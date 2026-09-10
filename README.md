@@ -2,7 +2,7 @@
 
 ## Team members
 
-- Sophia Smith...
+- Ayla Hauser
  
 ## Team rules
 
