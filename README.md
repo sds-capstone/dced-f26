@@ -3,6 +3,7 @@
 ## Team members
 
 - Ayla Hauser
+- Simran Jayasinghe
  
 ## Team rules
 
