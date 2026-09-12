@@ -5,6 +5,7 @@
 - Ayla Hauser
 - Simran Jayasinghe
 - Alice MacGarvie Thompson
+- Úna Gogstetter
  
 ## Team rules
 
