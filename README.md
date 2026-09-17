@@ -5,9 +5,11 @@
 - Ayla Hauser
 - Simran Jayasinghe
 - Alice MacGarvie Thompson
-- Úna Gogstetter
+- Úna Gogstetter (Sprint 1 Product Owner)
  
 ## Team rules
+
+- Weekly standup meetings will be on **Sundays at 3 pm**
 
 ## Final paper
 
