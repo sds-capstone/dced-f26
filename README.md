@@ -9,7 +9,18 @@
  
 ## Team rules
 
-- Weekly standup meetings will be on **Sundays at 3 pm**
+Weekly standup meetings will be on **Sundays at 3 pm**
+
+* We will communicate regularly about our progress, questions, availability, and any issues that arise. 
+* We will all provide feedback to each other on any work, either positive or constructive.
+* We will set clear expectations and divide responsibilities.
+          - This means setting internal deadlines and establishing who is responsible for what. This can be maintained through shared documents to keep track of progress, deadlines, and responsibilities.
+* We will balance independent work with collaboration.
+* Tailoring to each others strengths and passions, we will give each person space to work independently and research new ideas, while building in regular opportunities to brainstorm and revise our work as a group.
+* We value clear, constructive feedback focused on improving work.
+* We will always communicate our needs to group members, especially if something comes up that could inhibit our workflow.
+* We will be flexible and adaptable to everyone's work styles.
+* We will create a space where everyone feels comfortable enough to ask for help.
 
 ## Final paper
 
