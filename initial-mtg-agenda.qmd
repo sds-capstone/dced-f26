@@ -1,0 +1,57 @@
+---
+title: "Initial Meeting Agenda & Questions"
+subtitle: "This may change before our meeting!"
+author: "Alice, Ayla, Simran, Úna"
+format: html
+editor: visual
+---
+
+## Questions:
+
+-   Could you give us more detail on what problem this project is looking to solve? What is the impetus for this project?
+
+    -   “The richest parts of DC mask mask deep impacts of intergenerational poverty in the citywide data currently available through the Urban Institute's dashboard. I imagine a final product that is very similar to the current Urban Institute dashboard at the tract, block, or neighborhood level.”
+
+        -   We understand that one motive of this is to break down the data to tract/block/neighborhood level to better understand how poverty and systems of marginzalition is effecting communities on a block-by-block level. 
+
+        -   And that this data will be used for will be used for reporting and policymaking, and that it will be public. 
+
+        -   Can you please be more specific about how it could potentially be used in reporting in policymaking? And is that motive we described accurate? Can you please tell us more about the impetus for this project?
+
+-   Could you give us more detail on what you envision for the final product? What features would this dashboard have, and would the code for it be run locally or hosted somewhere on the web? Are there specific data types/variables you envision being included?
+
+    -   Who exactly is the target audience? Should it be geared more towards communities or policy makers? Will it be public-facing?
+
+-   How do you see this project being different from/building upon the Opportunity Atlas/Upward Mobility Dashboard?
+
+    -   To what extent would you like to see data visualizations vs. statistical analysis? Are there any specific types of comparisons (e.g. between variables) you’d like to see?
+
+    -   What do you like and dislike about the Opportunity Atlas?
+
+-   Would you like to see data by school district? Or is seeing data by Census tract/similar more important to you? Or are you flexible based on what geographies the data we use are available at?
+
+    -   Mobility dashboard metrics, trends
+
+    -   Modeling for indicators?
+
+-   Are there (public or internal) datasets outside of Census Data that you would like us to incorporate? If internal datasets, we will assume data is confidential.
+
+-   Does an R Shiny app sound good to you as a format for the dashboard? Would you like to see our (very basic) demo app?
+
+    -   Shiny = web app built in R
+
+    -   interactive web app, lets ppl explore data / viz / charts / metrics immediately with filters etc... automatically recaluctaes and remakes graph when u change input
+
+Additional notes
+
+-   Avoiding overinterpretation cuz accessible to public- how do we make that clear
+
+-   More in depth modeling with multiple variables etc
+
+-   So the urban mobility dashboard they gave us as a reference mostly just shows one variable over a map and a few charts with only that one variable. In the video, he said that the project will be used by his office for reporting and future policymaking. Im thinking if this is the same as the urban mobility dashboard, it could lose a lot of nuance and be misinterpreted.
+
+-   I feel like it would be important to include some straightforward way to see how association differs across groups, if predictors are strongly collinear, and other things that could lead to overinterpretation or misinterpretation (those are just a few simple examples). I don’t really know how to do this in a way that is clear and accessible and not just a theoretical class assignment or report. I think maybe we should bring this up in our first or second meeting, but we don’t want to imply that this data will be misinterpreted by their department. What is we frame it in terms of something that the \*public\* could misinterpret, since it will be open to the public as well….
+
+-   Ben said: I think that's fine. From what I know of the DC ed people they are very open to new ideas. I think you're absolutely right about the hazards of univariate analysis. But also, remember that you're just getting started and so mapping one variable will be easier than mapping two and is still a worthwhile exercise. Good luck with your conversation!
+
+\
