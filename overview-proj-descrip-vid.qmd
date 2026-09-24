@@ -56,7 +56,7 @@ They list spatial joins, subgroup analysis, statistical modeling, reproducible p
 
 The Upward Mobility Data Dashboard helps people understand key conditions affecting upward mobility from poverty and racial equity in communities.
 
-The dashboard provides[ Mobility Metrics](https://upward-mobility.urban.org/mobility-metrics/all-metrics) data for 24 predictors. The predictors are indicators that are strongly associated with upward mobility, according to the[ Upward Mobility Framework](https://upward-mobility.urban.org/framework)’s three-part definition of the term that encompasses long-term economic success, dignity and belonging, and power and autonomy. The predictors fall within one of five pillars, which represent supports people need from their communities to achieve upward mobility.
+The dashboard provides[Mobility Metrics](https://upward-mobility.urban.org/mobility-metrics/all-metrics) data for 24 predictors. The predictors are indicators that are strongly associated with upward mobility, according to the[Upward Mobility Framework](https://upward-mobility.urban.org/framework)’s three-part definition of the term that encompasses long-term economic success, dignity and belonging, and power and autonomy. The predictors fall within one of five pillars, which represent supports people need from their communities to achieve upward mobility.
 
 The dashboard shows a snapshot of these 24 predictors over time, across categories, and for every county and more than 480 cities in the US. People can use the predictors and their associated metrics to understand conditions in their communities, contextualize those conditions, establish priorities to mobilize action, and monitor progress.
 
