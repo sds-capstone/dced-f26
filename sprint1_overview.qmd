@@ -1,0 +1,41 @@
+---
+title: "Sprint 1 Overview: District of Colombia Deputy Mayor for Education"
+format: html
+---
+
+**Research Goal:** Create a DC Upward Mobility Dashboard to help identify the relationship between program, policy, and education outcomes. 
+
+**Research Question:** What are program and policy investments we can make that would create positive change for this entire neighborhood?
+
+## Background:
+* Want us to help identify levers for change in upward mobility, so that they can apply the corresponding resources.
+* There are great disparities in resources and education outcomes by neighborhood.
+* Because DC is a city, county, and state they are not able to see policy differences/outcomes in different parts of the state.
+* Need to be able to correlated variables with other variables (i.e if a neighborhood has a recreation center with x number of programs per student, does that impact attendance?)
+
+## Starting Point:
+We are going to create a dashboard measuring correlation between particular education variables to increase upward mobility in student education. Firstly, we are going to apply this on the neighborhood level: 
+**Congress Heights-** (Ward 8, Ketcham Zone for Simon Elementary School, Census Block 9804)
+
+## Variables to Explore:
+* Level Economics
+* Attendance
+* Safety
+* Public Safety 
+* Violence Interrupter
+* Illness
+* Access to parks
+* Air Quality
+* Access to Transportation
+* Kindergarten Readiness
+* Housing Disparities
+* Household Dynamics
+* Safe Passage Team Maps
+* Crime Data
+
+Looking for correlations and predictions. 
+
+
+
+
+
