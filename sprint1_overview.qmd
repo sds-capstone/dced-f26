@@ -41,6 +41,25 @@ Looking for correlations and predictions.
 * We will then update our map to have groupings by individual Washington DC wards and neighborhoods, to give an analysis by neighborhood. 
 * Then, we can look more into formatting and best practices in terms of correlating and predicting relationships between demographic variables and education.
 
+## Next Steps - Datasets of Interest:
+* Built Environment Indicators - (https://opendata.dc.gov/datasets/DCGIS::built-environment-indicators/about)
+Includes 41 measured variables, related to Education, Employment, Financial Institutions, Housing, Transportation, Food Environment, Medical Care, Outdoor Environment, and Community Safety
+
+* Air Quality Realtime -
+(https://opendata.dc.gov/datasets/DCGIS::air-quality-realtime/about)
+Point data measured at specific sites, can be aggregated into tracts
+
+* Affordable Housing -
+(https://opendata.dc.gov/datasets/DCGIS::affordable-housing/about)
+Point data, can be aggregated into tracts
+
+* Child Development Centers -
+(https://opendata.dc.gov/datasets/DCGIS::child-development-centers/about)
+Point data, can be aggregated into tracts
+
+* Parks & Recreation Areas - 
+(https://opendata.dc.gov/datasets/DCGIS::parks-and-recreation-areas/about)
+Polygon data, can be aggregated into tracts
 
 
 
