@@ -1,0 +1,28 @@
+---
+title: "Demo1 Baumer Feedback Notes"
+author: "Alice"
+format: html
+editor: visual
+---
+
+## Notes from Demo1 Baumer Feedback
+
+-   spatial data obvious confounder location
+
+    -   people like to put data on map because it looks cool. but question of this is what is the spatial element of this really doing this for us? why is a map different from a scatterplot
+
+    -   what is the spatial relationship that’s important here? - deeper Q to keep in back of mind
+
+-   data viz color theory
+
+    -   gonna have fairly complication data maps, appropriate color schemes and background important to making understanable
+
+-   spatial statistics- talk to albert kim about that- spacial statistical models… like a regression model but you have location in there… ways that people have figured out how to look at spatial relationship
+
+    -   mathematically challenging- cool challenge 
+
+        -   variagrams
+
+-   talk to- connecticut mirror 
+
+	•		⁃	also shiny app, have map component and other things- bar graph, scatterplot etc
