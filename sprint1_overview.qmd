@@ -35,6 +35,12 @@ We are going to create a dashboard measuring correlation between particular educ
 
 Looking for correlations and predictions. 
 
+## Next Steps - Near Future:
+* We are currently working on pulling, cleaning, and finding the correct and necessary data sets for our analysis. 
+* We are looking to apply ACS data since it provides the most up to date demographic and education information in DC.
+* We will then update our map to have groupings by individual Washington DC wards and neighborhoods, to give an analysis by neighborhood. 
+* Then, we can look more into formatting and best practices in terms of correlating and predicting relationships between demographic variables and education.
+
 
 
 
