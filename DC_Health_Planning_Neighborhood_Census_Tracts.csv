@@ -1,0 +1,180 @@
+﻿GEOID,NAME,STATE,COUNTY,DC_HPN_NAME,CODE,HPN_LABEL,GIS_ID,OBJECTID,GLOBALID
+11001007903,Census Tract 79.03,District of Columbia,District of Columbia,KINGMAN PARK,N28,N28 KINGMAN PARK,HealthNeighborhoodCensusTract_29,1,{16D0E829-567B-42F0-A718-8FE03ACE7D6B}
+11001008001,Census Tract 80.01,District of Columbia,District of Columbia,KINGMAN PARK,N28,N28 KINGMAN PARK,HealthNeighborhoodCensusTract_30,2,{18E732A6-1840-4B36-BE7F-D8E9E4DC48BF}
+11001008100,Census Tract 81,District of Columbia,District of Columbia,KINGMAN PARK,N28,N28 KINGMAN PARK,HealthNeighborhoodCensusTract_32,3,{BA52E65E-6E7E-483B-8273-BD5B383107FF}
+11001008200,Census Tract 82,District of Columbia,District of Columbia,CAPITOL HILL,N9,N9 CAPITOL HILL,HealthNeighborhoodCensusTract_33,4,{D52E9BDE-5CF0-4672-A7C3-F6F5DBF10407}
+11001008301,Census Tract 83.01,District of Columbia,District of Columbia,UNION STATION,N48,N48 UNION STATION,HealthNeighborhoodCensusTract_34,5,{40211F9A-2FAB-4007-BE40-E0777651FFDD}
+11001008302,Census Tract 83.02,District of Columbia,District of Columbia,UNION STATION,N48,N48 UNION STATION,HealthNeighborhoodCensusTract_35,6,{9C702480-E70B-4CC0-9004-228F321D021B}
+11001008402,Census Tract 84.02,District of Columbia,District of Columbia,UNION STATION,N48,N48 UNION STATION,HealthNeighborhoodCensusTract_36,7,{2B9E5FCD-4F7C-463C-BE68-2E75CF76EF8E}
+11001008410,Census Tract 84.10,District of Columbia,District of Columbia,UNION STATION,N48,N48 UNION STATION,HealthNeighborhoodCensusTract_37,8,{3C22E487-7F2F-486E-87A5-AF186603C5B7}
+11001008702,Census Tract 87.02,District of Columbia,District of Columbia,EDGEWOOD,N18,N18 EDGEWOOD,HealthNeighborhoodCensusTract_39,9,{E2FF221F-47CE-45EF-823F-5206C05685F4}
+11001008802,Census Tract 88.02,District of Columbia,District of Columbia,TRINIDAD,N45,N45 TRINIDAD,HealthNeighborhoodCensusTract_40,10,{10AF05D2-7C26-46EB-BCFD-FC6A74C426A8}
+11001008803,Census Tract 88.03,District of Columbia,District of Columbia,TRINIDAD,N45,N45 TRINIDAD,HealthNeighborhoodCensusTract_41,11,{AC2CC276-8A90-4A29-8F3B-9CBE4666747F}
+11001008804,Census Tract 88.04,District of Columbia,District of Columbia,TRINIDAD,N45,N45 TRINIDAD,HealthNeighborhoodCensusTract_42,12,{2D16AA3A-6464-425F-83B6-F254CBC83F0F}
+11001008903,Census Tract 89.03,District of Columbia,District of Columbia,TRINIDAD,N45,N45 TRINIDAD,HealthNeighborhoodCensusTract_43,13,{3B2194A5-2B64-427B-8BF6-71F7895573FE}
+11001008904,Census Tract 89.04,District of Columbia,District of Columbia,TRINIDAD,N45,N45 TRINIDAD,HealthNeighborhoodCensusTract_44,14,{C794615A-6B74-4C7F-8570-33A8FFC9439D}
+11001009000,Census Tract 90,District of Columbia,District of Columbia,FORT LINCOLN/GATEWAY,N21,N21 FORT LINCOLN/GATEWAY,HealthNeighborhoodCensusTract_45,15,{E824C782-5EDA-44A3-9C6D-8714171A3EDF}
+11001009201,Census Tract 92.01,District of Columbia,District of Columbia,EDGEWOOD,N18,N18 EDGEWOOD,HealthNeighborhoodCensusTract_47,16,{A759EABB-38B1-49CC-8472-74C7D3CBF989}
+11001009203,Census Tract 92.03,District of Columbia,District of Columbia,BLOOMINGDALE,N5,N5 BLOOMINGDALE,HealthNeighborhoodCensusTract_48,17,{B6889FA9-DCF9-4BE3-AE50-11AF454BEF71}
+11001009204,Census Tract 92.04,District of Columbia,District of Columbia,EDGEWOOD,N18,N18 EDGEWOOD,HealthNeighborhoodCensusTract_49,18,{C56B440A-6405-4487-AFD5-D02DFDF68FE5}
+11001009301,Census Tract 93.01,District of Columbia,District of Columbia,BRENTWOOD,N6,N6 BRENTWOOD,HealthNeighborhoodCensusTract_50,19,{8108254A-E63C-494A-979D-2C56F31D0F2F}
+11001009302,Census Tract 93.02,District of Columbia,District of Columbia,BRENTWOOD,N6,N6 BRENTWOOD,HealthNeighborhoodCensusTract_51,20,{A61AA8FC-61A3-4355-8B80-13F897521F9B}
+11001009400,Census Tract 94,District of Columbia,District of Columbia,WOODRIDGE,N51,N51 WOODRIDGE,HealthNeighborhoodCensusTract_52,21,{C016EB26-25B4-4369-9A04-D6F57EF8DAD4}
+11001009501,Census Tract 95.01,District of Columbia,District of Columbia,MICHIGAN PARK,N33,N33 MICHIGAN PARK,HealthNeighborhoodCensusTract_53,22,{87C50DE9-7524-46CB-A702-4E0AA504FD07}
+11001009504,Census Tract 95.04,District of Columbia,District of Columbia,MICHIGAN PARK,N33,N33 MICHIGAN PARK,HealthNeighborhoodCensusTract_55,23,{33DF7A7B-BE89-4461-9248-9747B4BFE1B7}
+11001009508,Census Tract 95.08,District of Columbia,District of Columbia,LAMOND RIGGS,N29,N29 LAMOND RIGGS,HealthNeighborhoodCensusTract_56,24,{230858DA-B5FB-4B41-8B28-5F461BCE9F3D}
+11001009509,Census Tract 95.09,District of Columbia,District of Columbia,MICHIGAN PARK,N33,N33 MICHIGAN PARK,HealthNeighborhoodCensusTract_57,25,{C8039842-B858-40AA-9D78-F1DA3FAB8F40}
+11001009601,Census Tract 96.01,District of Columbia,District of Columbia,EASTLAND GARDENS,N17,N17 EASTLAND GARDENS,HealthNeighborhoodCensusTract_58,26,{BF547A27-C826-44BD-B92C-DF6C14D240FD}
+11001009602,Census Tract 96.02,District of Columbia,District of Columbia,EASTLAND GARDENS,N17,N17 EASTLAND GARDENS,HealthNeighborhoodCensusTract_59,27,{77354AB2-DB0A-410E-89E0-C36E0A6627C1}
+11001009603,Census Tract 96.03,District of Columbia,District of Columbia,FORT DUPONT,N20,N20 FORT DUPONT,HealthNeighborhoodCensusTract_60,28,{F3468F3B-4690-4158-83E5-DAFB062FA92B}
+11001009604,Census Tract 96.04,District of Columbia,District of Columbia,FORT DUPONT,N20,N20 FORT DUPONT,HealthNeighborhoodCensusTract_61,29,{B3F906FC-D1C3-43D8-898D-52B5BC7208F6}
+11001009901,Census Tract 99.01,District of Columbia,District of Columbia,TWINING,N46,N46 TWINING,HealthNeighborhoodCensusTract_62,30,{AB28AEAE-07F0-45C3-BCA9-5BEF094E03EC}
+11001009902,Census Tract 99.02,District of Columbia,District of Columbia,TWINING,N46,N46 TWINING,HealthNeighborhoodCensusTract_63,31,{3B595204-FDC9-4E92-A6C6-9BC515BD320A}
+11001009904,Census Tract 99.04,District of Columbia,District of Columbia,MARSHALL HEIGHTS,N32,N32 MARSHALL HEIGHTS,HealthNeighborhoodCensusTract_65,32,{A521C555-7244-4A98-A36A-10F21882BBB2}
+11001009905,Census Tract 99.05,District of Columbia,District of Columbia,MARSHALL HEIGHTS,N32,N32 MARSHALL HEIGHTS,HealthNeighborhoodCensusTract_66,33,{BEEB5175-1C87-47BE-98F1-E75FBABE1C2A}
+11001009906,Census Tract 99.06,District of Columbia,District of Columbia,MARSHALL HEIGHTS,N32,N32 MARSHALL HEIGHTS,HealthNeighborhoodCensusTract_67,34,{DC428FCF-FC82-4A93-9E6D-30AD997A9694}
+11001009907,Census Tract 99.07,District of Columbia,District of Columbia,MARSHALL HEIGHTS,N32,N32 MARSHALL HEIGHTS,HealthNeighborhoodCensusTract_68,35,{4536B58B-86DC-410A-977B-A66639DD20CC}
+11001010100,Census Tract 101,District of Columbia,District of Columbia,CHINATOWN,N12,N12 CHINATOWN,HealthNeighborhoodCensusTract_69,36,{4D0E0DFC-B15D-4358-AD22-834D046D2B47}
+11001010200,Census Tract 102,District of Columbia,District of Columbia,SW/WATERFRONT,N43,N43 SW/WATERFRONT,HealthNeighborhoodCensusTract_70,37,{C372E00A-1EA2-4A61-9AA4-7EE19A43CAF4}
+11001010500,Census Tract 105,District of Columbia,District of Columbia,SW/WATERFRONT,N43,N43 SW/WATERFRONT,HealthNeighborhoodCensusTract_71,38,{7B866C27-3CB1-42EA-9442-86FBFA72CD43}
+11001010700,Census Tract 107,District of Columbia,District of Columbia,GWU,N24,N24 GWU,HealthNeighborhoodCensusTract_73,39,{16B5674F-B91D-49BC-BA72-3D5153B48233}
+11001010800,Census Tract 108,District of Columbia,District of Columbia,GWU,N24,N24 GWU,HealthNeighborhoodCensusTract_74,40,{5AA6D903-FD80-4C0F-89A6-A9CE9B8F2637}
+11001011000,Census Tract 110,District of Columbia,District of Columbia,SW/WATERFRONT,N43,N43 SW/WATERFRONT,HealthNeighborhoodCensusTract_75,41,{FF0AC75C-EF02-4CC2-8CE6-4AA11ABE1F51}
+11001011100,Census Tract 111,District of Columbia,District of Columbia,FORT LINCOLN/GATEWAY,N21,N21 FORT LINCOLN/GATEWAY,HealthNeighborhoodCensusTract_76,42,{E92C781A-599C-47E8-A885-5AD07E3EBB24}
+11001001401,Census Tract 14.01,District of Columbia,District of Columbia,CHEVY CHASE,N11,N11 CHEVY CHASE,HealthNeighborhoodCensusTract_77,43,{4EA27949-1427-4199-86F1-58DC367A3298}
+11001001402,Census Tract 14.02,District of Columbia,District of Columbia,CHEVY CHASE,N11,N11 CHEVY CHASE,HealthNeighborhoodCensusTract_78,44,{50FFB179-CAB8-4CEC-A03D-8525DACF7833}
+11001001500,Census Tract 15,District of Columbia,District of Columbia,BARNABY WOODS,N3,N3 BARNABY WOODS,HealthNeighborhoodCensusTract_79,45,{D3DA2382-2962-4A9C-AF0D-4121B3882A50}
+11001001702,Census Tract 17.02,District of Columbia,District of Columbia,BRIGHTWOOD,N7,N7 BRIGHTWOOD,HealthNeighborhoodCensusTract_81,46,{8062038C-2FA6-48F5-9B50-5569CC77F0EF}
+11001001803,Census Tract 18.03,District of Columbia,District of Columbia,BRIGHTWOOD,N7,N7 BRIGHTWOOD,HealthNeighborhoodCensusTract_82,47,{0ABA50FE-F384-4808-9819-2CF8CF7DC1E1}
+11001001804,Census Tract 18.04,District of Columbia,District of Columbia,BRIGHTWOOD,N7,N7 BRIGHTWOOD,HealthNeighborhoodCensusTract_83,48,{8F86F698-0038-47A9-A760-06D5103B3C5A}
+11001001901,Census Tract 19.01,District of Columbia,District of Columbia,BRIGHTWOOD,N7,N7 BRIGHTWOOD,HealthNeighborhoodCensusTract_84,49,{E53EF4BD-A39C-4858-BD42-D91F20845F78}
+11001001902,Census Tract 19.02,District of Columbia,District of Columbia,LAMOND RIGGS,N29,N29 LAMOND RIGGS,HealthNeighborhoodCensusTract_85,50,{201694C1-E12C-488C-A7C8-0F0C348936C4}
+11001000702,Census Tract 7.02,District of Columbia,District of Columbia,CATHEDRAL HEIGHTS,N10,N10 CATHEDRAL HEIGHTS,HealthNeighborhoodCensusTract_114,51,{4E8174B7-59F3-4EDC-B016-196D2F323ADD}
+11001000801,Census Tract 8.01,District of Columbia,District of Columbia,KENT/PALISADES,N27,N27 KENT/PALISADES,HealthNeighborhoodCensusTract_115,52,{ECF6D9DE-966B-4BD5-9479-F3C3898F7F64}
+11001000802,Census Tract 8.02,District of Columbia,District of Columbia,KENT/PALISADES,N27,N27 KENT/PALISADES,HealthNeighborhoodCensusTract_116,53,{7DE48C95-4D5E-422B-967F-BBD53C68B6CC}
+11001000901,Census Tract 9.01,District of Columbia,District of Columbia,KENT/PALISADES,N27,N27 KENT/PALISADES,HealthNeighborhoodCensusTract_117,54,{73FC2B90-A25E-4169-964E-F4B6A1555D1F}
+11001000902,Census Tract 9.02,District of Columbia,District of Columbia,KENT/PALISADES,N27,N27 KENT/PALISADES,HealthNeighborhoodCensusTract_118,55,{40C99E2D-DE6D-426E-80E1-A1E0A7947E1E}
+11001001001,Census Tract 10.01,District of Columbia,District of Columbia,TENLEYTOWN,N44,N44 TENLEYTOWN,HealthNeighborhoodCensusTract_119,56,{CF399BB3-EDD6-46EA-9DAA-ABC8C7687118}
+11001001002,Census Tract 10.02,District of Columbia,District of Columbia,CATHEDRAL HEIGHTS,N10,N10 CATHEDRAL HEIGHTS,HealthNeighborhoodCensusTract_120,57,{30A3FCAF-D373-4B23-B824-559DD44CFA46}
+11001001200,Census Tract 12,District of Columbia,District of Columbia,TENLEYTOWN,N44,N44 TENLEYTOWN,HealthNeighborhoodCensusTract_122,58,{31605BE5-05F0-438B-8F54-826319DA66F4}
+11001001301,Census Tract 13.01,District of Columbia,District of Columbia,FOREST HILLS,N19,N19 FOREST HILLS,HealthNeighborhoodCensusTract_123,59,{1903B5EB-A309-44CD-BADC-4E228A7C7136}
+11001001302,Census Tract 13.02,District of Columbia,District of Columbia,FOREST HILLS,N19,N19 FOREST HILLS,HealthNeighborhoodCensusTract_124,60,{D69F288E-3AFD-4485-8066-61249E98FBDC}
+11001002002,Census Tract 20.02,District of Columbia,District of Columbia,16th ST HEIGHTS,N1,N1 16th ST HEIGHTS,HealthNeighborhoodCensusTract_125,61,{D12BF948-7177-4868-9F31-BA44A8786EAD}
+11001002201,Census Tract 22.01,District of Columbia,District of Columbia,PETWORTH,N38,N38 PETWORTH,HealthNeighborhoodCensusTract_126,62,{407A7CE2-7D60-4F0C-BD91-52FBA928FF3C}
+11001002202,Census Tract 22.02,District of Columbia,District of Columbia,PETWORTH,N38,N38 PETWORTH,HealthNeighborhoodCensusTract_127,63,{938458E7-166A-478F-B3DE-68E74088CCFD}
+11001002301,Census Tract 23.01,District of Columbia,District of Columbia,PETWORTH,N38,N38 PETWORTH,HealthNeighborhoodCensusTract_128,64,{D927A6C0-697A-4926-91D8-AE02EED46D2D}
+11001002400,Census Tract 24,District of Columbia,District of Columbia,PETWORTH,N38,N38 PETWORTH,HealthNeighborhoodCensusTract_130,65,{52177199-A802-4BEE-AABF-EFC7BA263687}
+11001002501,Census Tract 25.01,District of Columbia,District of Columbia,16th ST HEIGHTS,N1,N1 16th ST HEIGHTS,HealthNeighborhoodCensusTract_131,66,{CF5FD4EB-72FF-4590-8ECF-AB85CC8F7DB7}
+11001002502,Census Tract 25.02,District of Columbia,District of Columbia,16th ST HEIGHTS,N1,N1 16th ST HEIGHTS,HealthNeighborhoodCensusTract_132,67,{4ECC1172-F5E9-44ED-BF61-0ADE18073D77}
+11001002600,Census Tract 26,District of Columbia,District of Columbia,16th ST HEIGHTS,N1,N1 16th ST HEIGHTS,HealthNeighborhoodCensusTract_133,68,{5D7AC9E5-90D6-4226-915E-8FF957ED67F9}
+11001002701,Census Tract 27.01,District of Columbia,District of Columbia,MOUNT PLEASANT,N34,N34 MOUNT PLEASANT,HealthNeighborhoodCensusTract_134,69,{E6E47F40-5B17-468A-91AF-5A83A6EA082D}
+11001002702,Census Tract 27.02,District of Columbia,District of Columbia,MOUNT PLEASANT,N34,N34 MOUNT PLEASANT,HealthNeighborhoodCensusTract_135,70,{63556DC3-C902-4317-A94B-C2E505912243}
+11001002801,Census Tract 28.01,District of Columbia,District of Columbia,COLUMBIA HEIGHTS,N13,N13 COLUMBIA HEIGHTS,HealthNeighborhoodCensusTract_136,71,{98A8F038-DA82-448E-9935-94487FB14189}
+11001002900,Census Tract 29,District of Columbia,District of Columbia,COLUMBIA HEIGHTS,N13,N13 COLUMBIA HEIGHTS,HealthNeighborhoodCensusTract_138,72,{4BC6781A-3BF7-42CE-95AB-B5F2DA9B79CA}
+11001003000,Census Tract 30,District of Columbia,District of Columbia,COLUMBIA HEIGHTS,N13,N13 COLUMBIA HEIGHTS,HealthNeighborhoodCensusTract_139,73,{479AD991-645D-45B1-AE04-18BA27E24F17}
+11001003100,Census Tract 31,District of Columbia,District of Columbia,COLUMBIA HEIGHTS,N13,N13 COLUMBIA HEIGHTS,HealthNeighborhoodCensusTract_140,74,{FC1F0B0E-125B-4355-9D0A-4E9E41363E6F}
+11001003200,Census Tract 32,District of Columbia,District of Columbia,COLUMBIA HEIGHTS,N13,N13 COLUMBIA HEIGHTS,HealthNeighborhoodCensusTract_141,75,{89B5FB44-6F13-4121-AA6E-F95F69A079EE}
+11001003301,Census Tract 33.01,District of Columbia,District of Columbia,BLOOMINGDALE,N5,N5 BLOOMINGDALE,HealthNeighborhoodCensusTract_142,76,{0D5670BE-F5AD-4F2B-8F93-891A2F4DA124}
+11001003302,Census Tract 33.02,District of Columbia,District of Columbia,BLOOMINGDALE,N5,N5 BLOOMINGDALE,HealthNeighborhoodCensusTract_143,77,{8BFCBBE8-AC12-4D63-82DD-2F3FDF68D8C3}
+11001003400,Census Tract 34,District of Columbia,District of Columbia,U ST/PLEASANT,N47,N47 U ST/PLEASANT,HealthNeighborhoodCensusTract_144,78,{A2BDCB72-5F9C-4BF1-A59C-86A7DBE354D2}
+11001003500,Census Tract 35,District of Columbia,District of Columbia,U ST/PLEASANT,N47,N47 U ST/PLEASANT,HealthNeighborhoodCensusTract_145,79,{A2647985-9F26-491B-850A-8DA1D853EC3F}
+11001003600,Census Tract 36,District of Columbia,District of Columbia,SOUTH COLUMBIA HEIGHTS,N41,N41 SOUTH COLUMBIA HEIGHTS,HealthNeighborhoodCensusTract_146,80,{276589A5-F91A-4930-9C87-7958AEF31851}
+11001003800,Census Tract 38,District of Columbia,District of Columbia,ADAMS MORGAN,N2,N2 ADAMS MORGAN,HealthNeighborhoodCensusTract_148,81,{F0D95D22-3761-4B6A-96D2-1948CA4BB552}
+11001003900,Census Tract 39,District of Columbia,District of Columbia,ADAMS MORGAN,N2,N2 ADAMS MORGAN,HealthNeighborhoodCensusTract_149,82,{A6141CAD-45A2-4016-9C5D-320FCDB24101}
+11001004001,Census Tract 40.01,District of Columbia,District of Columbia,ADAMS MORGAN,N2,N2 ADAMS MORGAN,HealthNeighborhoodCensusTract_150,83,{4E4DB445-26C5-4B6E-A35A-FB921F5DEC56}
+11001004002,Census Tract 40.02,District of Columbia,District of Columbia,ADAMS MORGAN,N2,N2 ADAMS MORGAN,HealthNeighborhoodCensusTract_151,84,{130AEF63-4974-4756-8589-9C4B0A8E3E2A}
+11001004100,Census Tract 41,District of Columbia,District of Columbia,GEORGETOWN EAST,N23,N23 GEORGETOWN EAST,HealthNeighborhoodCensusTract_152,85,{0A6E1BCF-5322-4A31-B175-E9DE0B07A492}
+11001004201,Census Tract 42.01,District of Columbia,District of Columbia,ADAMS MORGAN,N2,N2 ADAMS MORGAN,HealthNeighborhoodCensusTract_153,86,{7C92BA9E-3BB8-43E8-B55F-128CA2088895}
+11001004202,Census Tract 42.02,District of Columbia,District of Columbia,ADAMS MORGAN,N2,N2 ADAMS MORGAN,HealthNeighborhoodCensusTract_154,87,{40246112-089B-47CB-8DA3-F8477D06994D}
+11001004300,Census Tract 43,District of Columbia,District of Columbia,U ST/PLEASANT,N47,N47 U ST/PLEASANT,HealthNeighborhoodCensusTract_155,88,{EBEC0B6D-A713-4F0F-A2CD-5E8BB358DB16}
+11001004600,Census Tract 46,District of Columbia,District of Columbia,BLOOMINGDALE,N5,N5 BLOOMINGDALE,HealthNeighborhoodCensusTract_157,89,{B93B204E-43AD-4611-B71D-ABFC29BA9DE1}
+11001004701,Census Tract 47.01,District of Columbia,District of Columbia,CHINATOWN,N12,N12 CHINATOWN,HealthNeighborhoodCensusTract_158,90,{7AFD1310-BB69-4DE8-906E-727FC8F13EC0}
+11001004702,Census Tract 47.02,District of Columbia,District of Columbia,CHINATOWN,N12,N12 CHINATOWN,HealthNeighborhoodCensusTract_159,91,{EC2AEA03-6FEE-4611-95B0-FC0B301A74B6}
+11001004801,Census Tract 48.01,District of Columbia,District of Columbia,LOGAN CIRCLE/SHAW,N31,N31 LOGAN CIRCLE/SHAW,HealthNeighborhoodCensusTract_160,92,{6C9EC697-DE53-4381-AEE7-5078DCCB2D5E}
+11001004802,Census Tract 48.02,District of Columbia,District of Columbia,CHINATOWN,N12,N12 CHINATOWN,HealthNeighborhoodCensusTract_161,93,{338A99F8-C356-4D84-B9F4-1DB382EB8E5A}
+11001004901,Census Tract 49.01,District of Columbia,District of Columbia,LOGAN CIRCLE/SHAW,N31,N31 LOGAN CIRCLE/SHAW,HealthNeighborhoodCensusTract_162,94,{36572A58-B593-4D96-897A-F0A74D4A6304}
+11001004902,Census Tract 49.02,District of Columbia,District of Columbia,LOGAN CIRCLE/SHAW,N31,N31 LOGAN CIRCLE/SHAW,HealthNeighborhoodCensusTract_163,95,{902CA679-E80E-4E7F-925F-D6336D71F39F}
+11001005002,Census Tract 50.02,District of Columbia,District of Columbia,LOGAN CIRCLE/SHAW,N31,N31 LOGAN CIRCLE/SHAW,HealthNeighborhoodCensusTract_165,96,{75D42CE7-797C-49C2-9581-0047ADC6C927}
+11001005201,Census Tract 52.01,District of Columbia,District of Columbia,LOGAN CIRCLE/SHAW,N31,N31 LOGAN CIRCLE/SHAW,HealthNeighborhoodCensusTract_166,97,{5F24CB2C-8671-4617-A824-2B3BB92A8689}
+11001005301,Census Tract 53.01,District of Columbia,District of Columbia,LOGAN CIRCLE/SHAW,N31,N31 LOGAN CIRCLE/SHAW,HealthNeighborhoodCensusTract_167,98,{22D69AD3-E45D-4FE0-AA83-7E357F5515A5}
+11001003700,Census Tract 37,District of Columbia,District of Columbia,SOUTH COLUMBIA HEIGHTS,N41,N41 SOUTH COLUMBIA HEIGHTS,HealthNeighborhoodCensusTract_147,99,{493138BB-647E-4B10-81E5-AB82B7AFCE9D}
+11001004400,Census Tract 44,District of Columbia,District of Columbia,U ST/PLEASANT,N47,N47 U ST/PLEASANT,HealthNeighborhoodCensusTract_156,100,{C917EE09-8387-4DEE-AA79-BA1EEC931551}
+11001005001,Census Tract 50.01,District of Columbia,District of Columbia,LOGAN CIRCLE/SHAW,N31,N31 LOGAN CIRCLE/SHAW,HealthNeighborhoodCensusTract_164,101,{8417ABAF-12EB-4F43-BFA6-D3A09886C6A9}
+11001007404,Census Tract 74.04,District of Columbia,District of Columbia,DOUGLASS,N16,N16 DOUGLASS,HealthNeighborhoodCensusTract_91,102,{32275534-2549-4AC0-A5AD-64E5ECBEA445}
+11001009700,Census Tract 97,District of Columbia,District of Columbia,WASHINGTON HIGHLANDS,N49,N49 WASHINGTON HIGHLANDS,HealthNeighborhoodCensusTract_99,103,{4289FCEE-632E-4CC9-B6BA-569B8C3418C0}
+11001000202,Census Tract 2.02,District of Columbia,District of Columbia,GEORGETOWN,N22,N22 GEORGETOWN,HealthNeighborhoodCensusTract_107,104,{B55742FE-1066-4A6A-AF05-6B14CB2451F6}
+11001006801,Census Tract 68.01,District of Columbia,District of Columbia,HILL EAST,N25,N25 HILL EAST,HealthNeighborhoodCensusTract_3,105,{106B25AA-D945-40BB-9826-DE9300D6E27E}
+11001007401,Census Tract 74.01,District of Columbia,District of Columbia,SAINT ELIZABETHS,N39,N39 SAINT ELIZABETHS,HealthNeighborhoodCensusTract_11,106,{C36C7F0D-666A-41A1-9499-A5875128A2C9}
+11001007707,Census Tract 77.07,District of Columbia,District of Columbia,MARSHALL HEIGHTS,N32,N32 MARSHALL HEIGHTS,HealthNeighborhoodCensusTract_19,107,{B0BAE598-8B7C-458B-8E1B-5F2159A83BBD}
+11001007901,Census Tract 79.01,District of Columbia,District of Columbia,KINGMAN PARK,N28,N28 KINGMAN PARK,HealthNeighborhoodCensusTract_28,108,{7A9CDE5E-C97E-4F92-93F8-193FA04A283B}
+11001005500,Census Tract 55,District of Columbia,District of Columbia,GEORGETOWN EAST,N23,N23 GEORGETOWN EAST,HealthNeighborhoodCensusTract_168,109,{1D4F5B91-EF9D-4DC3-9CA9-D624DD8D2FEE}
+11001005600,Census Tract 56,District of Columbia,District of Columbia,GWU,N24,N24 GWU,HealthNeighborhoodCensusTract_169,110,{2FD77D3A-031F-4DA3-BEE4-1CE392E7B389}
+11001005800,Census Tract 58,District of Columbia,District of Columbia,CHINATOWN,N12,N12 CHINATOWN,HealthNeighborhoodCensusTract_170,111,{72C01701-DCA9-4C69-9833-837CC6443A5D}
+11001005900,Census Tract 59,District of Columbia,District of Columbia,CHINATOWN,N12,N12 CHINATOWN,HealthNeighborhoodCensusTract_171,112,{118C0E4A-1C3D-4205-97A4-29A3C1827763}
+11001006202,Census Tract 62.02,District of Columbia,District of Columbia,NATIONAL MALL,N0,N0 NATIONAL MALL,HealthNeighborhoodCensusTract_172,113,{61CE8A3B-D326-4947-8F45-EEDAE1B3D690}
+11001006400,Census Tract 64,District of Columbia,District of Columbia,SW/WATERFRONT,N43,N43 SW/WATERFRONT,HealthNeighborhoodCensusTract_173,114,{24999A96-082C-403D-9AC4-AA5ECAE94B77}
+11001006500,Census Tract 65,District of Columbia,District of Columbia,CAPITOL HILL,N9,N9 CAPITOL HILL,HealthNeighborhoodCensusTract_174,115,{2FF63A47-C802-4F39-8924-A90DE4F9A3FF}
+11001009810,Census Tract 98.10,District of Columbia,District of Columbia,BELLEVUE,N4,N4 BELLEVUE,HealthNeighborhoodCensusTract_175,116,{CF6417F6-8F0F-4F37-9359-01AC36557F97}
+11001009811,Census Tract 98.11,District of Columbia,District of Columbia,BELLEVUE,N4,N4 BELLEVUE,HealthNeighborhoodCensusTract_176,117,{D8D1FEF4-9A6C-4572-B58A-9623F3ED9C20}
+11001010300,Census Tract 103,District of Columbia,District of Columbia,SHEPHERD PARK,N40,N40 SHEPHERD PARK,HealthNeighborhoodCensusTract_177,118,{C2469E38-81F9-4E1B-B815-1902A9B0E5F4}
+11001010400,Census Tract 104,District of Columbia,District of Columbia,SAINT ELIZABETHS,N39,N39 SAINT ELIZABETHS,HealthNeighborhoodCensusTract_178,119,{10374720-5277-47FF-9BB8-AB03E7D4ECB0}
+11001010900,Census Tract 109,District of Columbia,District of Columbia,BELLEVUE,N4,N4 BELLEVUE,HealthNeighborhoodCensusTract_179,120,{DEE6EBA9-9D22-475B-8B30-4104919BEB55}
+11001008002,Census Tract 80.02,District of Columbia,District of Columbia,KINGMAN PARK,N28,N28 KINGMAN PARK,HealthNeighborhoodCensusTract_31,121,{E0604F30-285A-4416-996F-957E28CFC0A9}
+11001008701,Census Tract 87.01,District of Columbia,District of Columbia,BLOOMINGDALE,N5,N5 BLOOMINGDALE,HealthNeighborhoodCensusTract_38,122,{5444027F-3FDA-4BA0-B3B8-F949018FBAE9}
+11001009102,Census Tract 91.02,District of Columbia,District of Columbia,BRENTWOOD,N6,N6 BRENTWOOD,HealthNeighborhoodCensusTract_46,123,{AAC7A994-0B1D-4B03-A37B-E2B031D496F3}
+11001009503,Census Tract 95.03,District of Columbia,District of Columbia,WOODRIDGE,N51,N51 WOODRIDGE,HealthNeighborhoodCensusTract_54,124,{EA5EFA1F-F10E-43E3-A335-6A02DBB3E996}
+11001009903,Census Tract 99.03,District of Columbia,District of Columbia,MARSHALL HEIGHTS,N32,N32 MARSHALL HEIGHTS,HealthNeighborhoodCensusTract_64,125,{BE7197BD-8A6D-4561-A598-173ECB84ED88}
+11001010600,Census Tract 106,District of Columbia,District of Columbia,UNION STATION,N48,N48 UNION STATION,HealthNeighborhoodCensusTract_72,126,{C3A48B06-04C7-405E-9612-E5BB1FC16625}
+11001001600,Census Tract 16,District of Columbia,District of Columbia,SHEPHERD PARK,N40,N40 SHEPHERD PARK,HealthNeighborhoodCensusTract_80,127,{35AB97A1-4463-4CA9-A783-97EADDBE914F}
+11001000701,Census Tract 7.01,District of Columbia,District of Columbia,CATHEDRAL HEIGHTS,N10,N10 CATHEDRAL HEIGHTS,HealthNeighborhoodCensusTract_113,128,{AA55D064-D86D-4579-8409-6A1AC46222A3}
+11001001100,Census Tract 11,District of Columbia,District of Columbia,TENLEYTOWN,N44,N44 TENLEYTOWN,HealthNeighborhoodCensusTract_121,129,{592E4F81-2910-43D1-ADFA-F536257EE7DE}
+11001002302,Census Tract 23.02,District of Columbia,District of Columbia,DC MEDICAL CENTER,N15,N15 DC MEDICAL CENTER,HealthNeighborhoodCensusTract_129,130,{9D7D14B1-BD64-4B16-AFD6-7416FDF6BDC1}
+11001002802,Census Tract 28.02,District of Columbia,District of Columbia,COLUMBIA HEIGHTS,N13,N13 COLUMBIA HEIGHTS,HealthNeighborhoodCensusTract_137,131,{48BF8842-332F-4DB1-A9C1-6D6B5A01CA83}
+11001002001,Census Tract 20.01,District of Columbia,District of Columbia,16th ST HEIGHTS,N1,N1 16th ST HEIGHTS,HealthNeighborhoodCensusTract_86,132,{BEC819CB-A4B2-4A6B-BE36-6E1AD768361C}
+11001002101,Census Tract 21.01,District of Columbia,District of Columbia,BRIGHTWOOD PARK,N8,N8 BRIGHTWOOD PARK,HealthNeighborhoodCensusTract_87,133,{F5C4D40D-ED25-4849-8633-970010615542}
+11001002102,Census Tract 21.02,District of Columbia,District of Columbia,BRIGHTWOOD PARK,N8,N8 BRIGHTWOOD PARK,HealthNeighborhoodCensusTract_88,134,{49637B92-64EA-40C6-96EB-4BA43B96E34D}
+11001007304,Census Tract 73.04,District of Columbia,District of Columbia,CONGRESS HEIGHTS/SHIPLEY,N14,N14 CONGRESS HEIGHTS/SHIPLEY,HealthNeighborhoodCensusTract_89,135,{9B8FE11A-9174-440F-82AA-1E33C516F5AE}
+11001007403,Census Tract 74.03,District of Columbia,District of Columbia,DOUGLASS,N16,N16 DOUGLASS,HealthNeighborhoodCensusTract_90,136,{A6D0F3D7-0729-485E-AC90-EAF5CD514E42}
+11001007406,Census Tract 74.06,District of Columbia,District of Columbia,HISTORIC ANACOSTIA,N26,N26 HISTORIC ANACOSTIA,HealthNeighborhoodCensusTract_92,137,{F461C807-8201-48F4-9B27-C4952D378B05}
+11001007407,Census Tract 74.07,District of Columbia,District of Columbia,HISTORIC ANACOSTIA,N26,N26 HISTORIC ANACOSTIA,HealthNeighborhoodCensusTract_93,138,{D0243B97-6BB2-4E54-BD61-3F45CD80DC25}
+11001007408,Census Tract 74.08,District of Columbia,District of Columbia,NAYLOR/HILLCREST,N37,N37 NAYLOR/HILLCREST,HealthNeighborhoodCensusTract_94,139,{C4596656-50B3-4826-8C5B-19C350F78034}
+11001007409,Census Tract 74.09,District of Columbia,District of Columbia,DOUGLASS,N16,N16 DOUGLASS,HealthNeighborhoodCensusTract_95,140,{941C2C1E-9864-409F-A95E-4DAFB1A776BB}
+11001007502,Census Tract 75.02,District of Columbia,District of Columbia,NAYLOR/HILLCREST,N37,N37 NAYLOR/HILLCREST,HealthNeighborhoodCensusTract_96,141,{24961E1C-E51D-4CF5-9190-F86277BC6EF9}
+11001009505,Census Tract 95.05,District of Columbia,District of Columbia,LAMOND RIGGS,N29,N29 LAMOND RIGGS,HealthNeighborhoodCensusTract_97,142,{65C84475-862F-4C39-BC73-A32805D99159}
+11001009507,Census Tract 95.07,District of Columbia,District of Columbia,LAMOND RIGGS,N29,N29 LAMOND RIGGS,HealthNeighborhoodCensusTract_98,143,{64044C0B-20E4-4E55-87B8-DF9E01CB0643}
+11001009801,Census Tract 98.01,District of Columbia,District of Columbia,WASHINGTON HIGHLANDS,N49,N49 WASHINGTON HIGHLANDS,HealthNeighborhoodCensusTract_100,144,{93C1013C-971F-4BFA-BC02-0F1B5CE9EB42}
+11001009802,Census Tract 98.02,District of Columbia,District of Columbia,BELLEVUE,N4,N4 BELLEVUE,HealthNeighborhoodCensusTract_101,145,{4EC5DFB9-6320-48EC-99D0-9819CF0B271C}
+11001009803,Census Tract 98.03,District of Columbia,District of Columbia,CONGRESS HEIGHTS/SHIPLEY,N14,N14 CONGRESS HEIGHTS/SHIPLEY,HealthNeighborhoodCensusTract_102,146,{115E975F-0B72-444A-A402-06E7DD8DDFC2}
+11001009804,Census Tract 98.04,District of Columbia,District of Columbia,CONGRESS HEIGHTS/SHIPLEY,N14,N14 CONGRESS HEIGHTS/SHIPLEY,HealthNeighborhoodCensusTract_103,147,{2B7E67E4-242F-43DD-AE00-C54305433B71}
+11001009807,Census Tract 98.07,District of Columbia,District of Columbia,BELLEVUE,N4,N4 BELLEVUE,HealthNeighborhoodCensusTract_104,148,{EAB1A372-1BD0-4173-8088-7FD393C9E2BA}
+11001000100,Census Tract 1,District of Columbia,District of Columbia,GEORGETOWN EAST,N23,N23 GEORGETOWN EAST,HealthNeighborhoodCensusTract_105,149,{874878E8-BABC-4ADB-AF61-3A6ECBEC4277}
+11001000201,Census Tract 2.01,District of Columbia,District of Columbia,GEORGETOWN,N22,N22 GEORGETOWN,HealthNeighborhoodCensusTract_106,150,{4525096A-BFA2-48AC-850E-A1CFC080C28D}
+11001000300,Census Tract 3,District of Columbia,District of Columbia,CATHEDRAL HEIGHTS,N10,N10 CATHEDRAL HEIGHTS,HealthNeighborhoodCensusTract_108,151,{2D5A610C-F1CA-43A7-B30D-2C9681B9A408}
+11001000400,Census Tract 4,District of Columbia,District of Columbia,WOODLEY PARK,N50,N50 WOODLEY PARK,HealthNeighborhoodCensusTract_109,152,{13A4A70F-B7AC-4A68-A3CF-54C8AFC4C7EA}
+11001000501,Census Tract 5.01,District of Columbia,District of Columbia,WOODLEY PARK,N50,N50 WOODLEY PARK,HealthNeighborhoodCensusTract_110,153,{D96C2624-60D7-429A-B87B-F323BD4A5B2D}
+11001000502,Census Tract 5.02,District of Columbia,District of Columbia,WOODLEY PARK,N50,N50 WOODLEY PARK,HealthNeighborhoodCensusTract_111,154,{63DCF80D-42B8-4900-A5DE-2483F02DFC74}
+11001000600,Census Tract 6,District of Columbia,District of Columbia,WOODLEY PARK,N50,N50 WOODLEY PARK,HealthNeighborhoodCensusTract_112,155,{689BC3D1-9A04-4929-B61F-642C3C289A60}
+11001006600,Census Tract 66,District of Columbia,District of Columbia,CAPITOL HILL,N9,N9 CAPITOL HILL,HealthNeighborhoodCensusTract_1,156,{A4FFB910-749B-4358-B68A-9F5EDC45CDF0}
+11001006700,Census Tract 67,District of Columbia,District of Columbia,CAPITOL HILL,N9,N9 CAPITOL HILL,HealthNeighborhoodCensusTract_2,157,{7B4F10B2-F8B9-4435-BD35-3C5AEAC580C0}
+11001006802,Census Tract 68.02,District of Columbia,District of Columbia,HILL EAST,N25,N25 HILL EAST,HealthNeighborhoodCensusTract_4,158,{5EA9DB77-22D8-4110-B86A-A8F03566D305}
+11001006804,Census Tract 68.04,District of Columbia,District of Columbia,STADIUM ARMORY,N42,N42 STADIUM ARMORY,HealthNeighborhoodCensusTract_5,159,{63FE4DFD-1DE1-4F23-95B3-F2E4519A431C}
+11001006900,Census Tract 69,District of Columbia,District of Columbia,HILL EAST,N25,N25 HILL EAST,HealthNeighborhoodCensusTract_6,160,{8C52BE09-AF41-49C0-8B82-8B5D6DCEB0A7}
+11001007000,Census Tract 70,District of Columbia,District of Columbia,CAPITOL HILL,N9,N9 CAPITOL HILL,HealthNeighborhoodCensusTract_7,161,{038CBC19-7ADC-4C8C-8B69-916800CFE8A9}
+11001007100,Census Tract 71,District of Columbia,District of Columbia,HILL EAST,N25,N25 HILL EAST,HealthNeighborhoodCensusTract_8,162,{B212BCF0-2051-47E8-9004-F839F042F118}
+11001007200,Census Tract 72,District of Columbia,District of Columbia,SW/WATERFRONT,N43,N43 SW/WATERFRONT,HealthNeighborhoodCensusTract_9,163,{A22CE818-5558-40F0-A4D7-4C25C6165F72}
+11001007301,Census Tract 73.01,District of Columbia,District of Columbia,NAVAL STATION & AIR FORCE,N36,N36 NAVAL STATION & AIR FORCE,HealthNeighborhoodCensusTract_10,164,{2BC01ED6-32D8-4F99-9035-1F86206BA4C4}
+11001007503,Census Tract 75.03,District of Columbia,District of Columbia,HISTORIC ANACOSTIA,N26,N26 HISTORIC ANACOSTIA,HealthNeighborhoodCensusTract_12,165,{AFD07B01-58E2-4EDB-89EB-DC87CD333B1D}
+11001007504,Census Tract 75.04,District of Columbia,District of Columbia,HISTORIC ANACOSTIA,N26,N26 HISTORIC ANACOSTIA,HealthNeighborhoodCensusTract_13,166,{C6ACBBFE-0E14-4A4F-9931-29212363CB0F}
+11001007601,Census Tract 76.01,District of Columbia,District of Columbia,TWINING,N46,N46 TWINING,HealthNeighborhoodCensusTract_14,167,{115672C4-FAF4-468A-BFDD-9ED730C1AFF1}
+11001007603,Census Tract 76.03,District of Columbia,District of Columbia,NAYLOR/HILLCREST,N37,N37 NAYLOR/HILLCREST,HealthNeighborhoodCensusTract_15,168,{63A29606-55BC-4DE5-83AB-C91A656D2A1C}
+11001007604,Census Tract 76.04,District of Columbia,District of Columbia,NAYLOR/HILLCREST,N37,N37 NAYLOR/HILLCREST,HealthNeighborhoodCensusTract_16,169,{A1DB1AEC-41EE-4F83-8CF1-048599DD5DC0}
+11001007605,Census Tract 76.05,District of Columbia,District of Columbia,TWINING,N46,N46 TWINING,HealthNeighborhoodCensusTract_17,170,{F3735D92-0E05-4375-A2F8-B7F6823CC2B9}
+11001007703,Census Tract 77.03,District of Columbia,District of Columbia,FORT DUPONT,N20,N20 FORT DUPONT,HealthNeighborhoodCensusTract_18,171,{F71EAF12-1733-4E11-BBAA-21765C63F189}
+11001007708,Census Tract 77.08,District of Columbia,District of Columbia,FORT DUPONT,N20,N20 FORT DUPONT,HealthNeighborhoodCensusTract_20,172,{A511FA09-A4B7-4990-9E45-874391B78DC4}
+11001007709,Census Tract 77.09,District of Columbia,District of Columbia,TWINING,N46,N46 TWINING,HealthNeighborhoodCensusTract_21,173,{B8900B01-253C-4C7B-A99D-6013495573BB}
+11001007803,Census Tract 78.03,District of Columbia,District of Columbia,EASTLAND GARDENS,N17,N17 EASTLAND GARDENS,HealthNeighborhoodCensusTract_22,174,{E0DECCB8-9262-4481-9B3B-C14ABC624070}
+11001007804,Census Tract 78.04,District of Columbia,District of Columbia,LINCOLN HEIGHTS,N30,N30 LINCOLN HEIGHTS,HealthNeighborhoodCensusTract_23,175,{B5E9D575-D9E6-4DBA-93C4-ECADA34DA49A}
+11001007806,Census Tract 78.06,District of Columbia,District of Columbia,LINCOLN HEIGHTS,N30,N30 LINCOLN HEIGHTS,HealthNeighborhoodCensusTract_24,176,{ACE6FFDC-183B-4D06-AE70-7F3D0C172E73}
+11001007807,Census Tract 78.07,District of Columbia,District of Columbia,LINCOLN HEIGHTS,N30,N30 LINCOLN HEIGHTS,HealthNeighborhoodCensusTract_25,177,{80DFEFA3-8E8B-47E0-8D80-A82C6E8C3C7C}
+11001007808,Census Tract 78.08,District of Columbia,District of Columbia,LINCOLN HEIGHTS,N30,N30 LINCOLN HEIGHTS,HealthNeighborhoodCensusTract_26,178,{AAB9AC76-65A4-4714-907F-3721256FE6EA}
+11001007809,Census Tract 78.09,District of Columbia,District of Columbia,LINCOLN HEIGHTS,N30,N30 LINCOLN HEIGHTS,HealthNeighborhoodCensusTract_27,179,{20991069-0D65-48E5-BA1D-8B30E775867C}
