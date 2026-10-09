@@ -8,45 +8,80 @@ library(tigris)
 # Setting API key for census data. Pulls data from census package
 census_api_key("34df405496a792f31bd4cf10741ff37e850c3ab0")
 
+# tigris tract shapefile
+# selecting the variables- variable (names of variables), estimate (coorspondering num like income, geometry is shapefiles of census tracts)
+tracts <- tracts(state = "DC") |>
+  st_transform(crs = "WGS84") |>
+  select(c(TRACTCE, NAMELSAD, geometry)) 
 
-# Creating Neighborhoods
+# reading in the neighborhoods data set
+neighborhoods <- read.csv("Neighborhood_Labels.csv")
 
-Neighborhoods <- read.csv("DC_Health_Planning_Neighborhood_Census_Tracts.csv")
-Neighborhoods <- Neighborhoods |>
-  mutate(Neighborhoods = str_to_title(DC_HPN_NAME)) |>
-  select(c("NAME", "Neighborhoods")) 
+# convert neighborhood data into sf spatial object
+# I used 3857 because the coords are in web mercator
+neighborhood_points <- st_as_sf(
+  neighborhoods,
+  coords = c("X", "Y"),
+  crs = 3857,
+  remove = FALSE
   
+)
 
 
+# transform neighborhood and tracts into the same coord system
+neighborhood_points <- st_transform(
+  neighborhood_points,
+  st_crs(tracts)
+)
+
+# change them into a coord for distance calculations
+tracts_projected <- st_transform(tracts, 26985)
+points_projected <- st_transform(neighborhood_points, 26985)
+
+# create one point inside each census tract so that i can find neares neighborhood point
+tract_points <- st_point_on_surface(tracts_projected)
 
 
+# finding nearest neighborhoods points
+nearest_neighborhoods <- st_nearest_feature(
+  tract_points,
+  points_projected
+)
+
+# assigning census tracts the name of the nearest neighborhood
+tracts_projected$NEIGHBORHOOD <- neighborhoods$NAME[nearest_neighborhoods]
 
 
+# dissolve the census tract polygons that share the same neighborhood 
+neighborhood_polygons <- tracts_projected |>
+  group_by(NEIGHBORHOOD) |>
+  summarise(.groups = "drop")
+# re transform back for leaflet
+neighborhood_polygons <- neighborhood_polygons |>
+  st_transform(4326)
 
-
-
-
+tract_neighborhood <- tracts_projected |>
+  st_drop_geometry() |>
+  select(TRACTCE, NEIGHBORHOOD) |>
+  distinct()
 
 # Names of variables that your pulling
 # Geometry- shapefile instead of dataset
 # variable called shortname- shortens name of census tract like tract 1 etc
 # st transform from sf package, transforming everything to default coordinates
 data <- get_acs(geography = "tract", variables = c("Median Household Income" = "S1901_C01_012", "Median Rent" = "DP04_0134", "Poverty Rate" = "S1701_C03_001", "Percent White Only" = "DP05_0037P", "Percent Foreign-Born" = "DP02_0094P"), year = 2024, state = "DC", geometry = TRUE, survey = "acs5") |>
+  mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
   mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
   st_transform(crs = "WGS84") |>
-  select(c(variable, estimate, short_name, geometry))
+  select(c(variable, estimate, short_name, TRACTCE, geometry))
 
-data <- left_join(data, Neighborhoods, by = c("short_name" = "NAME")) |>
-  select(-c("short_name")) |>
-  rename("short_name" = "Neighborhoods")
+data <- data |>
+  left_join(tract_neighborhood, by = "TRACTCE") |>
+  filter(!is.na(NEIGHBORHOOD)) |>
+  mutate(short_name = NEIGHBORHOOD) |>
+  select(variable, estimate, short_name, geometry)
 
-# tigris tract shapefile
-# selecting the variables- variable (names of variables), estimate (coorspondering num like income, geometry is shapefiles of census tracts)
-tracts <- tracts(state = "DC") |>
-  select(c(TRACTCE, NAMELSAD, geometry))
- 
 
-  
 # crime data read in, this is points but just moved it into tract. Turns track ID into character var
 crimes <- read.csv("https://hub.arcgis.com/api/v3/datasets/74d924ddc3374e3b977e6f002478cb9b_7/downloads/data?format=csv&spatialRefId=26985&where=1%3D1") |>
   filter(!is.na(CENSUS_TRACT)) |>
@@ -135,10 +170,6 @@ server <- function(input, output) {
         addCircles(color = ~pal(estimate), radius = 250, fillOpacity = 0.9, label = ~paste0(short_name, " | ", format(estimate, big.mark = ",", scientific = FALSE))) |>
         addLegend(pal = pal, values = ~filtered_data()$estimate, title = "Estimate")
     }
-    
-    
-    
-    
     
     
     # If it is a polygod shapefile, will show polygons
