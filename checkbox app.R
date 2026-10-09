@@ -15,18 +15,18 @@ data <- get_acs(geography = "tract", variables = c("Median Household Income" = "
 tracts <- tracts(state = "DC") |>
   select(c(TRACTCE, NAMELSAD, geometry))
 
+tracts <- st_transform(tracts, crs = "WGS84")
+
 crimes <- read.csv("https://hub.arcgis.com/api/v3/datasets/74d924ddc3374e3b977e6f002478cb9b_7/downloads/data?format=csv&spatialRefId=26985&where=1%3D1") |>
   filter(!is.na(CENSUS_TRACT)) |>
   mutate(TRACTCE = sprintf("%06d", CENSUS_TRACT)) |>
   group_by(TRACTCE) |>
   summarize(estimate = n())
 
-tracts <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
+crimes <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
   rename(short_name = NAMELSAD) |>
   select(!TRACTCE) |>
   mutate(variable = "Number of Crimes in 2025")
-
-tracts <- st_transform(tracts, crs = "WGS84")
 
 # Loading in the public schools absentee and coordinates shapefile
 schools_shapefile <- st_read("school_geospatial")
@@ -55,8 +55,32 @@ geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
          short_name = SCHOOL_NAM) |>
   select(variable, estimate, short_name, geometry)
 
+# loading in built environment indicators and selecting relevant columns
+built_environment <- st_read("built_environment_indicators") |>
+  select(c(TRACTCE, m1_1_schoo:m9_5_HIN))
+
+# changing column names so they're informative
+colnames(built_environment)[2:42] <- c("Percent Tract Within 15-Minute Walk to School", "Percent Tract Within 15-Minute Walk to Modernized School", "Percent Tract Within 15-Minute Walk to Playground", "Percent Tract Within 2-Minute Walk of School Crossing Guard", "Percent Tract Along Safe Route to School", "Percent Tract Within 15-Minute Walk of Library", "Percent Tract Within 15-Minute Walk of Wireless Hotspot", "Percent Households With Broadband Internet", "Percent Tract Within 15-Minute Walk of Recreation Center", "Percent Households With Work Commute Under 45 Mins", "Percent Tract Within 15-Minute Walk of Banking Institution", "Percent Tract Within 15-Minute Walk of Cash Checking Institution", "Percent Buildings of Good Quality", "Percent Homes Built Since 1970", "Percent Housing Units Affordable", "Percent Tract Within 2-Minute Walk of Vacant or Blighted House", "Percent Tract Within 2-Minute Walk of Bus Stop", "Percent Tract Within 15-Minute Walk of Metro Station", "Percent Tract Within 5-Minute Walk of Capital Bikeshare Location", "Percent Street Area With Bike Lanes", "Percent 311 Calls Made for Sidewalk Repair", "Percent Tract Alleys and Parking Lots", "Percent Tract Within 15-Minute Walk of Grocery Store", "Percent Tract in Low Food Access Area", "Percent Tract Within 15-Minute Walk of Farmers Market", "Percent Tract Within 15-Minute Walk of Healthy Corner Store", "Percent Tract Within 5-Minute Walk of Restaurant", "Percent Tract Within 15-Minute Walk of Liquor Store", "Percent Tract Within 15-Minute Walk of Health Care Facility", "Percent Tract Within 15-Minute Walk of Mental Health Provider", "Percent Tract With Tree Canopy", "Percent Tract Within 10-Minute Walk of Park", "Percent Tract Within 1/4 Mile of Trail", "Land Use Diversity Score (0-1)", "Percent Positive Land Uses", "Percent Tract Within Floodplain", "Percent Tract Within 2-Minute Walk of Vacant Lot", "Percent Sidewalks Within 30 Feet of Streetlight", "Percent Tract Within 15-Minute Walk of Police Department", "Percent Tract Within 15-Minute Walk of Fire Station", "Percent Tract Within 250 Feet of High Injury Network Corridor")
+
+# pivoting to longer format and reformatting percentage variables to percent, and rounding each number to 2 decimal places
+built_environment <- built_environment |>
+  pivot_longer('Percent Tract Within 15-Minute Walk to School':'Percent Tract Within 250 Feet of High Injury Network Corridor', names_to = "variable", values_to = "estimate") |>
+  mutate(estimate = case_when(variable == "Land Use Diversity Score (0-1)" ~ round(estimate, 2),
+                              .default = round(estimate*100, 2)))
+
+# transforming CRS to match other data
+built_environment <- st_transform(built_environment, crs = "WGS84")
+
+# getting tract names and GEOIDs to merge with built_environment
+tracts_names <- as.data.frame(cbind(tracts$NAMELSAD, tracts$TRACTCE))
+colnames(tracts_names) <- c("short_name", "TRACTCE")
+
+# merging tract names with built_environment
+built_environment <- right_join(built_environment, tracts_names, by = join_by(TRACTCE)) |>
+  select(!TRACTCE)
+
 # Putting all dfs into one thing for the shiny app
-data <- rbind(data, tracts, geo_abs_joined)
+data <- rbind(data, crimes, geo_abs_joined, built_environment)
 
 # Ok so in this version I also included a checkbox to overlay chronic absent
 ui <- fluidPage(
