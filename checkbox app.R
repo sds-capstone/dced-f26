@@ -4,6 +4,7 @@ library(tidycensus)
 library(leaflet)
 library(sf)
 library(tigris)
+library(arcgislayers)
 
 census_api_key("34df405496a792f31bd4cf10741ff37e850c3ab0")
 
@@ -79,8 +80,96 @@ colnames(tracts_names) <- c("short_name", "TRACTCE")
 built_environment <- right_join(built_environment, tracts_names, by = join_by(TRACTCE)) |>
   select(!TRACTCE)
 
+# loading child development centers data into R
+child_development <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Public_Service_WebMercator/MapServer/33"), fields = "")
+
+child_development <- st_transform(child_development, crs = "WGS84")
+
+# assigning each center to a Census tract
+centers_intersect <- st_intersection(child_development, tracts)
+
+# counting number of centers per Census tract
+centers_intersect <- as.data.frame(centers_intersect)[c("NAMELSAD")] |>
+  group_by(NAMELSAD) |>
+  mutate(estimate = n()) |>
+  ungroup() |>
+  distinct()
+
+# joining tracts with centers
+centers_intersect <- left_join(tracts, centers_intersect, by = join_by("NAMELSAD")) |>
+  rename(short_name = NAMELSAD) |>
+  select(!TRACTCE) |>
+  mutate(estimate = case_when(is.na(estimate) ~ 0,
+                              .default = estimate),
+         variable = "Number of Child Development Centers")
+
+# loading affordable housing data into R and filtering to completed projects only
+affordable_housing <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Property_and_Land_WebMercator/FeatureServer/62"), fields = c("TOTAL_AFFORDABLE_UNITS", "STATUS_PUBLIC")) |>
+  filter(STATUS_PUBLIC == "Completed 2015 to Date") |>
+  select(!STATUS_PUBLIC)
+
+affordable_housing <- st_transform(affordable_housing, crs = "WGS84")
+
+# assigning each point to a Census tract
+housing_intersect <- st_intersection(affordable_housing, tracts)
+
+# counting number of affordable units per Census tract
+housing_intersect <- as.data.frame(housing_intersect)[c("NAMELSAD", "TOTAL_AFFORDABLE_UNITS")] |>
+  group_by(NAMELSAD) |>
+  mutate(estimate = sum(TOTAL_AFFORDABLE_UNITS)) |>
+  ungroup() |>
+  select(!TOTAL_AFFORDABLE_UNITS) |>
+  distinct()
+
+# joining tracts with housing units
+housing_intersect <- left_join(tracts, housing_intersect, by = join_by("NAMELSAD")) |>
+  rename(short_name = NAMELSAD) |>
+  select(!TRACTCE) |>
+  mutate(estimate = case_when(is.na(estimate) ~ 0,
+                              .default = estimate),
+         variable = "Affordable Housing Units Constructed Since 2015")
+
+# loading transit stops data into R
+# it doesn't load in unless I do stop_type_text as a field
+transit_stops <- arc_select(arc_open("https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/NTAD_National_Transit_Map_Stops/FeatureServer/0"), fields = c("stop_type_text"))
+
+transit_stops <- st_transform(transit_stops, crs = "WGS84")
+
+# assigning each stop to a Census tract
+transit_intersect <- st_intersects(transit_stops, tracts)
+
+# pulling row numbers representing stops located in DC tracts
+rows <- c()
+for (i in 1:nrow(transit_stops)) {
+  if (length(transit_intersect[[i]]) != 0) {
+    rows <- c(rows, transit_intersect[[i]])
+  }
+}
+
+# matching row numbers to Census tracts
+transit_final <- data.frame(short_name = character(), geometry = list())
+transit_final <- st_as_sf(transit_final, wkt = "geometry", crs = "WGS84")
+
+transit_tracts <- tracts |>
+  rename(short_name = NAMELSAD) |>
+  select(!TRACTCE)
+
+for (i in rows) {
+  transit_final <- rbind(transit_tracts[i,], transit_final)
+}
+
+# counting number of transit stops in each Census tract
+transit_final <- transit_final |>
+  group_by(short_name) |>
+  mutate(estimate = n()) |>
+  ungroup() |>
+  distinct() |>
+  mutate(estimate = case_when(is.na(estimate) ~ 0,
+                              .default = estimate),
+         variable = "Number of Transit Stops")
+
 # Putting all dfs into one thing for the shiny app
-data <- rbind(data, crimes, geo_abs_joined, built_environment)
+data <- rbind(data, crimes, geo_abs_joined, built_environment, centers_intersect, housing_intersect, transit_final)
 
 # Ok so in this version I also included a checkbox to overlay chronic absent
 ui <- fluidPage(
@@ -110,7 +199,7 @@ server <- function(input, output) {
     pal <- filtered_data_pal()
 # No longer need the if/else point polygon logic    
     m <- leaflet(filtered_data()) |>
-      addTiles() |>
+      leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
       addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7, label = ~paste0(short_name, " | ", format(estimate, big.mark = ",", scientific = FALSE))) |>
       addLegend(pal = pal, values = ~estimate, title = "Estimate")
 # Added if statement for whether or not to show school points
