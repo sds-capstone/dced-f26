@@ -1,0 +1,228 @@
+---
+title: "initial sponsor meeting notes"
+author: "alice"
+format: html
+editor: visual
+---
+
+## NOTES
+
+-   DC has an open data hub
+
+    -   Look for dataset -\> information
+
+-   Mobility sprint
+
+    -   Helping them identify levers for change in upward mobility
+
+    -   Policy makers at state county city level able to look at differences between multiple counties multiples cities in state
+
+        -   To see this is working well in one county but not in the other
+
+        -   DC = city, county, state
+
+            -   So there aren’t peers for DC to look at in this context… to see policy differences in different parts of the state 
+
+-   Good record of different outcomes and measured in well defined neighborhood units and planning units within the district. A lot correlate pretty well to census blocks
+
+    -   Some ways we can overlay that stuff
+
+    -   Trying to dig into are there housing disparities that can say if we attack housing in this neighborhood we can hopefully make changes 
+
+        -   in kindergarten readiness in 5 years 
+
+        -   In percentage of families with a health home (e.g. primary care physicians)
+
+    -   Asking how they can shrink resources to identify levers of change in DC public schools
+
+-   There are disparities between neighborhoods in the city
+
+    -   Which are the most effective levers? And how can we apply these levers quickly?
+
+    -   How can we increase the elasticity for upward mobility in neighborhoods in DC?
+
+-   Reporting:
+
+    -   We said we were going to change xyz measures in xyz neighborhood in DC. Did we change that and what were the effects?
+
+-   It would be good to put together a dashboard for one neighborhood and then have that process in place to pull that for all the defined neighborhoods in DC
+
+    -   We could start with making it work for one or two neighborhoods, then work on expanding that functionality to all the neighborhoods in DC
+
+    -   We should start with the Congress Heights neighborhood (Census Block 9804)
+
+        -   This census block overlaps w/ the catchment zone for Simon Elementary School and also the commission for a single member district (single member districts are small districts in DC)
+
+-   DC is all of the area that is the federal seat. The City of Washington is all of the area not controlled by the federal government (Washington covers most but not all of DC)
+
+    -   Within Washington, there are 8 wards, each with roughly the same number of people
+
+        -   Within each ward, there are advisory neighborhood commissions, which are groups of up to 8 representatives, elected from each single member district in each ANC
+
+-   For the initial draft of the dashboard, they want our dashboard to essentially have the same functionality as Urban Institute’s dashboard
+
+    -   They don’t want it any more granular than the neighborhood level
+
+    -   We are looking to answer the question: what are program and policy investments we can make that would change things for this entire neighborhood?
+
+        -   E.g. if we focus on kindergarten readiness (they don’t have a measurement of that right now yet though, but if there’s some proxy for kindergarten readiness they could get) and track that over 5 yrs, are we consistently seeing changes in 3rd-grade literacy compared to a demographically similar neighborhood?
+
+-   We want to be able to correlate variables w/ other variables, e.g. if a neighborhood has a recreation center with x number of programs per student, does that impact attendance or students’ sense of belonging?
+
+    -   **Anything that would help them identify a relationship between a program or policy statistic and outcomes for kids, youth, and families would be great**
+
+        -   **The dashboard should allow him to find correlations between variables**
+
+-   They are particularly interested in data on family- and household-level economics, and academic outcomes
+
+    -   This is a place-based upward mobility project housed in the Office of the Deputy Mayor for Education
+
+    -   Crime data, safe passage team maps, violence interrupter, and other non-police maps are all very interesting to them
+
+    -   Environmental data is also interesting to them, e.g. access to parks, air quality, impact on chronic illnesses (e.g. poorer neighborhoods have higher rates of asthma, higher rates of hospital visits, and higher rates of chronic absenteeism. How can we tell the story around the correlation between these statistics?)
+
+    -   Access to transportation is also interesting to them (e.g. poorer neighborhoods in DC have less access to trains)
+
+-   They are good with it being a Shiny app
+
+-   We should be mindful of the fact that neighborhoods that show as the highest poverty rate is because they are mostly students
+
+    -   Also, there are some big Census tracts showing low poverty rate because they are federal land/military base
+
+    -   We could try population-weighting it -\> this is best to do at the block level
+
+-   We can come up with questions between now and next week, and they can address some of those questions ahead of meeting on Friday
+
+    -   We should also look at EdScape and we can see several maps the planning and analysis team have done, which show a bunch of stuff at the neighborhood and planning unit levels
+
+    -   They can send us links to ArcGIS maps for the neighborhoods (from DC opendata)
+
+Rest of Alice’s notes
+
+-   looking at metrics… can we make predicrtions about what other metrics might change down thee line
+
+-   want to do this neighborghood by neighborghood
+
+    -   30 year life expectancy gap between neighboorhoods of city
+
+    -   within ward 8 (what we are focusing on) life expectancy gaps of 10 years
+
+    -   what are the biggest levels for upward mobility, and how we can identify these levers and ask on them quickly!
+
+        -   urban insti: when we track these things, theres is greater elatisity for ipward smobulity. used for states and counties. i gotta make that happen for NEIGHBORHOODS in DC
+
+        -   reporting is: we said we would change lever xyz, did it actually change this metric, and what else did it change?
+
+Objectives:
+
+1.  Dashboard for one neighborhood could be pulled for all of the defined neighborhoods
+
+    1.  Once we have done it so it works for 1 or 2 neighborhoods, rory can help us with the other ones
+
+    2.  starting place is def gonna be congress heights- census block 9804
+
+        1.  overlaps w kethcman zone elementary school
+
+        2.  advisoyr neighbrhhod comision 8C04 or 7
+
+            1.  single member districts are small level democratic jurisdictions within DC that have less impact than council member but more than random person 
+
+2.  Q: What do you envision dashboard showing within neighborhood? And at more granular level?
+
+    1.  Look at urban institute. That functionality is close to what looking at
+
+    2.  Granularity… any closer than neighborhood, would start to run into personally identifiable information
+
+        1.  Idea for team working with - what are program and policy investments we can make that would change things for this entire neighborhood
+
+            1.  Not enough to make changes for individual kid or individual family…. About entire elementary school, entire feeder pathway is improving and able to provide good child development for ALL kids who either live in that neighbhoorhood or go to school in that neighborhood 
+
+            2.  Ex: if we looked at kingertaen readiness (stopped being recorded) or another proxy for kindergarten readiness and we improve that over 5 years, when kingertaens get to third grade, are we seeing increase in ketcman that is demographically similar for ketchman
+
+                1.  This will allow him to say that we made THIS investment in congress heights and saw outcome 3 years down line and not in other one, he can argue that we can invest that down the line
+
+3.  Also works on attendance…
+
+    1.  He already knows that has to do with class and neighborhood
+
+        1.  But Being able to share correlate attendance with other things (like neighborhodd that has rec center, has x program per student) if that has some impact on attendance, anything i can use that would help me identify relationship between program/ policy / metric and outcomes for kids/youth/families 
+
+            1.  identifying which things actually improve conditions
+
+                1.  Dashboard that lets him play around and find correlations
+
+                2.  More complicated statistical modeling for identifying the vars most important
+
+4.  Soooo both about dashboard for future reporting to show a program worked, and more complicated statistical modeling for identifying the vars most important
+
+5.  Two main data: family economic level and attendance… place based upward mobility project housed in office of dept major of ed
+
+    1.  In convo w families around safety, police and non police public safety and justice investmendts
+
+        1.  Crime data, safe passage, team maps, violence interuptor, non police investment maps 
+
+        2.  Environmenal: access to parks, air quality and impact on chronic illness 
+
+            1.  highest rates of astma, hispiyal visits
+
+                1.  “ i feel like these tings are connected but i dont know how to tell that story carefully”\]
+
+            2.  If we find a dataset that might fit and if we can get to neighbood level put it in 
+
+        3.  Access to transportation… these neighborhoods have least access to trains 
+
+Neighborhood structure
+
+6.  DC is all of area that is federal seat. city of washington is all area not controlled by federal gov
+
+    1.  city of wash is most of DC but not all
+
+    2.  congress, parks, etc are in DC but not washington
+
+    3.  for most people, washington and DC are interchangable
+
+    4.  within city of washington, 8 wards with roughly same number of people per ward… similar to counties or districts
+
+        1.  Major chunking of city is by ward
+
+        2.  Within each of the wards, ANC advisory neighborhood comissions… groups of up to 8 representatives elected from each single member district within the ANC
+
+            1.  Single-member districts
+
+7.  High-level description of branches of DC government:[ DC Government Organization \| oca](https://oca.dc.gov/page/dc-government-organization)
+
+8.  Breakdown of ANCs:[ https://oanc.dc.gov/landing-page/ancs-ward](https://oanc.dc.gov/landing-page/ancs-ward)
+
+9.  We also have this fun elected appendage that probably won't be a factor in this project too much:  <https://sboe.dc.gov/>
+
+for poverty rate, two neighborhoods skew the poverty rate
+
+-   georgetown on west, catholic on east… cuz all students… very few people, and seasonal 
+
+-   all of below is just DC
+
+    -   federal property and military base 
+
+-   rock creek park has an impact too… makes population weighted stuff… best to do pop stuff at the block level 
+
+I'm legally obligated to plug EdScape:[ https://edscape.dc.gov/](https://edscape.dc.gov/)
+
+\| edscape
+
+And also this may be of interest, student population trends:[ https://dataviz1.dc.gov/t/OCTO/views/CensusTractEnrollmentTrends/Dashboard1?%3AshowAppBanner=false&…](https://dataviz1.dc.gov/t/OCTO/views/CensusTractEnrollmentTrends/Dashboard1?%3AshowAppBanner=false&%3Adisplay_count=n&%3AshowVizHome=n&%3Aorigin=viz_share_link&%3Aembed=yes&%3Atoolbar=no)
+
+Tableau
+
+ <https://opendata.dc.gov/>
+
+Open Data DC
+
+On this site, the District of Columbia government shares hundreds of datasets. The District invites you to browse the data, download it as a file, analyze it with your tools, or build apps using ou...
+
+ 
+
+for next week
+
+-   we should drive it, come up with questions between now and then and email them to you. we can try to address questions ahead of meeting on friday
+
+    -   keep in mind that it might be helpful to go ahead and look at the neighbohood / anc / etc breakdown and look on open data for neighbrood maps

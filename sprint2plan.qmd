@@ -1,0 +1,104 @@
+---
+title: "Sprint 2 Plan"
+author: "Alice MacGarvie Thompson"
+format: html
+editor: visual
+---
+
+## Here are our notes from the meeting today:  *Sprint 2--\> ends October 29, demo in class*  **1. What should the product look like by the end of the sprint?**
+
+1.  What would we like shiny app to look like
+
+    1.  Definitely having all data in
+
+    2.  Starting showing correlations / statistical analysis (non-spatial)
+
+    3.  Figure out how we are going to host it
+
+    4.  Neighborhood comparison stuff in shiny app
+
+        1.  Showing diff neighborhood maps and comparing
+
+        2.  Diff neighborhood statistics
+
+        3.  Does variable X have bigger impact for variable Y
+
+        4.  Display city mean/medium next on the side of neighborhood
+
+            1.  Census tracts aren’t all same size
+
+        5.  Data visualizations, stats next to map– some
+
+        6.  Correlations / statistical analysis (non-spatial) by neighorhood
+
+        7.  [[Alice MacGarvie Thompson]{.underline}](mailto:amacgarviethompson@smith.edu) can do a little theming stuff if there’s time
+
+2.  Developing abilities/knowledge
+
+    1.  Take this time for each of it to get comfortable and learn about geospatial modeling
+
+        1.  Kim
+
+        2.  Would be nice to not only do it in last sprint, but
+
+        3.  [[Ayla Hauser]{.underline}](mailto:adhauser@smith.edu) Email Professor Kim
+
+        4.  Absolute goal: have clear understanding. If there’s time, start implementing
+
+    2.  Figuring out what/how we are actually going to do the statistical modeling piece!
+
+        1.  First analysis!! and then visuzalizing in shiny
+
+        2.  Doing that modeling/analysis in R
+
+    3.  Making sure visualizations follow accessibility guidelines for color and design (Baumer)
+
+        1.  But we could also just do that for the end
+
+        2.  Could read up / learn more about this
+
+\
+\
+**3. What are the steps to get this?**
+
+1.  Email prof Kim
+
+2.  Putting all data in app
+
+3.  Dividing by neighborhood
+
+4.  Adding secondary visualizations to side
+
+5.  Adding statistics to side (city wide etc)
+
+6.  Meet with Baumer about modeling →
+
+    1.  Can try things and show him what we have
+
+7.  After Baumer, figure out what modeling we are going to do in R
+
+8.  Start to add modeling to shiny
+
+\
+\
+**4. For Friday, what are we going to do? Who’s gonna do it?**
+
+1.  Email Prof Kim- [[Ayla Hauser]{.underline}](mailto:adhauser@smith.edu)
+
+2.  Dividing by neighborhood- [[Ayla Hauser]{.underline}](mailto:adhauser@smith.edu) [[Alice MacGarvie Thompson]{.underline}](mailto:amacgarviethompson@smith.edu)
+
+3.  Putting (almost) all data in app- [[Simran Jayasinghe]{.underline}](mailto:sjayasinghe@smith.edu) [[Úna Gogstetter]{.underline}](mailto:ugogstetter@smith.edu)
+
+    1.  Four datasets in next step thing→ prioritize air quality
+
+4.  Putting city wide statistics next to visualization- [[Alice MacGarvie Thompson]{.underline}](mailto:amacgarviethompson@smith.edu)
+
+    1.  [[Link to find info on this categorization of schools]{.underline}](https://edscape.dc.gov/page/facilities-index)
+
+5.  We will make really specific issues and put them into kanban board- [[Alice MacGarvie Thompson]{.underline}](mailto:amacgarviethompson@smith.edu)
+
+\
+\
+**5. Modeling and statistics are a next week thing! Because we would need data to be cleaned and in right format first.**
+
+https://docs.google.com/document/d/1GTkc-soQNcHaC00amNVP12SBjcScFBJCfIVtNxvxaIw/edit?usp=sharing
