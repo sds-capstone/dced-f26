@@ -39,7 +39,7 @@ tracts <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
 tracts <- st_transform(tracts, crs = "WGS84")
 
 # Loading in the public schools absentee and coordinates shapefile
-schools_shapefile <- st_read("school_geospatial")
+schools_shapefile <- st_read("data-files/school_geospatial")
 
 # Loading in the absenteeism by school data
 absentee <- read.csv("data-files/absenteeism_ds.csv")
