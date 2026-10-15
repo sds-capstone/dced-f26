@@ -1,0 +1,91 @@
+---
+title: "Code for population weighting (apply to neighborhoods and wards)"
+format: html
+editor: visual
+---
+
+```{r}
+# Population-weighted interpolation with tidycensus::interpolate_pw()
+#
+# Goal: estimate the poverty rate for each DC ward from ACS tract data.
+#
+# Tracts and wards don't share boundaries. interpolate_pw() splits each
+# tract's counts across wards based on where the tract's population lives,
+# using 2020 Census block populations as weights. If 30% of a tract's
+# population is in Ward 1, Ward 1 gets 30% of that tract's counts.
+#
+# Requires a Census API key: census_api_key("YOUR KEY", install = TRUE)
+
+library(tidyverse)
+library(sf)
+library(tidycensus)
+library(tigris)
+
+options(tigris_use_cache = TRUE)
+
+# Projected coordinate system for DC (NAD83 / Maryland, meters).
+# Do spatial calculations in a projected CRS, not latitude/longitude.
+dc_crs <- 26985
+
+
+# 1. Source data: poverty counts by tract ---------------------------------
+# Interpolate counts, not rates. The rate is calculated at the end.
+poverty <- get_acs(
+  geography = "tract",
+  variables = c(pov_universe = "B17001_001", pov_below = "B17001_002"),
+  state = "DC",
+  year = 2024,
+  output = "wide",
+  geometry = TRUE,
+  cb = FALSE # detailed tract boundaries that line up with blocks
+) |>
+  select(pov_universeE, pov_belowE) |> # keep estimates, drop margins of error
+  st_transform(dc_crs)
+
+
+# 2. Weights: 2020 Census blocks with population (POP20) ------------------
+dc_blocks <- blocks(state = "DC", year = 2020) |>
+  st_transform(dc_crs)
+
+
+# 3. Target geography: DC wards --------------------------------------------
+# Any polygon layer works here, e.g. school attendance zones.
+wards <- state_legislative_districts(
+  state = "DC",
+  house = "upper",
+  year = 2024
+) |>
+  select(ward = NAMELSAD) |>
+  st_transform(dc_crs)
+
+
+# 4. Interpolate -------------------------------------------------------------
+ward_poverty <- interpolate_pw(
+  from = poverty,
+  to = wards,
+  to_id = "ward", # use a character ID column
+  weights = dc_blocks,
+  weight_column = "POP20",
+  extensive = TRUE # TRUE for counts (sums), FALSE for averages
+)
+
+
+# 5. Calculate the rate from the interpolated counts -----------------------
+ward_poverty <- ward_poverty |>
+  mutate(pov_rate = pov_belowE / pov_universeE)
+
+ward_poverty |>
+  st_drop_geometry()
+
+# Check: wards cover all of DC, so the totals should match
+sum(poverty$pov_belowE)
+sum(ward_poverty$pov_belowE)
+
+
+# 6. Map -----------------------------------------------------------------------
+ggplot(ward_poverty) +
+  geom_sf(aes(fill = pov_rate), color = "white") +
+  scale_fill_viridis_c(labels = scales::label_percent()) +
+  labs(fill = "Poverty rate") +
+  theme_void()
+```

@@ -42,7 +42,7 @@ tracts <- st_transform(tracts, crs = "WGS84")
 schools_shapefile <- st_read("school_geospatial")
 
 # Loading in the absenteeism by school data
-absentee <- read.csv("data-files/absenteeism_ds.csv")
+absentee <- read.csv("absenteeism_ds.csv")
 
 ## Cleaning absenteeism data
 # Change column names (col 4 to match shapefile name)
