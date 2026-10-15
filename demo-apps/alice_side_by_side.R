@@ -27,7 +27,7 @@ tracts <- tracts(state = "DC") |>
   select(c(TRACTCE, NAMELSAD, geometry))
 
 # reading in the neighborhoods data set
-neighborhoods <- read.csv("Neighborhood_Labels.csv")
+neighborhoods <- read.csv("data-files/Neighborhood_Labels.csv")
 
 # convert neighborhood data into sf spatial object
 # I used 3857 because the coords are in web mercator
@@ -79,7 +79,7 @@ tract_neighborhood <- tracts_projected |>
   distinct()
 
 # adding the ward shapefile
-ward_shapefile <- st_read("ward_2022")   
+ward_shapefile <- st_read("data-files/ward_2022")   
               
 # same set of things as other shapefiles
 wards <- ward_shapefile |>
@@ -118,7 +118,7 @@ data <- data |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Loading in the public schools absentee and coordinates shapefile
-schools_shapefile <- st_read("school_geospatial")
+schools_shapefile <- st_read("data-files/school_geospatial")
 
   
 # crime data read in, this is points but just moved it into tract. Turns track ID into character var
@@ -143,7 +143,7 @@ tracts <- st_transform(tracts, crs = "WGS84")
 ## END AYLA PART
 
 # Loading in the absenteeism by school data
-absentee <- read.csv("absenteeism_ds.csv")
+absentee <- read.csv("data-files/absenteeism_ds.csv")
 
 ## Cleaning absenteeism data
 # Change column names (col 4 to match shapefile name)

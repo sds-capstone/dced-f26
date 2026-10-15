@@ -15,7 +15,7 @@ tracts <- tracts(state = "DC") |>
   select(c(TRACTCE, NAMELSAD, geometry)) 
 
 # reading in the neighborhoods data set
-neighborhoods <- read.csv("Neighborhood_Labels.csv")
+neighborhoods <- read.csv("data-files/Neighborhood_Labels.csv")
 
 # convert neighborhood data into sf spatial object
 # I used 3857 because the coords are in web mercator
@@ -100,10 +100,10 @@ tracts <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
 tracts <- st_transform(tracts, crs = "WGS84")
 
 # Loading in the public schools absentee and coordinates shapefile
-schools_shapefile <- st_read("school_geospatial")
+schools_shapefile <- st_read("data-files/school_geospatial")
 
 # Loading in the absenteeism by school data
-absentee <- read.csv("absenteeism_ds.csv")
+absentee <- read.csv("data-files/absenteeism_ds.csv")
 
 ## Cleaning absenteeism data
 # Change column names (col 4 to match shapefile name)

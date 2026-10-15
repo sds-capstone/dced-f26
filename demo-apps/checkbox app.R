@@ -40,7 +40,7 @@ crimes <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
   mutate(variable = "Number of Crimes in 2025")
 
 # Loading in the public schools absentee and coordinates shapefile
-schools_shapefile <- st_read("school_geospatial")
+schools_shapefile <- st_read("data-files/school_geospatial")
 
 # Loading in the absenteeism by school data
 absentee <- read.csv("data-files/absenteeism_ds.csv")
@@ -67,7 +67,7 @@ geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
   select(variable, estimate, short_name, geometry)
 
 # loading in built environment indicators and selecting relevant columns
-built_environment <- st_read("built_environment_indicators") |>
+built_environment <- st_read("data-files/built_environment_indicators") |>
   select(c(TRACTCE, m1_1_schoo:m9_5_HIN))
 
 # changing column names so they're informative
