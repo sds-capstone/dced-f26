@@ -1,5 +1,6 @@
 ---
 title: "Code for population weighting (apply to neighborhoods and wards)"
+author: "Rory Lawless- taken from the github he sent us"
 format: html
 editor: visual
 ---
