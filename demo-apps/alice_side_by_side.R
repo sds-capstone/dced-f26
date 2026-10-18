@@ -135,7 +135,7 @@ tracts <- st_transform(tracts, crs = "WGS84")
 # END tract/ward/neighborhood part!
 
 # Loading in the absenteeism by school data
-absentee <- read.csv(here::here("data-files", "Neighborhood_Labels.csv"))
+absentee <- read.csv(here::here("data-files", "absenteeism_ds.csv"))
 
 ## Cleaning absenteeism data
 # Change column names (col 4 to match shapefile name)
@@ -195,15 +195,21 @@ ui <- fluidPage(
     column(width = 6, 
            selectInput("area1", "Area 1", choices = area_choices),
            selectInput("var1", "Variable 1", choices = unique(data$variable)),
-           leafletOutput("map1", height = "500px")
+           leafletOutput("map1", height = "500px"),
+           # added summary stats and histogram to output
+           tableOutput("stats1"),
+           plotOutput("hist1", height = "250px")
     ),
     column(width = 6,
            selectInput("area2", "Area 2", choices = area_choices),
            selectInput("var2", "Variable 2", choices = unique(data$variable)),
-           leafletOutput("map2", height = "500px")
+           leafletOutput("map2", height = "500px"),
+           # added summary stats and histogram to output (2nd side)
+           tableOutput("stats2"),
+           plotOutput("hist2", height = "250px")
+    ),
     )
   )
-)
 
 # reactive function, will continue changes
 # since its reactive, will call back
@@ -229,6 +235,7 @@ server <- function(input, output) {
     d
   })
   
+  # MAP FUNCTION!!! - function to put data in polygons and points on map
   make_map <- function(map_data) {
     pal <- colorNumeric("BuPu", domain = map_data$estimate)
     
@@ -254,11 +261,46 @@ server <- function(input, output) {
     }
   }
   
+  # SUMMARY STATS FUNCTION
+  # takes the selected variable and calculates the n, median, mean, sd
+  make_stats <- function(map_data) {
+    vals <- map_data |> st_drop_geometry() |> filter(!is.na(estimate)) #drop geometry bc dont need map shapes
+    data.frame(
+      n      = nrow(vals),
+      median = median(vals$estimate),
+      mean   = mean(vals$estimate),
+      sd     = sd(vals$estimate)
+    )
+  }
   
+  # HISTOGRAM FUNCTION
+  # takes the selected variable and makes histogram
+  make_hist <- function(map_data) {
+    ggplot(st_drop_geometry(map_data), aes(x = estimate)) +
+      # we can change color / theme / bin width if you guys want
+      geom_histogram(bins = 15, fill = "#8856a7", color = "white") +
+      labs(x = unique(map_data$variable), y = "Count") +
+      theme_minimal()
+  }
   
+  make_hist <- function(map_data) {
+    ggplot(st_drop_geometry(map_data), aes(x = estimate)) +
+      geom_histogram(bins = 15, fill = "#8856a7", color = "white") +
+      labs(x = unique(map_data$variable), y = "Count") +
+      theme_minimal()
+  }
   
+  # two maps output
   output$map1 <- renderLeaflet({ make_map(filtered1()) })
   output$map2 <- renderLeaflet({ make_map(filtered2()) })
+  
+  # two summary stats output
+  output$stats1 <- renderTable({ make_stats(filtered1()) })
+  output$stats2 <- renderTable({ make_stats(filtered2()) })
+  
+  # two histogram output
+  output$hist1 <- renderPlot({ make_hist(filtered1()) })
+  output$hist2 <- renderPlot({ make_hist(filtered2()) })
 }
 
 
