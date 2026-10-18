@@ -8,26 +8,18 @@ library(tigris)
 # Setting API key for census data. Pulls data from census package
 census_api_key("34df405496a792f31bd4cf10741ff37e850c3ab0")
 
-
-# Names of variables that your pulling
-# Geometry- shapefile instead of dataset
-# variable called shortname- shortens name of census tract like tract 1 etc
-# st transform from sf package, transforming everything to default coordinates
-data <- get_acs(geography = "tract", variables = c("Median Household Income" = "S1901_C01_012", "Median Rent" = "DP04_0134", "Poverty Rate" = "S1701_C03_001", "Percent White Only" = "DP05_0037P", "Percent Foreign-Born" = "DP02_0094P"), year = 2024, state = "DC", geometry = TRUE, survey = "acs5") |>
-  mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
-  st_transform(crs = "WGS84") |>
-  select(c(variable, estimate, short_name, geometry))
-
-## START AYLA PART
-
 # tigris tract shapefile
 # selecting the variables- variable (names of variables), estimate (coorspondering num like income, geometry is shapefiles of census tracts)
 tracts <- tracts(state = "DC") |>
   st_transform(crs = "WGS84") |>
   select(c(TRACTCE, NAMELSAD, geometry))
 
+# after Simran reorganized the folders I could not for the life of me get the code to run because
+# it kept saying no existing file or directory
+# and i checked the file path like a billion times and still did not work
+# so i did the read package thing that prof cook showed 
 # reading in the neighborhoods data set
-neighborhoods <- read.csv("data-files/Neighborhood_Labels.csv")
+neighborhoods <- read.csv(here::here("data-files", "Neighborhood_Labels.csv"))
 
 # convert neighborhood data into sf spatial object
 # I used 3857 because the coords are in web mercator
@@ -36,10 +28,9 @@ neighborhood_points <- st_as_sf(
   coords = c("X", "Y"),
   crs = 3857,
   remove = FALSE
-  
 )
 
-# transform neighborhood and tracts into the same coord system
+# (from Ayla) transform neighborhood and tracts into the same coord system
 neighborhood_points <- st_transform(
   neighborhood_points,
   st_crs(tracts)
@@ -48,59 +39,61 @@ neighborhood_points <- st_transform(
 # change them into a coord for distance calculations
 tracts_projected <- st_transform(tracts, 26985)
 points_projected <- st_transform(neighborhood_points, 26985)
-
-# create one point inside each census tract so that i can find neares neighborhood point
-tract_points <- st_point_on_surface(tracts_projected)
-
-
-
-# finding nearest neighborhoods points
-nearest_neighborhoods <- st_nearest_feature(
-  tract_points,
-  points_projected
-)
-
-# assigning census tracts the name of the nearest neighborhood
-tracts_projected$NEIGHBORHOOD <- neighborhoods$NAME[nearest_neighborhoods]
-
-
-
-# dissolve the census tract polygons that share the same neighborhood
-neighborhood_polygons <- tracts_projected |>
-  group_by(NEIGHBORHOOD) |>
-  summarise(.groups = "drop")
-# re transform back for leaflet
-neighborhood_polygons <- neighborhood_polygons |>
-  st_transform(4326)
-
-tract_neighborhood <- tracts_projected |>
-  st_drop_geometry() |>
-  select(TRACTCE, NEIGHBORHOOD) |>
-  distinct()
-
+  
 # adding the ward shapefile
-ward_shapefile <- st_read("data-files/ward_2022")   
-              
+ward_shapefile <- st_read(here::here("data-files", "ward_2022"))   
+
 # same set of things as other shapefiles
 wards <- ward_shapefile |>
   mutate(ward = paste("Ward", WARD)) |>
   select(ward)                           
 
-# Here I followed the logic of aylas neighborhood code for wards
+###
 
-# ward coordinate crs to points
-wards_projected <- st_transform(wards, st_crs(tract_points))
+# From Rory: "Weights: 2020 Census blocks with population (POP20)"
+  dc_blocks <- blocks(state = "DC", year = 2020) |>
+  # except i did st_transform instead of crs bc we alr have that
+  st_transform(26985)
 
-# st_within to see what ward contains that point
-tract_ward <- st_join(tract_points, wards_projected, join = st_within) |>
+# Get a point from each block. Got st point on surface postgis documentation
+# https://postgis.net/docs/ST_PointOnSurface.html
+block_points <- st_point_on_surface(dc_blocks)
+
+# (From Ayla) nearest neighborhoods points... but added block points too
+nearest_neighborhoods <- st_nearest_feature(block_points, points_projected)
+block_points$NEIGHBORHOOD <- neighborhoods$NAME[nearest_neighborhoods]
+
+# changed the ward stuff to block points
+# ward transform to point
+# see what ward contains that point w the st_within join
+# st_transform(26985) instead of WGS84 like b4
+wards_projected <- st_transform(wards, 26985)
+block_points <- st_join(block_points, wards_projected, join = st_within)
+
+# sorting the tracts into neighborhoods and wards by weight 
+tract_weighted <- block_points |>
   st_drop_geometry() |>
-  select(TRACTCE, ward) |>
-  distinct()
+  # group tracts by by neighborhood and ward
+  group_by(TRACTCE = TRACTCE20, neighborhood = NEIGHBORHOOD, ward) |>
+  # weight by sum population
+  summarize(pop = sum(POP20), .groups = "drop") |>
+  # group tract var
+  group_by(TRACTCE) |>
+  slice_max(pop, n = 1, with_ties = FALSE) |>
+  select(-pop)
 
-# joining ward and neighborhood by tract variable 
-tract_lookup <- tract_neighborhood |>
-  rename(neighborhood = NEIGHBORHOOD) |>
-  left_join(tract_ward, by = "TRACTCE")
+# join tracts points with weighted by tract var
+tracts_projected <- left_join(tracts_projected, tract_weighted, by = "TRACTCE")
+
+# change neighborhood var name
+tracts_projected <- tracts_projected |>
+  rename(NEIGHBORHOOD = neighborhood)
+
+# new tracts into polygons by neighborhood
+neighborhood_polygons <- tracts_projected |>
+  group_by(NEIGHBORHOOD) |>
+  summarise(.groups = "drop") |>
+  st_transform(4326)
 
 # Names of variables that your pulling
 # Geometry- shapefile instead of dataset
@@ -113,12 +106,12 @@ data <- get_acs(geography = "tract", variables = c("Median Household Income" = "
   select(c(variable, estimate, short_name, TRACTCE, geometry))
 
 data <- data |>
-  left_join(tract_lookup, by = "TRACTCE") |>
+  left_join(tract_weighted, by = "TRACTCE") |>
   filter(!is.na(neighborhood)) |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Loading in the public schools absentee and coordinates shapefile
-schools_shapefile <- st_read("data-files/school_geospatial")
+schools_shapefile <- st_read(here::here("data-files", "school_geospatial"))
 
   
 # crime data read in, this is points but just moved it into tract. Turns track ID into character var
@@ -131,19 +124,18 @@ crimes <- read.csv("https://hub.arcgis.com/api/v3/datasets/74d924ddc3374e3b977e6
 # Join track shapefile with crimes dataset
 # Changed second line fyi -alice
 tracts <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
-  left_join(tract_lookup, by = "TRACTCE") |>
+  left_join(tract_weighted, by = "TRACTCE") |>
   rename(short_name = NAMELSAD) |>
   mutate(variable = "Number of Crimes in 2025") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
-
 # transforming to WGS84 is a coordinate reference system... way its projected on a map. If shapefile is not in WGS84, transforms into
 tracts <- st_transform(tracts, crs = "WGS84")
 
-## END AYLA PART
+# END tract/ward/neighborhood part!
 
 # Loading in the absenteeism by school data
-absentee <- read.csv("data-files/absenteeism_ds.csv")
+absentee <- read.csv(here::here("data-files", "Neighborhood_Labels.csv"))
 
 ## Cleaning absenteeism data
 # Change column names (col 4 to match shapefile name)
@@ -155,7 +147,9 @@ names(absentee)[6] <- "percent_abs"
 abs_clean <-
   absentee |>
   filter(year == "2024-25") |>
-  mutate(percent_abs = as.numeric(sub("%", "", percent_abs)))
+  mutate(percent_abs = as.numeric(sub("%", "", percent_abs)),
+         # school id as integer bc was str in other one
+         SCHOOL_ID = as.integer(SCHOOL_ID))
 
 
 # Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
