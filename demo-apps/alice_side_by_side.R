@@ -6,7 +6,7 @@ library(sf)
 library(tigris)
 
 # Setting API key for census data. Pulls data from census package
-census_api_key("34df405496a792f31bd4cf10741ff37e850c3ab0")
+census_api_key("6fdd3d02e0762b982b0c2188bfd0d01b406d7c60")
 
 # tigris tract shapefile
 # selecting the variables- variable (names of variables), estimate (coorspondering num like income, geometry is shapefiles of census tracts)
@@ -111,9 +111,12 @@ data <- data |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Loading in the public schools absentee and coordinates shapefile
-schools_shapefile <- st_read(here::here("data-files", "school_geospatial"))
+schools_shapefile <- st_read(here::here("data-files", "school_geospatial"), crs = "WGS84")
 
-  
+schools_shapefile <- st_transform(
+  schools_shapefile,
+  st_crs(tracts)
+)
 # crime data read in, this is points but just moved it into tract. Turns track ID into character var
 crimes <- read.csv("https://hub.arcgis.com/api/v3/datasets/74d924ddc3374e3b977e6f002478cb9b_7/downloads/data?format=csv&spatialRefId=26985&where=1%3D1") |>
   filter(!is.na(CENSUS_TRACT)) |>
@@ -151,7 +154,60 @@ abs_clean <-
          # school id as integer bc was str in other one
          SCHOOL_ID = as.integer(SCHOOL_ID))
 
+# parks and rec
+dc_parks_sf <- st_read(
+  "https://opendata.dc.gov/api/download/v1/items/287eaa2ecbff4d699762bbc6795ffdca/geojson?layers=9", crs = "WGS84")
 
+dc_parks_sf <- st_transform(
+  dc_parks_sf,
+  st_crs(tracts)
+)
+
+dc_parks_sf <- dc_parks_sf |>
+  mutate(park_id = row_number())
+
+# counting each park in tract
+park_counts <- st_join(
+  tracts |> select(short_name),
+  dc_parks_sf |> select(park_id),
+  join = st_intersects,
+  left = TRUE
+) |>
+  st_drop_geometry() |>
+  group_by(short_name) |>
+  summarise(
+    park_estimate = n_distinct(park_id, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# adding counts to geometry
+park_tracts <- tracts |>
+  left_join(park_counts, by = "short_name") |>
+  mutate(
+    estimate = coalesce(park_estimate, 0L),
+    variable = "Number of Parks"
+  ) |>
+  select(variable, estimate, short_name, neighborhood, ward, geometry)
+
+# ayla trying to transform each spatial object into same crs
+
+target_crs <- st_crs(4326)
+
+tracts <- st_transform(tracts, target_crs)
+
+dc_parks_sf <- st_transform(dc_parks_sf, target_crs)
+
+schools_shapefile <- st_transform(
+  schools_shapefile, target_crs
+)
+
+wards <- st_transform(wards, target_crs)
+
+neighborhood_points <- st_transform(
+  neighborhood_points, target_crs
+)
+
+block_points <- st_transform(block_points, target_crs)
 # Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
 geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
   filter(!is.na(percent_abs)) |>
@@ -175,7 +231,7 @@ geo_abs_joined <- geo_abs_joined |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Putting all dfs into one thing for the shiny app
-data <- rbind(data, tracts, geo_abs_joined)
+data <- rbind(data, tracts, geo_abs_joined, park_counts)
 
 # dropdown shows list of area type (but grouped)
 # filters to only that area type
@@ -244,6 +300,8 @@ block_long <- block_data |>
             by = c("GEOID" = "GEOID20")) |>
   st_as_sf() |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
+
+
 
 # For each shiny app, need to make a ui and a server. 
 # The ui tells you how to set up the page. divided in half by map1 and map2
