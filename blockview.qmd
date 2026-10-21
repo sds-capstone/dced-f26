@@ -1,0 +1,184 @@
+---
+title: "block_view"
+author: "alice"
+format: html
+editor: visual
+---
+
+## Figuring out block variable names, within each variable, and the shapefile join.
+
+```{r}
+blocks_sf <- blocks(state = "DC", year = 2020) |>
+  st_transform(4326)
+
+v_dhc <- load_variables(2020, "dhc", cache = TRUE)
+
+block_data <- get_decennial(
+  geography = "block", state = "DC", year = 2020, sumfile = "dhc",
+  variables = c(
+    pop         = "P1_001N",
+    race_total  = "P3_001N",
+    white       = "P3_002N",
+    black       = "P3_003N",
+    aian        = "P3_004N",
+    asian       = "P3_005N",
+    nhpi        = "P3_006N",
+    other_race  = "P3_007N",
+    two_or_more = "P3_008N",
+    occ_total   = "H4_001N",
+    owned_mort  = "H4_002N",
+    owned_free  = "H4_003N",
+    renter      = "H4_004N"
+  ),
+  output = "wide"
+) |>
+  mutate(
+    owner      = owned_mort + owned_free,
+    pct_white  = 100 * white / race_total,
+    pct_black  = 100 * black / race_total,
+    pct_asian  = 100 * asian / race_total,
+    pct_renter = 100 * renter / occ_total,
+    pct_owner  = 100 * owner / occ_total
+  )
+
+# join block vars estimates with blocks_sf shapefile
+block_long <- block_data |>
+  select(GEOID, pop, starts_with("pct_")) |>
+  pivot_longer(-GEOID, names_to = "variable", values_to = "estimate") |>
+  left_join(select(blocks_sf, GEOID20, geometry),
+            by = c("GEOID" = "GEOID20")) |>
+  st_as_sf()
+```
+
+### **Disregard what's below...**
+
+```{r}
+# Rory repeat
+blocks_sf <- blocks(state = "DC", year = 2020) |>
+  st_transform(4326)
+
+names(blocks_sf)
+
+v_dhc <- load_variables(2020, "dhc", cache = TRUE)
+
+```
+
+```{r}
+v_dhc <- load_variables(2020, "dhc", cache = TRUE)
+
+print(v_dhc$name, max = 10000)   # every variable code
+nrow(v_dhc)                      # how many there are
+```
+
+```{r}
+View(v_dhc)
+```
+
+```{r}
+library(tidycensus)
+library(tidyverse)
+
+v_dhc <- load_variables(2020, "dhc", cache = TRUE)
+
+v_dhc |> filter(str_detect(name, "^P1_"))  |> select(name, label) |> print(n = Inf)
+v_dhc |> filter(str_detect(name, "^H4_"))  |> select(name, label) |> print(n = Inf)
+v_dhc |> filter(str_detect(name, "^P18_")) |> select(name, label) |> print(n = Inf)
+
+block_data <- get_decennial(
+  geography = "block", state = "DC", year = 2020, sumfile = "dhc",
+  variables = c(
+    pop          = "P1_001N",
+    white        = "P1_003N",
+    black        = "P1_004N",
+    asian        = "P1_006N",
+    two_or_more  = "P1_009N",
+    hh_total     = "P18_001N",
+    family_hh    = "P18_002N",
+    nonfamily_hh = "P18_007N",
+    occ_total    = "H4_001N",
+    owned_mort   = "H4_002N",
+    owned_free   = "H4_003N",
+    renter       = "H4_004N"
+  ),
+  output = "wide"
+)
+
+block_data <- block_data |>
+  mutate(
+    owner         = owned_mort + owned_free,
+    pct_white     = 100 * white / pop,
+    pct_black     = 100 * black / pop,
+    pct_asian     = 100 * asian / pop,
+    pct_renter    = 100 * renter / occ_total,
+    pct_owner     = 100 * owner / occ_total,
+    pct_family_hh = 100 * family_hh / hh_total,
+    pct_nonfam_hh = 100 * nonfamily_hh / hh_total
+  )
+
+library(sf); library(tigris)
+
+blocks_sf <- blocks(state = "DC", year = 2020) |> st_transform(4326)
+
+block_long <- block_data |>
+  select(GEOID, pop, starts_with("pct_")) |>
+  pivot_longer(-GEOID, names_to = "variable", values_to = "estimate") |>
+  left_join(select(blocks_sf, GEOID20, geometry),
+            by = c("GEOID" = "GEOID20")) |>
+  st_as_sf()
+```
+
+```{r}
+v_dhc <- load_variables(2020, "dhc", cache = TRUE)
+
+v_dhc |> filter(str_detect(name, "^P1_")) |>
+  select(name, label) |> print(n = 20)
+```
+
+```{r}
+v_dhc |> filter(str_detect(concept, "^RACE$")) |> select(name, label)
+
+v_dhc |> distinct(concept) |> filter(str_detect(concept, "RACE")) |> print(n = Inf)
+```
+
+```{r}
+v_pl <- load_variables(2020, "pl", cache = TRUE)
+v_pl |> filter(str_detect(name, "^P1_")) |> select(name, label) |> print(n = 20)
+```
+
+```{r}
+v_dhc |> filter(str_detect(concept, "^TENURE$")) |> select(name, label)
+v_dhc |> filter(str_detect(concept, "HOUSEHOLD TYPE")) |> select(name, label) |> print(n = 30)
+```
+
+```{r}
+# VIEW
+block_data <- get_decennial(
+  geography = "block", state = "DC", year = 2020, sumfile = "dhc",
+  variables = c(
+    pop         = "P1_001N",
+    race_total  = "P3_001N",
+    white       = "P3_002N",
+    black       = "P3_003N",
+    aian        = "P3_004N",
+    asian       = "P3_005N",
+    nhpi        = "P3_006N",
+    other_race  = "P3_007N",
+    two_or_more = "P3_008N",
+    occ_total   = "H4_001N",
+    owned_mort  = "H4_002N",
+    owned_free  = "H4_003N",
+    renter      = "H4_004N"
+  ),
+  output = "wide"
+) |>
+  mutate(
+    owner      = owned_mort + owned_free,
+    pct_white  = 100 * white / race_total,
+    pct_black  = 100 * black / race_total,
+    pct_asian  = 100 * asian / race_total,
+    pct_renter = 100 * renter / occ_total,
+    pct_owner  = 100 * owner / occ_total
+  )
+
+View(block_data)
+```

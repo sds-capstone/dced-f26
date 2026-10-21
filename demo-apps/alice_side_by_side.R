@@ -241,6 +241,65 @@ area_choices <- list(
   "Neighborhoods" = sort(unique(na.omit(data$neighborhood)))
 )
 
+# rory repeat
+blocks_sf <- blocks(state = "DC", year = 2020) |>
+  st_transform(4326)
+
+# To see where I figured out the variable names and broke this down:
+# see blockview.qmd in our repo
+block_data <- get_decennial(
+  geography = "block", state = "DC", year = 2020, sumfile = "dhc",
+  variables = c(
+    pop         = "P1_001N",
+    race_total  = "P3_001N",
+    white       = "P3_002N",
+    black       = "P3_003N",
+    aian        = "P3_004N",
+    asian       = "P3_005N",
+    nhpi        = "P3_006N",
+    other_race  = "P3_007N",
+    two_or_more = "P3_008N",
+    occ_total   = "H4_001N",
+    owned_mort  = "H4_002N",
+    owned_free  = "H4_003N",
+    renter      = "H4_004N"
+  ),
+  output = "wide"
+) |>
+  mutate(
+    owner      = owned_mort + owned_free,
+    pct_white  = 100 * white / race_total,
+    pct_black  = 100 * black / race_total,
+    pct_asian  = 100 * asian / race_total,
+    pct_renter = 100 * renter / occ_total,
+    pct_owner  = 100 * owner / occ_total
+  )
+
+# add neighborhood and ward to each block (alr have b4 in block points)
+block_lookup <- block_points |>
+  st_drop_geometry() |>
+  select(GEOID20, neighborhood = NEIGHBORHOOD, ward)
+
+# join block vars estimates with blocks_sf shapefile
+block_long <- block_data |>
+  select(GEOID, pop, starts_with("pct_")) |>
+  pivot_longer(-GEOID, names_to = "variable", values_to = "estimate") |>
+  mutate(
+    # renaming all the variables- no hispanic yet, will add next time
+    variable = recode(variable,
+      pop        = "Total Population (2020)",
+      pct_white  = "Percent White Alone (2020)",
+      pct_black  = "Percent Black Alone (2020)",
+      pct_asian  = "Percent Asian Alone (2020)",
+      pct_renter = "Percent Renter-Occupied (2020)",
+      pct_owner  = "Percent Owner-Occupied (2020)"),
+      estimate   = if_else(is.finite(estimate), estimate, NA_real_),
+      short_name = paste("Block", GEOID)) |>
+  left_join(block_lookup, by = c("GEOID" = "GEOID20")) |>
+  left_join(select(blocks_sf, GEOID20, geometry),
+            by = c("GEOID" = "GEOID20")) |>
+  st_as_sf() |>
+  select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 
 
@@ -275,14 +334,26 @@ ui <- fluidPage(
     )
     ),
   # 2- MESSY! messing around with block / school sf bullshit
-  tabPanel("Block/Neighborhood/School Breakdown"),
+    tabPanel("Block/Neighborhood/School Breakdown",
+    fluidRow(
+      column(width = 12,
+             selectInput("area_block", "Area", choices = area_choices),
+             selectInput("var_block", "Variable", choices = unique(block_long$variable)),
+             leafletOutput("map_block", height="600px"),
+             tableOutput("stats_block"),
+             plotOutput("hist_block", height="250px")
+  )
+  )
+  ),
   
   # 3- initial mockup regression with few variables 
-  tabPanel("Initial Mockup Regression- Few Variables"),
-
+  tabPanel("Initial Mockup Regression- Few Variables",
+    fluidPage(
+      "We do not have the block regression stuff yet, I'll put it in tomorrow night-Alice"
   )
 )
-
+)
+)
 
 # reactive function, will continue changes
 # since its reactive, will call back
@@ -374,9 +445,23 @@ server <- function(input, output) {
   # two histogram output
   output$hist1 <- renderPlot({ make_hist(filtered1()) })
   output$hist2 <- renderPlot({ make_hist(filtered2()) })
+  
+# function block by block for tab 2
+  filtered3 <- reactive({
+    d <- block_long |> filter(variable == input$var_block)
+    if (input$area_block != "Citywide") {
+      d <- d |> filter(neighborhood == input$area_block | ward == input$area_block)
+    }
+    d
+  })
+  
+  # block-by-block-app maps stats hist!
+  output$map_block   <- renderLeaflet({ make_map(filtered3()) })
+  output$stats_block <- renderTable({ make_stats(filtered3()) })
+  output$hist_block  <- renderPlot({ make_hist(filtered3()) })
 }
 
 
 
-#this is what runs shiny app
+# this is what runs shiny app
 shinyApp(ui = ui, server = server)
