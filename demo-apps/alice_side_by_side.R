@@ -11,7 +11,7 @@ census_api_key("6fdd3d02e0762b982b0c2188bfd0d01b406d7c60")
 # tigris tract shapefile
 # selecting the variables- variable (names of variables), estimate (coorspondering num like income, geometry is shapefiles of census tracts)
 tracts <- tracts(state = "DC") |>
-  st_transform(crs = "WGS84") |>
+  st_transform(crs = 4326) |>
   select(c(TRACTCE, NAMELSAD, geometry))
 
 # after Simran reorganized the folders I could not for the life of me get the code to run because
@@ -37,9 +37,9 @@ neighborhood_points <- st_transform(
 )
 
 # change them into a coord for distance calculations
-tracts_projected <- st_transform(tracts, 26985)
-points_projected <- st_transform(neighborhood_points, 26985)
-  
+tracts_projected <- st_transform(tracts, 4326)
+points_projected <- st_transform(neighborhood_points, 4326)
+
 # adding the ward shapefile
 ward_shapefile <- st_read(here::here("data-files", "ward_2022"))   
 
@@ -51,9 +51,9 @@ wards <- ward_shapefile |>
 ###
 
 # From Rory: "Weights: 2020 Census blocks with population (POP20)"
-  dc_blocks <- blocks(state = "DC", year = 2020) |>
+dc_blocks <- blocks(state = "DC", year = 2020) |>
   # except i did st_transform instead of crs bc we alr have that
-  st_transform(26985)
+  st_transform(4326)
 
 # Get a point from each block. Got st point on surface postgis documentation
 # https://postgis.net/docs/ST_PointOnSurface.html
@@ -66,8 +66,8 @@ block_points$NEIGHBORHOOD <- neighborhoods$NAME[nearest_neighborhoods]
 # changed the ward stuff to block points
 # ward transform to point
 # see what ward contains that point w the st_within join
-# st_transform(26985) instead of WGS84 like b4
-wards_projected <- st_transform(wards, 26985)
+# st_transform(4326) instead of WGS84 like b4
+wards_projected <- st_transform(wards, 4326)
 block_points <- st_join(block_points, wards_projected, join = st_within)
 
 # sorting the tracts into neighborhoods and wards by weight 
@@ -102,7 +102,7 @@ neighborhood_polygons <- tracts_projected |>
 data <- get_acs(geography = "tract", variables = c("Median Household Income" = "S1901_C01_012", "Median Rent" = "DP04_0134", "Poverty Rate" = "S1701_C03_001", "Percent White Only" = "DP05_0037P", "Percent Foreign-Born" = "DP02_0094P"), year = 2024, state = "DC", geometry = TRUE, survey = "acs5") |>
   mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
   mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
-  st_transform(crs = "WGS84") |>
+  st_transform(crs = 4326) |>
   select(c(variable, estimate, short_name, TRACTCE, geometry))
 
 data <- data |>
@@ -111,14 +111,14 @@ data <- data |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Loading in the public schools absentee and coordinates shapefile
-schools_shapefile <- st_read(here::here("data-files", "school_geospatial"), crs = "WGS84")
+schools_shapefile <- st_read(here::here("data-files", "school_geospatial"))
 
 schools_shapefile <- st_transform(
   schools_shapefile,
   st_crs(tracts)
 )
 # crime data read in, this is points but just moved it into tract. Turns track ID into character var
-crimes <- read.csv("https://hub.arcgis.com/api/v3/datasets/74d924ddc3374e3b977e6f002478cb9b_7/downloads/data?format=csv&spatialRefId=26985&where=1%3D1") |>
+crimes <- read.csv("https://hub.arcgis.com/api/v3/datasets/74d924ddc3374e3b977e6f002478cb9b_7/downloads/data?format=csv&spatialRefId=4326&where=1%3D1") |>
   filter(!is.na(CENSUS_TRACT)) |>
   mutate(TRACTCE = sprintf("%06d", CENSUS_TRACT)) |>
   group_by(TRACTCE) |>
@@ -132,8 +132,8 @@ tracts <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
   mutate(variable = "Number of Crimes in 2025") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
-# transforming to WGS84 is a coordinate reference system... way its projected on a map. If shapefile is not in WGS84, transforms into
-tracts <- st_transform(tracts, crs = "WGS84")
+# transforming to 4326 is a coordinate reference system... way its projected on a map
+tracts <- st_transform(tracts, crs = 4326)
 
 # END tract/ward/neighborhood part!
 
@@ -156,7 +156,7 @@ abs_clean <-
 
 # parks and rec
 dc_parks_sf <- st_read(
-  "https://opendata.dc.gov/api/download/v1/items/287eaa2ecbff4d699762bbc6795ffdca/geojson?layers=9", crs = "WGS84")
+  "https://opendata.dc.gov/api/download/v1/items/287eaa2ecbff4d699762bbc6795ffdca/geojson?layers=9")
 
 dc_parks_sf <- st_transform(
   dc_parks_sf,
@@ -191,27 +191,25 @@ park_tracts <- tracts |>
 
 # ayla trying to transform each spatial object into same crs
 
-target_crs <- st_crs(4326)
+tracts <- st_transform(tracts, 4326)
 
-tracts <- st_transform(tracts, target_crs)
-
-dc_parks_sf <- st_transform(dc_parks_sf, target_crs)
+dc_parks_sf <- st_transform(dc_parks_sf, 4326)
 
 schools_shapefile <- st_transform(
-  schools_shapefile, target_crs
+  schools_shapefile, 4326
 )
 
-wards <- st_transform(wards, target_crs)
+wards <- st_transform(wards, 4326)
 
 neighborhood_points <- st_transform(
-  neighborhood_points, target_crs
+  neighborhood_points, 4326
 )
 
-block_points <- st_transform(block_points, target_crs)
+block_points <- st_transform(block_points, 4326)
 # Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
 geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
   filter(!is.na(percent_abs)) |>
-  st_transform(crs = "WGS84") |>
+  st_transform(crs = 4326) |>
   mutate(variable = "% of Students Chronically Absent, 24-25",
          estimate = percent_abs,
          short_name = SCHOOL_NAM) |>
@@ -231,7 +229,7 @@ geo_abs_joined <- geo_abs_joined |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Putting all dfs into one thing for the shiny app
-data <- rbind(data, tracts, geo_abs_joined, park_counts)
+data <- rbind(data, tracts, geo_abs_joined, park_tracts)
 
 # dropdown shows list of area type (but grouped)
 # filters to only that area type
@@ -313,26 +311,32 @@ ui <- fluidPage(
     id = "main_tabs",
     # 1- side by side maps and histograms and sum stats 
     tabPanel("Compare Maps and Visualizations",
-    fluidRow(
-      # i put 6 for width cuz half the page but we could change - alice
-      column(width = 6, 
-            selectInput("area1", "Area 1", choices = area_choices),
-            selectInput("var1", "Variable 1", choices = unique(data$variable)),
-            leafletOutput("map1", height = "500px"),
-            # added summary stats and histogram to output
-            tableOutput("stats1"),
-            plotOutput("hist1", height = "250px")
-      ),
-    column(width = 6,
-           selectInput("area2", "Area 2", choices = area_choices),
-           selectInput("var2", "Variable 2", choices = unique(data$variable)),
-           leafletOutput("map2", height = "500px"),
-           # added summary stats and histogram to output (2nd side)
-           tableOutput("stats2"),
-           plotOutput("hist2", height = "250px")
-    )
-    )
+             fluidRow(
+               # i put 6 for width cuz half the page but we could change - alice
+               column(width = 6, 
+                      selectInput("area1", "Area 1", choices = area_choices),
+                      selectInput("var1", "Variable 1", choices = unique(data$variable)),
+                      leafletOutput("map1", height = "500px"),
+                      # added summary stats and histogram to output
+                      tableOutput("stats1"),
+                      plotOutput("hist1", height = "250px")
+               ),
+               column(width = 6,
+                      selectInput("area2", "Area 2", choices = area_choices),
+                      selectInput("var2", "Variable 2", choices = unique(data$variable)),
+                      leafletOutput("map2", height = "500px"),
+                      # added summary stats and histogram to output (2nd side)
+                      tableOutput("stats2"),
+                      plotOutput("hist2", height = "250px")
+               )
+             )
     ),
+    # 2- MESSY! messing around with block / school sf bullshit
+    tabPanel("Block/Neighborhood/School Breakdown"),
+    
+    # 3- initial mockup regression with few variables 
+    tabPanel("Initial Mockup Regression- Few Variables"),
+    
   # 2- MESSY! messing around with block / school sf bullshit
     tabPanel("Block/Neighborhood/School Breakdown",
     fluidRow(
@@ -368,7 +372,7 @@ server <- function(input, output) {
       d <- d |> filter(neighborhood == input$area1 | ward == input$area1)
     }
     d
-
+    
   })
   # same thing for filter 2
   filtered2 <- reactive({
@@ -389,7 +393,7 @@ server <- function(input, output) {
       # Una, this is Alice! I realized the problem was that the second statement was supposed to be an "if else"
       # If is a point shapefile, will show circles 
       leaflet(map_data) |>
-        addTiles() |>
+        leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addCircles(color = ~pal(estimate), radius = 250, fillOpacity = 0.9,
                    label = ~paste0(short_name, " | ",
                                    format(estimate, big.mark = ",", scientific = FALSE))) |>
@@ -397,7 +401,7 @@ server <- function(input, output) {
     } else {
       # If it is a polygod shapefile, will show polygons
       leaflet(map_data) |>
-        addTiles() |>
+        leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7,
                     label = ~paste0(short_name, " | ",
                                     format(estimate, big.mark = ",", scientific = FALSE))) |>
