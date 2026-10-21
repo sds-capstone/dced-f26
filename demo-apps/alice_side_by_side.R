@@ -190,16 +190,21 @@ area_choices <- list(
 # *This is Alice*- I think that you can do the side by side in server but I did it in the ui part
 ui <- fluidPage(
   titlePanel("Washington, D.C. Census Tract Demographics"),
-  fluidRow(
-    # i put 6 for width cuz half the page but we could change - alice
-    column(width = 6, 
-           selectInput("area1", "Area 1", choices = area_choices),
-           selectInput("var1", "Variable 1", choices = unique(data$variable)),
-           leafletOutput("map1", height = "500px"),
-           # added summary stats and histogram to output
-           tableOutput("stats1"),
-           plotOutput("hist1", height = "250px")
-    ),
+  # list of tabs on top
+  tabsetPanel(
+    id = "main_tabs",
+    # 1- side by side maps and histograms and sum stats 
+    tabPanel("Compare Maps and Visualizations",
+    fluidRow(
+      # i put 6 for width cuz half the page but we could change - alice
+      column(width = 6, 
+            selectInput("area1", "Area 1", choices = area_choices),
+            selectInput("var1", "Variable 1", choices = unique(data$variable)),
+            leafletOutput("map1", height = "500px"),
+            # added summary stats and histogram to output
+            tableOutput("stats1"),
+            plotOutput("hist1", height = "250px")
+      ),
     column(width = 6,
            selectInput("area2", "Area 2", choices = area_choices),
            selectInput("var2", "Variable 2", choices = unique(data$variable)),
@@ -207,9 +212,18 @@ ui <- fluidPage(
            # added summary stats and histogram to output (2nd side)
            tableOutput("stats2"),
            plotOutput("hist2", height = "250px")
-    ),
     )
+    )
+    ),
+  # 2- MESSY! messing around with block / school sf bullshit
+  tabPanel("Block/Neighborhood/School Breakdown"),
+  
+  # 3- initial mockup regression with few variables 
+  tabPanel("Initial Mockup Regression- Few Variables"),
+
   )
+)
+
 
 # reactive function, will continue changes
 # since its reactive, will call back

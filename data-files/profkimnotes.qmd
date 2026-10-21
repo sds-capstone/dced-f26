@@ -1,0 +1,180 @@
+---
+title: "Prof Kim Notes"
+author: "Alice"
+format: html
+editor: visual
+---
+
+-   
+
+-   start with the visualization first and go from there
+
+-   
+
+-   even if you find the best method of analysis, visualization mroe important
+
+-   
+
+-   first thing is to get this data visualized
+
+    -   
+
+    -   whats the nature of the data? Is it points/ blocks? visualize it
+
+    -   
+
+-   
+
+-   whats the level of granularity— block
+
+    -   
+
+    -   1\. first step: make a map with the outline of every block 
+
+    -   
+
+    -   schools point data
+
+    -   
+
+    -   6,000 census blocks in DC
+
+    -   
+
+    -   206 census tracts in DC
+
+    -   
+
+    -   map on tract level and block level 
+
+    -   
+
+    -   in SF, columns are data vals and the polygon column- one of the columns is the geometric object in question
+
+    -   
+
+    -   of the jump, point sf objects corresponding to schools, objects corresponding to blocks and another corresponding to tracts
+
+    -   
+
+-   
+
+-   jump back and forth before analyzing things for block and tract
+
+-   
+
+-   start with the simplest thing and get it done- minimum viable project 
+
+-   
+
+-   and get public and charter on the map
+
+-   
+
+-   get that first viz done ASAP- all hands on deck
+
+-   
+
+-   once you get that done, some really simple visualization
+
+    -   
+
+    -   ex- heat map of schools, are their pockets
+
+    -   
+
+    -   if we’re talking about correlations between nearby things, distance matrix
+
+        -   
+
+        -   one row for each school, one column for each school, measure the distance between each school
+
+        -   
+
+        -   are closer schools more similar than less similar
+
+        -   
+
+    -   
+
+-   
+
+-   after all that, what is the exact statistical question we want to look at?
+
+    -   
+
+    -   from there, we can do the statistical / coding procedure… first visualization will help center discussions on what that scientific question really is 
+
+    -   
+
+-   
+
+-   part of discussion with sponsor was UI., other ab stats
+
+    -   
+
+    -   multiple dependent variables
+
+    -   
+
+    -   pick ONE outcome varoable to start
+
+        -   
+
+        -   ask sponsors: what is one outcome variable / social phenomen that you are trying to explain?
+
+            -   
+
+            -   say “we need to start out simple. if you could pick one variable to understand, 
+
+                -   
+
+                -   start with a simple regression model, for now ignore the spatial data… pretend that these 200 schools exist in vaccum- just do the independence assumption
+
+                -   
+
+                -   regression with 200 rows, see what variables explain outcome variable Y
+
+                -   
+
+                -   But the thing is there schools are not indepdent of each other, geographically speaking
+
+                    -   
+
+                    -   two schools next to each other will have socioeconomic status
+
+                    -   
+
+                    -   whole point of spatial tools improve on limited regression model that assumes that schools are indepdent from each other
+
+                        -   
+
+                        -   Indep assumption violated
+
+                        -   
+
+                    -   
+
+                -   
+
+            -   
+
+        -   
+
+    -   
+
+-   
+
+-   add all the school variables from different school data into the model and visualize them
+
+-   
+
+-   most important thing is start with simple things and build in complexity later 
+
+-   
+
+-   for next meeting, HAVE to have the visualizations and everything WRITTEN out… send him an email beforehand with clear things
+
+-   
+
+	•		•	this is starting point of our final report
