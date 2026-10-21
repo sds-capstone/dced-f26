@@ -316,7 +316,7 @@ server <- function(input, output) {
       # Una, this is Alice! I realized the problem was that the second statement was supposed to be an "if else"
       # If is a point shapefile, will show circles 
       leaflet(map_data) |>
-        addTiles() |>
+        leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addCircles(color = ~pal(estimate), radius = 250, fillOpacity = 0.9,
                    label = ~paste0(short_name, " | ",
                                    format(estimate, big.mark = ",", scientific = FALSE))) |>
@@ -324,7 +324,7 @@ server <- function(input, output) {
     } else {
       # If it is a polygod shapefile, will show polygons
       leaflet(map_data) |>
-        addTiles() |>
+        leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7,
                     label = ~paste0(short_name, " | ",
                                     format(estimate, big.mark = ",", scientific = FALSE))) |>
