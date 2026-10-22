@@ -5,7 +5,7 @@ editor: visual
 ---
 
 ```{r}
-# dropdown shows list of area type (but grouped)
+# dropdown shows list of area type (but grouped))
 # filters to only that area type
 area_choices <- list(
   "Citywide"      = "Citywide",
