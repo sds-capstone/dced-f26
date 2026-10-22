@@ -129,9 +129,6 @@ tracts <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
   mutate(variable = "Number of Crimes in 2025") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
-# transforming to WGS84 is a coordinate reference system... way its projected on a map. If shapefile is not in WGS84, transforms into
-tracts <- st_transform(tracts, crs = "WGS84")
-
 # END tract/ward/neighborhood part!
 
 # Loading in the absenteeism by school data
@@ -166,7 +163,11 @@ geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
 neighborhood_join1  <- neighborhood_polygons |>
   rename(neighborhood = NEIGHBORHOOD) |>
   st_transform(st_crs(geo_abs_joined))
+
 ward_join1 <- st_transform(wards, st_crs(geo_abs_joined))
+tracts <- st_transform(tracts, crs = "WGS84")
+# transforming to WGS84 is a coordinate reference system... way its projected on a map. If shapefile is not in WGS84, transforms into
+
 
 # adding neighborhoods and wards cols
 geo_abs_joined <- geo_abs_joined |>
@@ -248,17 +249,8 @@ block_long <- block_data |>
 
 abs_var <- unique(geo_abs_joined$variable)
 
-# this part is iffy but i did mean absenteeism of the schools in each tract for NOW
-tract_abs <- geo_abs_joined |>
-  st_drop_geometry() |>
-  filter(!is.na(tract_abs)) |>
-  group_by(tract) |>
-  summarize(absentee_rate = mean(estimate, na.rm = TRUE),
-            n_schools     = n(),
-            .groups = "drop")
-
 # tract vars -> one value per tract (average of its tracts)
-neighborhood_vars <- data |>
+tract_vars <- data |>
   st_drop_geometry() |>
   filter(variable != abs_var, !is.na(neighborhood)) |>
   group_by(neighborhood, variable) |>
@@ -266,7 +258,7 @@ neighborhood_vars <- data |>
   pivot_wider(names_from = variable, values_from = estimate)
 
 # theres only one row for neigborhod
-neighborhood_data <- left_join(neighborhood_abs, neighborhood_vars, by = "neighborhood")
+tract_data<- left_join(tract_abs, neighborhood_vars, by = "tract")
 
 # remove absenteeism from b4 dropdown
 reg_vars <- setdiff(unique(data$variable), abs_var)
@@ -284,6 +276,16 @@ reg_step_text <- c("Median Household Income"  = "$10,000 increase",
                    "Percent White Only"       = "10-point increase",
                    "Percent Foreign-Born"     = "10-point increase",
                    "Number of Crimes in 2025" = "10-point increase")
+
+# this part is iffy but i did mean absenteeism of the schools in each tract for NOW
+tract_abs <- geo_abs_joined |>
+  st_join(select(tracts, tract = short_name), join = st_within) |>
+  st_drop_geometry() |>
+  filter(!is.na(tract)) |>
+  group_by(tract) |>
+  summarize(absentee_rate = mean(estimate, na.rm = TRUE),
+            n_schools     = n(),
+            .groups = "drop")
 
 # For each shiny app, need to make a ui and a server. 
 # The ui tells you how to set up the page. divided in half by map1 and map2
@@ -329,14 +331,13 @@ ui <- fluidPage(
   ),
   
   # 3- initial mockup regression with few variables 
-  # title explanation
   tabPanelp("What is the impact of Variable 1 on School Chronic absenteeism rate, while controlling for Variable 2?"),
     fluidRow(
       # drop down to select var1
       # set default to perc white
       column(width = 6,
              selectInput("var_reg1", "Variable 1", choices = reg_vars,
-                                            +                         selected = "Percent White Only")
+                         selected = "Percent White Only")
              ),
       # dropdonw to select var2
       # se default to income
@@ -346,7 +347,7 @@ ui <- fluidPage(
              )
       ),
   # super quick label- need to change
-  h4("Simple Linear Regression Between Variables"),
+  h4("OLS Regression Between Variables"),
   # text description
   textOutput("reg_interpretation"),
   # coef table
@@ -470,13 +471,13 @@ server <- function(input, output) {
 # one row per tract (y = absenteeism, x1 = var 1, x2 = var 2) 
 reg_data <- reactive({
   validate(need(input$var_reg1 != input$var_reg2, "Please pick two different variables."))
-  d <- tract_data |>                                                # SWAP: neighborhood_data
-    transmute(tract,                                                # SWAP: neighborhood
+  d <- tract_data |>                                                
+    transmute(tract,                                                
               y  = absentee_rate,
               x1 = .data[[input$var_reg1]],
               x2 = .data[[input$var_reg2]]) |>
     drop_na()
-  validate(need(nrow(d) > 3, "Not enough tracts with data for this pair of variables."))   # SWAP: neighborhoods
+  validate(need(nrow(d) > 3, "Not enough tracts with data for this pair of variables."))   
   d
 })
 
@@ -491,7 +492,7 @@ output$reg_table <- renderTable({
     select(Term = term, Estimate = estimate, `Std. Error` = std.error, `p-value` = p.value)
 }, digits = 3)
 
-# scatterplot: points are tracts (SWAP: neighborhoods), lines are the model's fit at low / median / high var 2
+# scatterplot: points are tracts, lines are the model's fit at low / median / high var 2
 output$reg_scatter <- renderPlot({
   d <- reg_data()
   m <- reg_model()
@@ -502,6 +503,9 @@ output$reg_scatter <- renderPlot({
     mutate(x2 = x2_vals[match(level, lvls)])
   lines_df$fit   <- predict(m, newdata = lines_df)
   lines_df$level <- factor(lines_df$level, levels = lvls)
+
+# -------------------------------------------------------------------------
+
   
   ggplot() +
     geom_point(data = d, aes(x = x1, y = y), color = "#8856a7", size = 2.5, alpha = 0.8) +
@@ -526,10 +530,10 @@ output$reg_resid <- renderPlot({
 reg_interpretation <- reactive({
   b      <- coef(reg_model())[["x1"]]
   change <- b * reg_steps[[input$var_reg1]]
-  paste0("For every ", reg_step_text[[input$var_reg1]], " in a tract's ",   # SWAP: neighborhood's
-         input$var_reg1, ", the absentee rate of schools in that tract is predicted to ",   # SWAP: neighborhood
+  paste0("For every ", reg_step_text[[input$var_reg1]], " in a tract's ",
+         input$var_reg1, ", the absentee rate of schools in that tract is predicted to ",
          if (change >= 0) "increase" else "decrease",
-         " by ", round(abs(change), 2), " percentage points, compared to tracts with the same level of ",   # SWAP: neighborhoods
+         " by ", round(abs(change), 2), " percentage points, compared to tracts with the same level of ",   
          input$var_reg2, ".")
 })
 output$reg_interpretation <- renderText({ reg_interpretation() })
