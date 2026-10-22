@@ -48,7 +48,6 @@ wards <- ward_shapefile |>
   mutate(ward = paste("Ward", WARD)) |>
   select(ward)                           
 
-###
 
 # From Rory: "Weights: 2020 Census blocks with population (POP20)"
 dc_blocks <- blocks(state = "DC", year = 2020) |>
@@ -117,6 +116,11 @@ schools_shapefile <- st_transform(
   schools_shapefile,
   st_crs(tracts)
 )
+
+# END tract/ward/neighborhood part!
+
+#Crime Data
+
 # crime data read in, this is points but just moved it into tract. Turns track ID into character var
 crimes <- read.csv("https://hub.arcgis.com/api/v3/datasets/74d924ddc3374e3b977e6f002478cb9b_7/downloads/data?format=csv&spatialRefId=4326&where=1%3D1") |>
   filter(!is.na(CENSUS_TRACT)) |>
@@ -124,18 +128,18 @@ crimes <- read.csv("https://hub.arcgis.com/api/v3/datasets/74d924ddc3374e3b977e6
   group_by(TRACTCE) |>
   summarize(estimate = n())
 
+# transforming to 4326 is a coordinate reference system... way its projected on a map
+crime_tracts <- st_transform(tracts, crs = 4326)
+
 # Join track shapefile with crimes dataset
 # Changed second line fyi -alice
-tracts <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
+crime_tracts <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
   left_join(tract_weighted, by = "TRACTCE") |>
-  rename(short_name = NAMELSAD) |>
+  rename(short_name = "NAMELSAD") |>
   mutate(variable = "Number of Crimes in 2025") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
-# transforming to 4326 is a coordinate reference system... way its projected on a map
-tracts <- st_transform(tracts, crs = 4326)
-
-# END tract/ward/neighborhood part!
+#School Absenteeism - point data for checkbox
 
 # Loading in the absenteeism by school data
 absentee <- read.csv(here::here("data-files", "absenteeism_ds.csv"))
@@ -151,10 +155,260 @@ abs_clean <-
   absentee |>
   filter(year == "2024-25") |>
   mutate(percent_abs = as.numeric(sub("%", "", percent_abs)),
-         # school id as integer bc was str in other one
          SCHOOL_ID = as.integer(SCHOOL_ID))
 
-# parks and rec
+# Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
+geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
+  filter(!is.na(percent_abs)) |>
+  st_transform(crs = "WGS84") |>
+  mutate(variable = "% of Students Chronically Absent, 24-25",
+         estimate = percent_abs,
+         short_name = SCHOOL_NAM) |>
+  select(variable, estimate, short_name, geometry)
+
+# joining with neighborhood and ward 
+neighborhood_join_abs <- neighborhood_polygons |>
+  rename(neighborhood = NEIGHBORHOOD) |>
+  st_transform(st_crs(geo_abs_joined))
+
+ward_join_abs <- st_transform(wards, st_crs(geo_abs_joined))
+
+geo_abs_joined <- geo_abs_joined |>
+  st_join(neighborhood_join_abs, join = st_within) |>
+  st_join(ward_join_abs, join = st_within) |>
+  select(variable, estimate, short_name, neighborhood, ward, geometry)
+
+# Air Quality - point for checkbox
+
+#Loading in air quality data
+air_quality <- read.csv(here::here("data-files", "air-quality-history.csv"))
+
+#Cleaning data
+air_quality <- air_quality |>
+  mutate(DATETIME_LOCAL = lubridate::ymd_hms(DATETIME_LOCAL)) |>
+  mutate(year = lubridate::year(DATETIME_LOCAL))
+
+air_quality_2024 <- air_quality |>
+  filter(
+    year == 2024,
+    PARAMETER_NAME %in% c("Nitrogen dioxide (NO2)", "PM2.5 - Local Conditions", "Ozone")
+  ) |>
+  mutate(
+    month = lubridate::month(DATETIME_LOCAL)
+  )
+
+#Getting monthly and annual average AQIs by site
+air_quality_monthly_aqi <- air_quality_2024 |>
+  group_by(LOCAL_SITE_NAME, PARAMETER_NAME, month) |>
+  summarize(
+    monthly_aqi = mean(AQI, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+air_quality_monthly_aqi_overall <- air_quality_monthly_aqi |>
+  group_by(LOCAL_SITE_NAME, month) |>
+  summarize(
+    monthly_aqi = max(monthly_aqi, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+air_quality_monthly_aqi_wide <- air_quality_monthly_aqi_overall |>
+  mutate(
+    month = month.name[month]
+  ) |>
+  pivot_wider(
+    names_from = month,
+    values_from = monthly_aqi
+  )
+
+air_quality_annual_aqi <- air_quality_2024 |>
+  group_by(LOCAL_SITE_NAME) |>
+  summarize(
+    annual_aqi = mean(AQI, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+air_quality_annual_aqi <- air_quality_monthly_aqi_overall |>
+  group_by(LOCAL_SITE_NAME) |>
+  summarize(
+    annual_aqi = mean(monthly_aqi, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+air_quality_by_sites <- air_quality_monthly_aqi_wide |>
+  left_join(
+    air_quality_annual_aqi,
+    by = "LOCAL_SITE_NAME"
+  ) |>
+  mutate(
+    across(
+      where(is.numeric),
+      ~ round(.x, 1)
+    )
+  )
+
+#getting site locations from original dataset
+air_quality_locations <- air_quality_2024 |>
+  select(
+    LOCAL_SITE_NAME,
+    LATITUDE,
+    LONGITUDE
+  ) |>
+  distinct()
+
+air_quality_by_sites <- air_quality_by_sites |>
+  left_join(
+    air_quality_locations,
+    by = "LOCAL_SITE_NAME"
+  )
+
+#creating spatial object from the lat and long coordinates given in dataset 4326 is the ESPG identifier for WSG84
+air_quality_by_sites_sf <- st_as_sf(
+  air_quality_by_sites,
+  coords = c("LONGITUDE", "LATITUDE"),
+  crs = 4326
+)
+
+#Built Environment
+
+# Loading in built environment indicators and selecting relevant columns
+built_environment <- st_read(here::here("data-files", "built_environment_indicators")) |>
+  select(c(TRACTCE, m1_1_schoo:m9_5_HIN))
+
+# Changing column names so they're informative
+colnames(built_environment)[2:42] <- c(
+  "Percent Tract Within 15-Minute Walk to School", "Percent Tract Within 15-Minute Walk to Modernized School", 
+  "Percent Tract Within 15-Minute Walk to Playground", "Percent Tract Within 2-Minute Walk of School Crossing Guard", 
+  "Percent Tract Along Safe Route to School", "Percent Tract Within 15-Minute Walk of Library", 
+  "Percent Tract Within 15-Minute Walk of Wireless Hotspot", "Percent Households With Broadband Internet", 
+  "Percent Tract Within 15-Minute Walk of Recreation Center", "Percent Households With Work Commute Under 45 Mins", 
+  "Percent Tract Within 15-Minute Walk of Banking Institution", "Percent Tract Within 15-Minute Walk of Cash Checking Institution", 
+  "Percent Buildings of Good Quality", "Percent Homes Built Since 1970", "Percent Housing Units Affordable", 
+  "Percent Tract Within 2-Minute Walk of Vacant or Blighted House", "Percent Tract Within 2-Minute Walk of Bus Stop", 
+  "Percent Tract Within 15-Minute Walk of Metro Station", "Percent Tract Within 5-Minute Walk of Capital Bikeshare Location", 
+  "Percent Street Area With Bike Lanes", "Percent 311 Calls Made for Sidewalk Repair", "Percent Tract Alleys and Parking Lots", 
+  "Percent Tract Within 15-Minute Walk of Grocery Store", "Percent Tract in Low Food Access Area", 
+  "Percent Tract Within 15-Minute Walk of Farmers Market", "Percent Tract Within 15-Minute Walk of Healthy Corner Store", 
+  "Percent Tract Within 5-Minute Walk of Restaurant", "Percent Tract Within 15-Minute Walk of Liquor Store", 
+  "Percent Tract Within 15-Minute Walk of Health Care Facility", "Percent Tract Within 15-Minute Walk of Mental Health Provider", 
+  "Percent Tract With Tree Canopy", "Percent Tract Within 10-Minute Walk of Park", "Percent Tract Within 1/4 Mile of Trail", 
+  "Land Use Diversity Score (0-1)", "Percent Positive Land Uses", "Percent Tract Within Floodplain", 
+  "Percent Tract Within 2-Minute Walk of Vacant Lot", "Percent Sidewalks Within 30 Feet of Streetlight", 
+  "Percent Tract Within 15-Minute Walk of Police Department", "Percent Tract Within 15-Minute Walk of Fire Station", 
+  "Percent Tract Within 250 Feet of High Injury Network Corridor"
+)
+
+# pivoting to longer format and reformatting percentage variables to percent, and rounding each number to 2 decimal places
+built_environment <- built_environment |>
+  pivot_longer('Percent Tract Within 15-Minute Walk to School':'Percent Tract Within 250 Feet of High Injury Network Corridor', names_to = "variable", values_to = "estimate") |>
+  mutate(estimate = case_when(variable == "Land Use Diversity Score (0-1)" ~ round(estimate, 2),
+                              .default = round(estimate*100, 2)))
+
+# transforming CRS to match other data
+built_environment <- st_transform(built_environment, crs = "WGS84")
+
+#tract names and join
+tract_base <- tracts(state = "DC") |>
+  st_transform(crs = 4326) |>
+  select(TRACTCE, short_name = NAMELSAD, geometry) |>
+  st_drop_geometry()
+
+built_environment_tracts <- built_environment |>
+  left_join(tract_base, by = "TRACTCE") |>
+  left_join(tract_weighted, by = "TRACTCE") |>
+  st_as_sf() |>
+  select(variable, estimate, short_name, neighborhood, ward, geometry)
+
+# Child Development Centers
+
+child_development <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Public_Service_WebMercator/MapServer/33"), fields = "")
+
+child_development <- st_transform(child_development, crs = 4326)
+
+# assigning each center to a Census tract
+centers_intersect <- st_intersection(child_development, tracts)
+
+# counting number of centers per Census tract
+centers_count <- as.data.frame(centers_intersect)[c("TRACTCE", "NAMELSAD")] |>
+  group_by(TRACTCE, NAMELSAD) |>
+  summarise(estimate = n(), .groups = "drop")
+
+# joining tracts, weights, and formatting columns to match side-by-side structure
+child_development_tracts <- tracts |>
+  select(TRACTCE, NAMELSAD, geometry) |>
+  left_join(centers_count, by = c("TRACTCE", "NAMELSAD")) |>
+  left_join(tract_weighted, by = "TRACTCE") |>
+  mutate(
+    estimate = case_when(is.na(estimate) ~ 0, .default = estimate),
+    variable = "Number of Child Development Centers",
+    short_name = NAMELSAD
+  ) |>
+  select(variable, estimate, short_name, neighborhood, ward, geometry)
+
+# Affordable Housing
+
+# loading affordable housing data into R and filtering to completed projects only
+affordable_housing <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Property_and_Land_WebMercator/FeatureServer/62"), fields = c("TOTAL_AFFORDABLE_UNITS", "STATUS_PUBLIC")) |>
+  filter(STATUS_PUBLIC == "Completed 2015 to Date") |>
+  select(!STATUS_PUBLIC)
+
+affordable_housing <- st_transform(affordable_housing, crs = "WGS84")
+
+# assigning each point to a Census tract
+housing_intersect <- st_intersection(affordable_housing, tracts)
+
+# counting number of affordable units per Census tract
+housing_counts <- as.data.frame(housing_intersect)[c("NAMELSAD", "TOTAL_AFFORDABLE_UNITS")] |>
+  group_by(NAMELSAD) |>
+  mutate(estimate = sum(TOTAL_AFFORDABLE_UNITS)) |>
+  ungroup() |>
+  select(!TOTAL_AFFORDABLE_UNITS) |>
+  distinct()
+
+# joining tracts with housing units
+affordable_housing_tracts <- tracts |>
+  left_join(housing_counts, by = join_by("NAMELSAD")) |>
+  left_join(tract_weighted, by = join_by("TRACTCE")) |>
+  rename(short_name = NAMELSAD) |>
+  mutate(estimate = case_when(is.na(estimate) ~ 0,
+                              .default = estimate),
+         variable = "Affordable Housing Units Constructed Since 2015") |>
+  select(variable, estimate, short_name, neighborhood, ward, geometry)
+
+# Transit Stops
+
+# loading transit stops data into R
+# it doesn't load in unless I do stop_type_text as a field
+transit_stops <- arc_select(arc_open("https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/NTAD_National_Transit_Map_Stops/FeatureServer/0"), fields = c("stop_type_text"))
+
+transit_stops <- st_transform(transit_stops, crs = "WGS84") |>
+  mutate(stop_id = row_number())
+
+transit_counts <- st_join(
+  tracts |> select(TRACTCE),
+  transit_stops |> select(stop_id),
+  join = st_intersects,
+  left = TRUE
+) |>
+  st_drop_geometry() |>
+  group_by(TRACTCE) |>
+  mutate(
+    estimate = n_distinct(stop_id, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+transit_tracts <- tracts |>
+  select(TRACTCE, NAMELSAD, geometry) |>
+  left_join(transit_counts, by = "TRACTCE") |>
+  left_join(tract_weighted, by = "TRACTCE") |>
+  mutate(
+    variable = "Number of Transit Stops",
+    short_name = NAMELSAD
+  ) |>
+  select(variable, estimate, short_name, neighborhood, ward, geometry)
+
+# Parks & Rec
+
 dc_parks_sf <- st_read(
   "https://opendata.dc.gov/api/download/v1/items/287eaa2ecbff4d699762bbc6795ffdca/geojson?layers=9")
 
@@ -168,13 +422,13 @@ dc_parks_sf <- dc_parks_sf |>
 
 # counting each park in tract
 park_counts <- st_join(
-  tracts |> select(short_name),
+  tracts |> select(TRACTCE, short_name = NAMELSAD),
   dc_parks_sf |> select(park_id),
   join = st_intersects,
   left = TRUE
 ) |>
   st_drop_geometry() |>
-  group_by(short_name) |>
+  group_by(TRACTCE, short_name) |>
   summarise(
     park_estimate = n_distinct(park_id, na.rm = TRUE),
     .groups = "drop"
@@ -182,54 +436,17 @@ park_counts <- st_join(
 
 # adding counts to geometry
 park_tracts <- tracts |>
-  left_join(park_counts, by = "short_name") |>
+  select(TRACTCE, geometry) |>
+  left_join(park_counts, by = "TRACTCE") |>
+  left_join(tract_weighted, by = "TRACTCE") |>
   mutate(
     estimate = coalesce(park_estimate, 0L),
     variable = "Number of Parks"
   ) |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
-# ayla trying to transform each spatial object into same crs
-
-tracts <- st_transform(tracts, 4326)
-
-dc_parks_sf <- st_transform(dc_parks_sf, 4326)
-
-schools_shapefile <- st_transform(
-  schools_shapefile, 4326
-)
-
-wards <- st_transform(wards, 4326)
-
-neighborhood_points <- st_transform(
-  neighborhood_points, 4326
-)
-
-block_points <- st_transform(block_points, 4326)
-# Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
-geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
-  filter(!is.na(percent_abs)) |>
-  st_transform(crs = 4326) |>
-  mutate(variable = "% of Students Chronically Absent, 24-25",
-         estimate = percent_abs,
-         short_name = SCHOOL_NAM) |>
-  select(variable, estimate, short_name, geometry)
-
-# same thing as b4, just doing it for schools 
-# adding coordinates for each school
-neighborhood_join1  <- neighborhood_polygons |>
-  rename(neighborhood = NEIGHBORHOOD) |>
-  st_transform(st_crs(geo_abs_joined))
-ward_join1 <- st_transform(wards, st_crs(geo_abs_joined))
-
-# adding neighborhoods and wards cols
-geo_abs_joined <- geo_abs_joined |>
-  st_join(neighborhood_join1,  join = st_within) |> 
-  st_join(ward_join1, join = st_within) |>
-  select(variable, estimate, short_name, neighborhood, ward, geometry)
-
 # Putting all dfs into one thing for the shiny app
-data <- rbind(data, tracts, geo_abs_joined, park_tracts)
+data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, transit_tracts, park_tracts)
 
 # dropdown shows list of area type (but grouped)
 # filters to only that area type
@@ -316,6 +533,8 @@ ui <- fluidPage(
                column(width = 6, 
                       selectInput("area1", "Area 1", choices = area_choices),
                       selectInput("var1", "Variable 1", choices = unique(data$variable)),
+                      checkboxInput("show_schools1", "% of Students Chronically Absent by School", value = FALSE),
+                      checkboxInput("show_air_quality1", "2024 Air Quality Monitoring Sites", value = FALSE),
                       leafletOutput("map1", height = "500px"),
                       # added summary stats and histogram to output
                       tableOutput("stats1"),
@@ -324,6 +543,8 @@ ui <- fluidPage(
                column(width = 6,
                       selectInput("area2", "Area 2", choices = area_choices),
                       selectInput("var2", "Variable 2", choices = unique(data$variable)),
+                      checkboxInput("show_schools2", "% of Students Chronically Absent by School", value = FALSE),
+                      checkboxInput("show_air_quality2", "2024 Air Quality Monitoring Sites", value = FALSE),
                       leafletOutput("map2", height = "500px"),
                       # added summary stats and histogram to output (2nd side)
                       tableOutput("stats2"),
@@ -331,11 +552,6 @@ ui <- fluidPage(
                )
              )
     ),
-    # 2- MESSY! messing around with block / school sf bullshit
-    tabPanel("Block/Neighborhood/School Breakdown"),
-    
-    # 3- initial mockup regression with few variables 
-    tabPanel("Initial Mockup Regression- Few Variables"),
     
   # 2- MESSY! messing around with block / school sf bullshit
     tabPanel("Block/Neighborhood/School Breakdown",
@@ -384,7 +600,7 @@ server <- function(input, output) {
   })
   
   # MAP FUNCTION!!! - function to put data in polygons and points on map
-  make_map <- function(map_data) {
+  make_map <- function(map_data, show_schools = FALSE, show_air_quality = FALSE) {
     pal <- colorNumeric("BuPu", domain = map_data$estimate)
     
     # Una, this is Alice! I realized the problem was that the second statement was supposed to be an "if else"
@@ -392,7 +608,7 @@ server <- function(input, output) {
     if (all(st_geometry_type(map_data) == "POINT")) {
       # Una, this is Alice! I realized the problem was that the second statement was supposed to be an "if else"
       # If is a point shapefile, will show circles 
-      leaflet(map_data) |>
+      m <- leaflet(map_data) |>
         leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addCircles(color = ~pal(estimate), radius = 250, fillOpacity = 0.9,
                    label = ~paste0(short_name, " | ",
@@ -400,13 +616,66 @@ server <- function(input, output) {
         addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable))
     } else {
       # If it is a polygod shapefile, will show polygons
-      leaflet(map_data) |>
+      m <- leaflet(map_data) |>
         leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7,
                     label = ~paste0(short_name, " | ",
                                     format(estimate, big.mark = ",", scientific = FALSE))) |>
         addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable))
     }
+    
+    if (show_schools) { # if they check the school checkbox
+      school_pal <- colorNumeric(palette = "YlOrRd", domain = geo_abs_joined$estimate) # yellow color to contrast w purple
+      m <- m |>
+        addCircleMarkers(data = geo_abs_joined, radius = 6, color = "black", weight = 1, # circle markers instead of circle
+                         fillColor = ~school_pal(estimate), fillOpacity = 0.9,
+                         label = ~paste0(short_name, " | ", estimate, "% chronically absent")) |>
+        addLegend(data = geo_abs_joined, pal = school_pal, values = ~estimate,
+                  title = "% Chronically Absent", position = "bottomleft")
+    }
+    
+    if (show_air_quality){
+      air_quality_pal <- colorNumeric(
+        palette = c("#D9F0A3", "#78C679", "#238443", "#004529"),
+        domain = air_quality_by_sites_sf$annual_aqi
+      )
+      m <- m |>
+        addCircleMarkers(
+          data = air_quality_by_sites_sf,
+          radius = 7,
+          color = "black",
+          weight = 1,
+          fillColor = ~air_quality_pal(annual_aqi),
+          fillOpacity = 0.9,
+          label = ~lapply(
+            paste0(
+              "<strong>", LOCAL_SITE_NAME, "</strong><br>",
+              "Annual AQI: ", round(annual_aqi, 1), "<br>",
+              "January: ", ifelse(is.na(January), "No data", round(January, 1)), "<br>",
+              "February: ", ifelse(is.na(February), "No data", round(February, 1)), "<br>",
+              "March: ", ifelse(is.na(March), "No data", round(March, 1)), "<br>",
+              "April: ", ifelse(is.na(April), "No data", round(April, 1)), "<br>",
+              "May: ", ifelse(is.na(May), "No data", round(May, 1)), "<br>",
+              "June: ", ifelse(is.na(June), "No data", round(June, 1)), "<br>",
+              "July: ", ifelse(is.na(July), "No data", round(July, 1)), "<br>",
+              "August: ", ifelse(is.na(August), "No data", round(August, 1)), "<br>",
+              "September: ", ifelse(is.na(September), "No data", round(September, 1)), "<br>",
+              "October: ", ifelse(is.na(October), "No data", round(October, 1)), "<br>",
+              "November: ", ifelse(is.na(November), "No data", round(November, 1)), "<br>",
+              "December: ", ifelse(is.na(December), "No data", round(December, 1))
+            ),
+            htmltools::HTML
+          )
+        ) |>
+        addLegend(
+          data = air_quality_by_sites_sf,
+          pal = air_quality_pal,
+          values = ~annual_aqi,
+          title = "Annual AQI",
+          position = "bottomright"
+        )
+    }
+    m
   }
   
   # SUMMARY STATS FUNCTION
@@ -439,8 +708,8 @@ server <- function(input, output) {
   }
   
   # two maps output
-  output$map1 <- renderLeaflet({ make_map(filtered1()) })
-  output$map2 <- renderLeaflet({ make_map(filtered2()) })
+  output$map1 <- renderLeaflet({ make_map(filtered1(), show_air_quality = input$show_air_quality1, show_schools = input$show_schools1) })
+  output$map2 <- renderLeaflet({ make_map(filtered2(), show_air_quality = input$show_air_quality2, show_schools = input$show_schools2) })
   
   # two summary stats output
   output$stats1 <- renderTable({ make_stats(filtered1()) })
@@ -469,3 +738,4 @@ server <- function(input, output) {
 
 # this is what runs shiny app
 shinyApp(ui = ui, server = server)
+
