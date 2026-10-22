@@ -299,12 +299,16 @@ block_long <- block_data |>
   st_as_sf() |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
-
+# this is for fixing the legend so the NA value part goes below the legend
+css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
+html_fix <- as.character(htmltools::tags$style(type = "text/css", css_fix))
 
 # For each shiny app, need to make a ui and a server. 
 # The ui tells you how to set up the page. divided in half by map1 and map2
 # *This is Alice*- I think that you can do the side by side in server but I did it in the ui part
 ui <- fluidPage(
+  # this fixes the HTML for the legend so the NA value part goes below the legend
+  HTML(html_fix),
   titlePanel("Washington, D.C. Census Tract Demographics"),
   # list of tabs on top
   tabsetPanel(
@@ -331,11 +335,6 @@ ui <- fluidPage(
                )
              )
     ),
-    # 2- MESSY! messing around with block / school sf bullshit
-    tabPanel("Block/Neighborhood/School Breakdown"),
-    
-    # 3- initial mockup regression with few variables 
-    tabPanel("Initial Mockup Regression- Few Variables"),
     
   # 2- MESSY! messing around with block / school sf bullshit
     tabPanel("Block/Neighborhood/School Breakdown",
@@ -385,7 +384,7 @@ server <- function(input, output) {
   
   # MAP FUNCTION!!! - function to put data in polygons and points on map
   make_map <- function(map_data) {
-    pal <- colorNumeric("BuPu", domain = map_data$estimate)
+    pal <- colorNumeric(colorRamp(c("#F7FBFC", "#8B95C5", "#4D004A", "#140013"), interpolate = "spline"), domain = data[data$variable == unique(map_data$variable),]$estimate)
     
     # Una, this is Alice! I realized the problem was that the second statement was supposed to be an "if else"
     # If is a point shapefile, will show circles 
@@ -396,16 +395,18 @@ server <- function(input, output) {
         leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addCircles(color = ~pal(estimate), radius = 250, fillOpacity = 0.9,
                    label = ~paste0(short_name, " | ",
-                                   format(estimate, big.mark = ",", scientific = FALSE))) |>
-        addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable))
+                                   case_when(!is.na(estimate) ~ format(estimate, big.mark = ",", scientific = FALSE), 
+                                             .default = "No data"))) |>
+        addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable), na.label = "No data")
     } else {
       # If it is a polygod shapefile, will show polygons
       leaflet(map_data) |>
         leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7,
                     label = ~paste0(short_name, " | ",
-                                    format(estimate, big.mark = ",", scientific = FALSE))) |>
-        addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable))
+                                    case_when(!is.na(estimate) ~ format(estimate, big.mark = ",", scientific = FALSE), 
+                                              .default = "No data")))|>
+        addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable), na.label = "No data")
     }
   }
   
