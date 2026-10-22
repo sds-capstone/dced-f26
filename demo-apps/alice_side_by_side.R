@@ -245,6 +245,46 @@ block_long <- block_data |>
   st_as_sf() |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
+
+abs_var <- unique(geo_abs_joined$variable)
+
+# this part is iffy but i did mean absenteeism of the schools in each tract for NOW
+tract_abs <- geo_abs_joined |>
+  st_drop_geometry() |>
+  filter(!is.na(tract_abs)) |>
+  group_by(tract) |>
+  summarize(absentee_rate = mean(estimate, na.rm = TRUE),
+            n_schools     = n(),
+            .groups = "drop")
+
+# tract vars -> one value per tract (average of its tracts)
+neighborhood_vars <- data |>
+  st_drop_geometry() |>
+  filter(variable != abs_var, !is.na(neighborhood)) |>
+  group_by(neighborhood, variable) |>
+  summarize(estimate = mean(estimate, na.rm = TRUE), .groups = "drop") |>
+  pivot_wider(names_from = variable, values_from = estimate)
+
+# theres only one row for neigborhod
+neighborhood_data <- left_join(neighborhood_abs, neighborhood_vars, by = "neighborhood")
+
+# remove absenteeism from b4 dropdown
+reg_vars <- setdiff(unique(data$variable), abs_var)
+
+## not relevant to map. renaming variables for the regression tab, do you guys like the 10-point thing?
+reg_steps <- c("Median Household Income"  = 10000,
+               "Median Rent"              = 100,
+               "Poverty Rate"             = 10,
+               "Percent White Only"       = 10,
+               "Percent Foreign-Born"     = 10,
+               "Number of Crimes in 2025" = 10)
+reg_step_text <- c("Median Household Income"  = "$10,000 increase",
+                   "Median Rent"              = "$100 increase",
+                   "Poverty Rate"             = "10-point increase",
+                   "Percent White Only"       = "10-point increase",
+                   "Percent Foreign-Born"     = "10-point increase",
+                   "Number of Crimes in 2025" = "10-point increase")
+
 # For each shiny app, need to make a ui and a server. 
 # The ui tells you how to set up the page. divided in half by map1 and map2
 # *This is Alice*- I think that you can do the side by side in server but I did it in the ui part
@@ -289,12 +329,35 @@ ui <- fluidPage(
   ),
   
   # 3- initial mockup regression with few variables 
-  tabPanel("Initial Mockup Regression- Few Variables",
-    fluidPage(
-      "We do not have the block regression stuff yet, I'll put it in tomorrow night-Alice"
+  # title explanation
+  tabPanelp("What is the impact of Variable 1 on School Chronic absenteeism rate, while controlling for Variable 2?"),
+    fluidRow(
+      # drop down to select var1
+      # set default to perc white
+      column(width = 6,
+             selectInput("var_reg1", "Variable 1", choices = reg_vars,
+                                            +                         selected = "Percent White Only")
+             ),
+      # dropdonw to select var2
+      # se default to income
+      column(width = 6,
+             selectInput("var_reg2", "Variable 2", choices = reg_vars,
+                         selected = "Median Household Income")
+             )
+      ),
+  # super quick label- need to change
+  h4("Simple Linear Regression Between Variables"),
+  # text description
+  textOutput("reg_interpretation"),
+  # coef table
+  h4("Coefficient table"),
+  # regression table
+  tableOutput("reg_table"),
+  # scatterplot with var 1 and chronic abs, fitted value lined is 
+  plotOutput("reg_scatter", height = "400px"),
+  # residual plot
+  plotOutput("reg_resid", height = "300px")
   )
-)
-)
 )
 
 # reactive function, will continue changes
@@ -403,6 +466,73 @@ server <- function(input, output) {
   output$hist_block  <- renderPlot({ make_hist(filtered3()) })
 }
 
+# NEW: tab 3 (regression) 
+# one row per tract (y = absenteeism, x1 = var 1, x2 = var 2) 
+reg_data <- reactive({
+  validate(need(input$var_reg1 != input$var_reg2, "Please pick two different variables."))
+  d <- tract_data |>                                                # SWAP: neighborhood_data
+    transmute(tract,                                                # SWAP: neighborhood
+              y  = absentee_rate,
+              x1 = .data[[input$var_reg1]],
+              x2 = .data[[input$var_reg2]]) |>
+    drop_na()
+  validate(need(nrow(d) > 3, "Not enough tracts with data for this pair of variables."))   # SWAP: neighborhoods
+  d
+})
+
+# multiple linear regression, fit by ordinary least squares (OLS)
+reg_model <- reactive({ lm(y ~ x1 + x2, data = reg_data()) })
+
+# coefficient table
+output$reg_table <- renderTable({
+  broom::tidy(reg_model()) |>
+    mutate(term = recode(term, "(Intercept)" = "Intercept",
+                         x1 = input$var_reg1, x2 = input$var_reg2)) |>
+    select(Term = term, Estimate = estimate, `Std. Error` = std.error, `p-value` = p.value)
+}, digits = 3)
+
+# scatterplot: points are tracts (SWAP: neighborhoods), lines are the model's fit at low / median / high var 2
+output$reg_scatter <- renderPlot({
+  d <- reg_data()
+  m <- reg_model()
+  lvls    <- c("Low (25th percentile)", "Median", "High (75th percentile)")
+  x2_vals <- unname(quantile(d$x2, c(0.25, 0.5, 0.75)))
+  lines_df <- expand_grid(x1 = seq(min(d$x1), max(d$x1), length.out = 50),
+                          level = lvls) |>
+    mutate(x2 = x2_vals[match(level, lvls)])
+  lines_df$fit   <- predict(m, newdata = lines_df)
+  lines_df$level <- factor(lines_df$level, levels = lvls)
+  
+  ggplot() +
+    geom_point(data = d, aes(x = x1, y = y), color = "#8856a7", size = 2.5, alpha = 0.8) +
+    geom_line(data = lines_df, aes(x = x1, y = fit, color = level), linewidth = 1) +
+    scale_color_brewer(palette = "Dark2") +
+    labs(x = input$var_reg1, y = abs_var, color = paste0(input$var_reg2, ":")) +
+    theme_minimal()
+})
+
+# residuals vs. fitted: actual minus predicted, against predicted
+output$reg_resid <- renderPlot({
+  m <- reg_model()
+  ggplot(data.frame(fitted = fitted(m), resid = resid(m)), aes(x = fitted, y = resid)) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_point(color = "#8856a7", size = 2.5, alpha = 0.8) +
+    labs(x = "Fitted values (predicted absenteeism rate)",
+         y = "Residual (actual - predicted)") +
+    theme_minimal()
+})
+
+# interpretation of the coefficient table (shown right under the dropdowns in the ui)
+reg_interpretation <- reactive({
+  b      <- coef(reg_model())[["x1"]]
+  change <- b * reg_steps[[input$var_reg1]]
+  paste0("For every ", reg_step_text[[input$var_reg1]], " in a tract's ",   # SWAP: neighborhood's
+         input$var_reg1, ", the absentee rate of schools in that tract is predicted to ",   # SWAP: neighborhood
+         if (change >= 0) "increase" else "decrease",
+         " by ", round(abs(change), 2), " percentage points, compared to tracts with the same level of ",   # SWAP: neighborhoods
+         input$var_reg2, ".")
+})
+output$reg_interpretation <- renderText({ reg_interpretation() })
 
 
 # this is what runs shiny app
