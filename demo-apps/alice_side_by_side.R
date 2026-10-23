@@ -533,8 +533,9 @@ block_long <- block_data |>
       pct_owner  = "Percent Owner-Occupied (2020)"),
       estimate   = if_else(is.finite(estimate), estimate, NA_real_),
       short_name = paste("Block", GEOID),
-    # adding all-FALSE percent and dollars variables so there won't be an error when my code I wrote for the other part of the app also runs for this one
-    percent = FALSE,
+    percent = case_when((variable == "Total Population (2020)" | is.na(estimate)) ~ FALSE,
+                                  .default = TRUE),
+    # adding all-FALSE dollars variable so there won't be an error when my code I wrote for the other part of the app also runs for this one
     dollars = FALSE) |>
   left_join(block_lookup, by = c("GEOID" = "GEOID20")) |>
   left_join(select(blocks_sf, GEOID20, geometry),
@@ -651,6 +652,8 @@ server <- function(input, output) {
         addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable), labFormat = labelFormat(prefix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$dollars), "$", ""), suffix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$percent), "%", "")), na.label = "No data")
     } else {
       # If it is a polygod shapefile, will show polygons
+      
+      if (unique(map_data$variable) %in% data$variable) {
       m <- leaflet(map_data) |>
         leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7,
@@ -662,6 +665,19 @@ server <- function(input, output) {
                                     case_when(percent == TRUE ~ "%",
                                               .default = "")))|>
         addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable), labFormat = labelFormat(prefix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$dollars), "$", ""), suffix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$percent), "%", "")), na.label = "No data")
+      } else if (unique(map_data$variable) %in% block_long$variable) {
+        m <- leaflet(map_data) |>
+          leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
+          addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7,
+                      label = ~paste0(short_name, " | ",
+                                      case_when(dollars == TRUE ~ "$",
+                                                .default = ""),
+                                      case_when(!is.na(estimate) ~ format(estimate, big.mark = ",", scientific = FALSE), 
+                                                .default = "No data"),
+                                      case_when(percent == TRUE ~ "%",
+                                                .default = "")))|>
+          addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable), labFormat = labelFormat(suffix = ifelse(TRUE %in% unique(block_long[block_long$variable == unique(map_data$variable),]$percent), "%", "")), na.label = "No data")
+      }
     }
     
     if (show_schools) { # if they check the school checkbox
