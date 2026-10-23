@@ -9,6 +9,11 @@ library(arcgislayers)
 # Setting API key for census data. Pulls data from census package
 census_api_key("6fdd3d02e0762b982b0c2188bfd0d01b406d7c60")
 
+# retrieving population by tract data
+tract_pop <- get_decennial(geography = "tract", state = "DC", year = 2020, sumfile = "dhc", variables = "P1_001N") |>
+  mutate(short_name = substr(NAME, 1, nchar(NAME) - 44), pop = value) |>
+  select(c(short_name, pop))
+
 # tigris tract shapefile
 # selecting the variables- variable (names of variables), estimate (coorspondering num like income, geometry is shapefiles of census tracts)
 tracts <- tracts(state = "DC") |>
@@ -99,7 +104,7 @@ neighborhood_polygons <- tracts_projected |>
 # Geometry- shapefile instead of dataset
 # variable called shortname- shortens name of census tract like tract 1 etc
 # st transform from sf package, transforming everything to default coordinates
-data <- get_acs(geography = "tract", variables = c("Median Household Income" = "S1901_C01_012", "Median Rent" = "DP04_0134", "Poverty Rate" = "S1701_C03_001", "Percent White Only" = "DP05_0037P", "Percent Foreign-Born" = "DP02_0094P"), year = 2024, state = "DC", geometry = TRUE, survey = "acs5") |>
+data <- get_acs(geography = "tract", variables = c("Median Household Income" = "S1901_C01_012", "Median Rent" = "DP04_0134", "Poverty Rate (%)" = "S1701_C03_001", "Percent White Only" = "DP05_0037P", "Percent Foreign-Born" = "DP02_0094P"), year = 2024, state = "DC", geometry = TRUE, survey = "acs5") |>
   mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
   mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
   st_transform(crs = 4326) |>
@@ -136,8 +141,11 @@ crime_tracts <- st_transform(tracts, crs = 4326)
 # Changed second line fyi -alice
 crime_tracts <- left_join(tracts, crimes, by = join_by(TRACTCE)) |>
   left_join(tract_weighted, by = "TRACTCE") |>
-  rename(short_name = "NAMELSAD") |>
-  mutate(variable = "Number of Crimes in 2025") |>
+  rename(short_name = "NAMELSAD")
+
+crime_tracts <- left_join(crime_tracts, tract_pop, by = join_by(short_name)) |>
+  mutate(estimate = round(estimate / pop, 2)) |>
+  mutate(variable = "Crimes Per Capita in 2025") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 #School Absenteeism - point data for checkbox
@@ -339,11 +347,12 @@ child_development_tracts <- tracts |>
   select(TRACTCE, NAMELSAD, geometry) |>
   left_join(centers_count, by = c("TRACTCE", "NAMELSAD")) |>
   left_join(tract_weighted, by = "TRACTCE") |>
-  mutate(
-    estimate = case_when(is.na(estimate) ~ 0, .default = estimate),
-    variable = "Number of Child Development Centers",
-    short_name = NAMELSAD
-  ) |>
+  mutate(estimate = case_when(is.na(estimate) ~ 0, .default = estimate),
+         short_name = NAMELSAD)
+
+child_development_tracts <- left_join(child_development_tracts, tract_pop, by = join_by(short_name)) |>
+  mutate(estimate = round(estimate / pop, 2),
+    variable = "Child Development Centers Per Capita") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Affordable Housing
@@ -372,8 +381,11 @@ affordable_housing_tracts <- tracts |>
   left_join(tract_weighted, by = join_by("TRACTCE")) |>
   rename(short_name = NAMELSAD) |>
   mutate(estimate = case_when(is.na(estimate) ~ 0,
-                              .default = estimate),
-         variable = "Affordable Housing Units Constructed Since 2015") |>
+                              .default = estimate))
+
+affordable_housing_tracts <- left_join(affordable_housing_tracts, tract_pop, by = join_by(short_name)) |>
+  mutate(estimate = round(estimate / pop, 2),
+         variable = "Affordable Housing Units Constructed Since 2015 Per Capita") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Transit Stops
@@ -402,10 +414,11 @@ transit_tracts <- tracts |>
   select(TRACTCE, NAMELSAD, geometry) |>
   left_join(transit_counts, by = "TRACTCE") |>
   left_join(tract_weighted, by = "TRACTCE") |>
-  mutate(
-    variable = "Number of Transit Stops",
-    short_name = NAMELSAD
-  ) |>
+  rename(short_name = NAMELSAD)
+
+transit_tracts <- left_join(transit_tracts, tract_pop, by = join_by(short_name)) |>
+  mutate(estimate = round(estimate / pop, 2),
+         variable = "Transit Stops Per Capita") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Parks & Rec
@@ -440,14 +453,23 @@ park_tracts <- tracts |>
   select(TRACTCE, geometry) |>
   left_join(park_counts, by = "TRACTCE") |>
   left_join(tract_weighted, by = "TRACTCE") |>
-  mutate(
-    estimate = coalesce(park_estimate, 0L),
-    variable = "Number of Parks"
+  mutate(estimate = coalesce(park_estimate, 0L))
+
+park_tracts <- left_join(park_tracts, tract_pop, by = join_by(short_name)) |>
+  mutate(estimate = round(estimate / pop, 2),
+         variable = "Parks Per Capita"
   ) |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Putting all dfs into one thing for the shiny app
 data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, transit_tracts, park_tracts)
+
+# denoting which variables are percents vs. not, and which should have a dollar sign before them
+data <- data |>
+  mutate(percent = case_when((variable %in% c("Median Household Income", "Median Rent", "Crimes in 2025 Per Capita", "Land Use Diversity Score (0-1)", "Child Development Centers Per Capita", "Affordable Housing Units Constructed Since 2015 Per Capita", "Transit Stops Per Capita", "Parks Per Capita") | is.na(estimate)) ~ FALSE,
+                             .default = TRUE),
+         dollars = case_when((variable %in% c("Median Household Income", "Median Rent") & !is.na(estimate)) ~ TRUE,
+                             .default = FALSE))
 
 # dropdown shows list of area type (but grouped)
 # filters to only that area type
@@ -510,7 +532,11 @@ block_long <- block_data |>
       pct_renter = "Percent Renter-Occupied (2020)",
       pct_owner  = "Percent Owner-Occupied (2020)"),
       estimate   = if_else(is.finite(estimate), estimate, NA_real_),
-      short_name = paste("Block", GEOID)) |>
+      short_name = paste("Block", GEOID),
+    percent = case_when((variable == "Total Population (2020)" | is.na(estimate)) ~ FALSE,
+                                  .default = TRUE),
+    # adding all-FALSE dollars variable so there won't be an error when my code I wrote for the other part of the app also runs for this one
+    dollars = FALSE) |>
   left_join(block_lookup, by = c("GEOID" = "GEOID20")) |>
   left_join(select(blocks_sf, GEOID20, geometry),
             by = c("GEOID" = "GEOID20")) |>
@@ -558,11 +584,18 @@ reg_step_text <- c("Median Household Income"  = "$10,000 increase",
                    "Number of Crimes in 2025" = "10-point increase")
 
 # bdd691cddd8e503d7d82f0f37497bd5dd58a44f1
+  select(variable, estimate, short_name, neighborhood, ward, geometry, percent, dollars)
+
+# this is for fixing the legend so the NA value part goes below the legend
+css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
+html_fix <- as.character(htmltools::tags$style(type = "text/css", css_fix))
 
 # For each shiny app, need to make a ui and a server. 
 # The ui tells you how to set up the page. divided in half by map1 and map2
 # *This is Alice*- I think that you can do the side by side in server but I did it in the ui part
 ui <- fluidPage(
+  # this fixes the HTML for the legend so the NA value part goes below the legend
+  HTML(html_fix),
   titlePanel("Washington, D.C. Census Tract Demographics"),
   # list of tabs on top
   tabsetPanel(
@@ -664,9 +697,9 @@ server <- function(input, output) {
     d
   })
   
-  # MAP FUNCTION!!! - function to put data in polygons and points on map
   make_map <- function(map_data, show_schools = FALSE, show_air_quality = FALSE) {
-    pal <- colorNumeric("BuPu", domain = map_data$estimate)
+    pal <- colorNumeric(colorRamp(c("#F7FBFC", "#8B95C5", "#4D004A", "#140013"), interpolate = "spline"), domain = data[data$variable == unique(map_data$variable),]$estimate)
+
     
     # Una, this is Alice! I realized the problem was that the second statement was supposed to be an "if else"
     # If is a point shapefile, will show circles 
@@ -677,16 +710,41 @@ server <- function(input, output) {
         leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addCircles(color = ~pal(estimate), radius = 250, fillOpacity = 0.9,
                    label = ~paste0(short_name, " | ",
-                                   format(estimate, big.mark = ",", scientific = FALSE))) |>
-        addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable))
+                                   case_when(dollars == TRUE ~ "$",
+                                             .default = ""),
+                                   case_when(!is.na(estimate) ~ format(estimate, big.mark = ",", scientific = FALSE), 
+                                             .default = "No data"),
+                                   case_when(percent == TRUE ~ "%",
+                                             .default = ""))) |>
+        addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable), labFormat = labelFormat(prefix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$dollars), "$", ""), suffix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$percent), "%", "")), na.label = "No data")
     } else {
       # If it is a polygod shapefile, will show polygons
+      
+      if (unique(map_data$variable) %in% data$variable) {
       m <- leaflet(map_data) |>
         leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7,
                     label = ~paste0(short_name, " | ",
-                                    format(estimate, big.mark = ",", scientific = FALSE))) |>
-        addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable))
+                                    case_when(dollars == TRUE ~ "$",
+                                              .default = ""),
+                                    case_when(!is.na(estimate) ~ format(estimate, big.mark = ",", scientific = FALSE), 
+                                              .default = "No data"),
+                                    case_when(percent == TRUE ~ "%",
+                                              .default = "")))|>
+        addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable), labFormat = labelFormat(prefix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$dollars), "$", ""), suffix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$percent), "%", "")), na.label = "No data")
+      } else if (unique(map_data$variable) %in% block_long$variable) {
+        m <- leaflet(map_data) |>
+          leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
+          addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7,
+                      label = ~paste0(short_name, " | ",
+                                      case_when(dollars == TRUE ~ "$",
+                                                .default = ""),
+                                      case_when(!is.na(estimate) ~ format(estimate, big.mark = ",", scientific = FALSE), 
+                                                .default = "No data"),
+                                      case_when(percent == TRUE ~ "%",
+                                                .default = "")))|>
+          addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable), labFormat = labelFormat(suffix = ifelse(TRUE %in% unique(block_long[block_long$variable == unique(map_data$variable),]$percent), "%", "")), na.label = "No data")
+      }
     }
     
     if (show_schools) { # if they check the school checkbox
