@@ -1,0 +1,146 @@
+---
+title: "initial-reg-code"
+format: html
+editor: visual
+---
+
+```{r}
+# dropdown shows list of area type (but grouped))
+# filters to only that area type
+area_choices <- list(
+  "Citywide"      = "Citywide",
+  "Wards"         = sort(unique(na.omit(data$ward))),
+  "Neighborhoods" = sort(unique(na.omit(data$neighborhood)))
+)
+
+# rory repeat
+blocks_sf <- blocks(state = "DC", year = 2020) |>
+  st_transform(4326)
+
+# To see where I figured out the variable names and broke this down:
+# see blockview.qmd in our repo
+block_data <- get_decennial(
+  geography = "block", state = "DC", year = 2020, sumfile = "dhc",
+  variables = c(
+    pop         = "P1_001N",
+    race_total  = "P3_001N",
+    white       = "P3_002N",
+    black       = "P3_003N",
+    aian        = "P3_004N",
+    asian       = "P3_005N",
+    nhpi        = "P3_006N",
+    other_race  = "P3_007N",
+    two_or_more = "P3_008N",
+    occ_total   = "H4_001N",
+    owned_mort  = "H4_002N",
+    owned_free  = "H4_003N",
+    renter      = "H4_004N"
+  ),
+  output = "wide"
+) |>
+  mutate(
+    owner      = owned_mort + owned_free,
+    pct_white  = 100 * white / race_total,
+    pct_black  = 100 * black / race_total,
+    pct_asian  = 100 * asian / race_total,
+    pct_renter = 100 * renter / occ_total,
+    pct_owner  = 100 * owner / occ_total
+  )
+
+# add neighborhood and ward to each block (alr have b4 in block points)
+block_lookup <- block_points |>
+  st_drop_geometry() |>
+  select(GEOID20, neighborhood = NEIGHBORHOOD, ward)
+
+# join block vars estimates with blocks_sf shapefile
+block_long <- block_data |>
+  select(GEOID, pop, starts_with("pct_")) |>
+  pivot_longer(-GEOID, names_to = "variable", values_to = "estimate") |>
+  mutate(
+    # renaming all the variables- no hispanic yet, will add next time
+    variable = recode(variable,
+                      pop        = "Total Population (2020)",
+                      pct_white  = "Percent White Alone (2020)",
+                      pct_black  = "Percent Black Alone (2020)",
+                      pct_asian  = "Percent Asian Alone (2020)",
+                      pct_renter = "Percent Renter-Occupied (2020)",
+                      pct_owner  = "Percent Owner-Occupied (2020)"),
+    estimate   = if_else(is.finite(estimate), estimate, NA_real_),
+    short_name = paste("Block", GEOID)) |>
+  left_join(block_lookup, by = c("GEOID" = "GEOID20")) |>
+  left_join(select(blocks_sf, GEOID20, geometry),
+            by = c("GEOID" = "GEOID20")) |>
+  st_as_sf() |>
+  select(variable, estimate, short_name, neighborhood, ward, geometry)
+
+
+abs_var <- unique(geo_abs_joined$variable)
+
+# this part is iffy but i did mean absenteeism of the schools in each tract for NOW
+tract_abs <- geo_abs_joined |>
+  st_drop_geometry() |>
+  filter(!is.na(tract_abs)) |>
+  group_by(tract) |>
+  summarize(absentee_rate = mean(estimate, na.rm = TRUE),
+            n_schools     = n(),
+            .groups = "drop")
+
+# tract vars -> one value per tract (average of its tracts)
+neighborhood_vars <- data |>
+  st_drop_geometry() |>
+  filter(variable != abs_var, !is.na(neighborhood)) |>
+  group_by(neighborhood, variable) |>
+  summarize(estimate = mean(estimate, na.rm = TRUE), .groups = "drop") |>
+  pivot_wider(names_from = variable, values_from = estimate)
+
+# theres only one row for neigborhod
+neighborhood_data <- left_join(neighborhood_abs, neighborhood_vars, by = "neighborhood")
+
+# remove absenteeism from b4 dropdown
+reg_vars <- setdiff(unique(data$variable), abs_var)
+
+## not relevant to map. renaming variables for the regression tab, do you guys like the 10-point thing?
+reg_steps <- c("Median Household Income"  = 10000,
+               "Median Rent"              = 100,
+               "Poverty Rate"             = 10,
+               "Percent White Only"       = 10,
+               "Percent Foreign-Born"     = 10,
+               "Number of Crimes in 2025" = 10)
+reg_step_text <- c("Median Household Income"  = "$10,000 increase",
+                   "Median Rent"              = "$100 increase",
+                   "Poverty Rate"             = "10-point increase",
+                   "Percent White Only"       = "10-point increase",
+                   "Percent Foreign-Born"     = "10-point increase",
+                   "Number of Crimes in 2025" = "10-point increase")
+
+# For each shiny app, need to make a ui and a server. 
+# The ui tells you how to set up the page. divided in half by map1 and map2
+# *This is Alice*- I think that you can do the side by side in server but I did it in the ui part
+ui <- fluidPage(
+  titlePanel("Washington, D.C. Census Tract Demographics"),
+  # list of tabs on top
+  tabsetPanel(
+    id = "main_tabs",
+    # 1- side by side maps and histograms and sum stats 
+    tabPanel("Compare Maps and Visualizations",
+             fluidRow(
+               # i put 6 for width cuz half the page but we could change - alice
+               column(width = 6, 
+                      selectInput("area1", "Area 1", choices = area_choices),
+                      selectInput("var1", "Variable 1", choices = unique(data$variable)),
+                      leafletOutput("map1", height = "500px"),
+                      # added summary stats and histogram to output
+                      tableOutput("stats1"),
+                      plotOutput("hist1", height = "250px")
+               ),
+               column(width = 6,
+                      selectInput("area2", "Area 2", choices = area_choices),
+                      selectInput("var2", "Variable 2", choices = unique(data$variable)),
+                      leafletOutput("map2", height = "500px"),
+                      # added summary stats and histogram to output (2nd side)
+                      tableOutput("stats2"),
+                      plotOutput("hist2", height = "250px")
+               )
+             )
+    ),
+```
