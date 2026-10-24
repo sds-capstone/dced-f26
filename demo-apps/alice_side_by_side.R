@@ -545,7 +545,6 @@ block_long <- block_data |>
   left_join(select(blocks_sf, GEOID20, geometry),
             by = c("GEOID" = "GEOID20")) |>
   st_as_sf() |>
-
   select(variable, estimate, short_name, neighborhood, ward, geometry, percent, dollars)
 
 abs_var <- unique(geo_abs_joined$variable)
