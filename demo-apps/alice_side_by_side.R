@@ -47,6 +47,7 @@ tracts_projected <- st_transform(tracts, 4326)
 points_projected <- st_transform(neighborhood_points, 4326)
 
 # adding the ward shapefile
+# here() is a function from the here package. this was was suggested by claude when debugging, just to be transparent about that. 
 ward_shapefile <- st_read(here::here("data-files", "ward_2022"))   
 
 # same set of things as other shapefiles
@@ -148,7 +149,10 @@ crime_tracts <- left_join(crime_tracts, tract_pop, by = join_by(short_name)) |>
   mutate(variable = "Crimes Per Capita in 2025") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
-#School Absenteeism - point data for checkbox
+# Loading in HS grad grads (includes demographic rates too), but doesn't include charter schools
+hs_grad_rates <- read.csv(here::here("data-files", "hs_grad_rates.csv"))
+
+# point data for school absente checkbox 
 
 # Loading in the absenteeism by school data
 absentee <- read.csv(here::here("data-files", "absenteeism_ds.csv"))
@@ -541,7 +545,7 @@ block_long <- block_data |>
   left_join(select(blocks_sf, GEOID20, geometry),
             by = c("GEOID" = "GEOID20")) |>
   st_as_sf() |>
-  select(variable, estimate, short_name, neighborhood, ward, geometry)
+  select(variable, estimate, short_name, neighborhood, ward, geometry, percent, dollars)
 
 abs_var <- unique(geo_abs_joined$variable)
 
@@ -582,9 +586,6 @@ reg_step_text <- c("Median Household Income"  = "$10,000 increase",
                    "Percent White Only"       = "10-point increase",
                    "Percent Foreign-Born"     = "10-point increase",
                    "Number of Crimes in 2025" = "10-point increase")
-
-# bdd691cddd8e503d7d82f0f37497bd5dd58a44f1
-  select(variable, estimate, short_name, neighborhood, ward, geometry, percent, dollars)
 
 # this is for fixing the legend so the NA value part goes below the legend
 css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
@@ -881,7 +882,7 @@ output$reg_table <- renderTable({
     select(Term = term, Estimate = estimate, `Std. Error` = std.error, `p-value` = p.value)
 }, digits = 3)
 
-# scatterplot: points are tracts (SWAP: neighborhoods), lines are the model's fit at low / median / high var 2
+# scatterplot: points are tracts, lines are the model's fit at low / median / high var 2
 output$reg_scatter <- renderPlot({
   d <- reg_data()
   m <- reg_model()
