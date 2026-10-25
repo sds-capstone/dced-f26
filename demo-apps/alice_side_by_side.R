@@ -18,7 +18,7 @@ tract_pop <- get_decennial(geography = "tract", state = "DC", year = 2020, sumfi
 # selecting the variables- variable (names of variables), estimate (coorspondering num like income, geometry is shapefiles of census tracts)
 tracts <- tracts(state = "DC") |>
   st_transform(crs = 4326) |>
-  select(c(TRACTCE, NAMELSAD, geometry))
+  select(c(TRACTCE, NAMELSAD, geometry, ALAND))
 
 # after Simran reorganized the folders I could not for the life of me get the code to run because
 # it kept saying no existing file or directory
@@ -348,11 +348,8 @@ child_development_tracts <- tracts |>
   left_join(centers_count, by = c("TRACTCE", "NAMELSAD")) |>
   left_join(tract_weighted, by = "TRACTCE") |>
   mutate(estimate = case_when(is.na(estimate) ~ 0, .default = estimate),
-         short_name = NAMELSAD)
-
-child_development_tracts <- left_join(child_development_tracts, tract_pop, by = join_by(short_name)) |>
-  mutate(estimate = round(estimate / pop, 2),
-    variable = "Child Development Centers Per Capita") |>
+         short_name = NAMELSAD,
+         variable = "Child Development Centers Per Capita") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
 # Affordable Housing
@@ -381,10 +378,7 @@ affordable_housing_tracts <- tracts |>
   left_join(tract_weighted, by = join_by("TRACTCE")) |>
   rename(short_name = NAMELSAD) |>
   mutate(estimate = case_when(is.na(estimate) ~ 0,
-                              .default = estimate))
-
-affordable_housing_tracts <- left_join(affordable_housing_tracts, tract_pop, by = join_by(short_name)) |>
-  mutate(estimate = round(estimate / pop, 2),
+                              .default = estimate),
          variable = "Affordable Housing Units Constructed Since 2015 Per Capita") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
@@ -414,10 +408,7 @@ transit_tracts <- tracts |>
   select(TRACTCE, NAMELSAD, geometry) |>
   left_join(transit_counts, by = "TRACTCE") |>
   left_join(tract_weighted, by = "TRACTCE") |>
-  rename(short_name = NAMELSAD)
-
-transit_tracts <- left_join(transit_tracts, tract_pop, by = join_by(short_name)) |>
-  mutate(estimate = round(estimate / pop, 2),
+  mutate(short_name = NAMELSAD,
          variable = "Transit Stops Per Capita") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
@@ -453,10 +444,7 @@ park_tracts <- tracts |>
   select(TRACTCE, geometry) |>
   left_join(park_counts, by = "TRACTCE") |>
   left_join(tract_weighted, by = "TRACTCE") |>
-  mutate(estimate = coalesce(park_estimate, 0L))
-
-park_tracts <- left_join(park_tracts, tract_pop, by = join_by(short_name)) |>
-  mutate(estimate = round(estimate / pop, 2),
+  mutate(estimate = coalesce(park_estimate, 0L),
          variable = "Parks Per Capita"
   ) |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
@@ -466,10 +454,23 @@ data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, chil
 
 # denoting which variables are percents vs. not, and which should have a dollar sign before them
 data <- data |>
-  mutate(percent = case_when((variable %in% c("Median Household Income", "Median Rent", "Crimes in 2025 Per Capita", "Land Use Diversity Score (0-1)", "Child Development Centers Per Capita", "Affordable Housing Units Constructed Since 2015 Per Capita", "Transit Stops Per Capita", "Parks Per Capita") | is.na(estimate)) ~ FALSE,
+  mutate(percent = case_when((variable %in% c("Median Household Income", "Median Rent", "Crimes Per Capita in 2025", "Land Use Diversity Score (0-1)", "Child Development Centers Per Capita", "Affordable Housing Units Constructed Since 2015 Per Capita", "Transit Stops Per Capita", "Parks Per Capita") | is.na(estimate)) ~ FALSE,
                              .default = TRUE),
          dollars = case_when((variable %in% c("Median Household Income", "Median Rent") & !is.na(estimate)) ~ TRUE,
                              .default = FALSE))
+
+tracts_join <- tracts |>
+  st_drop_geometry() |>
+  select(c(NAMELSAD, ALAND)) |>
+  rename(land_area = ALAND, short_name = NAMELSAD)
+
+# joining data with tract_pop to provide the population of each tract
+data <- left_join(data, tract_pop, by = join_by("short_name"))
+
+data <- left_join(data, tracts_join, by = join_by("short_name")) |>
+  # computing population-weighted estimates for count variables
+  mutate(estimate = case_when(variable %in% c("Child Development Centers Per Capita", "Affordable Housing Units Constructed Since 2015 Per Capita", "Transit Stops Per Capita", "Parks Per Capita") ~ round(estimate / pop, 2),
+                              .default = estimate))
 
 # dropdown shows list of area type (but grouped)
 # filters to only that area type
@@ -520,28 +521,29 @@ block_lookup <- block_points |>
 
 # join block vars estimates with blocks_sf shapefile
 block_long <- block_data |>
-  select(GEOID, pop, starts_with("pct_")) |>
-  pivot_longer(-GEOID, names_to = "variable", values_to = "estimate") |>
+  mutate(pop2 = pop) |>
+  select(GEOID, pop2, pop, starts_with("pct_")) |>
+  pivot_longer(-c(GEOID, pop), names_to = "variable", values_to = "estimate") |>
   mutate(
     # renaming all the variables- no hispanic yet, will add next time
     variable = recode(variable,
-      pop        = "Total Population (2020)",
-      pct_white  = "Percent White Alone (2020)",
-      pct_black  = "Percent Black Alone (2020)",
-      pct_asian  = "Percent Asian Alone (2020)",
-      pct_renter = "Percent Renter-Occupied (2020)",
-      pct_owner  = "Percent Owner-Occupied (2020)"),
-      estimate   = if_else(is.finite(estimate), estimate, NA_real_),
-      short_name = paste("Block", GEOID),
+                      pop2        = "Total Population (2020)",
+                      pct_white  = "Percent White Alone (2020)",
+                      pct_black  = "Percent Black Alone (2020)",
+                      pct_asian  = "Percent Asian Alone (2020)",
+                      pct_renter = "Percent Renter-Occupied (2020)",
+                      pct_owner  = "Percent Owner-Occupied (2020)"),
+    estimate   = if_else(is.finite(estimate), estimate, NA_real_),
+    short_name = paste("Block", GEOID),
     percent = case_when((variable == "Total Population (2020)" | is.na(estimate)) ~ FALSE,
-                                  .default = TRUE),
+                        .default = TRUE),
     # adding all-FALSE dollars variable so there won't be an error when my code I wrote for the other part of the app also runs for this one
     dollars = FALSE) |>
   left_join(block_lookup, by = c("GEOID" = "GEOID20")) |>
   left_join(select(blocks_sf, GEOID20, geometry),
             by = c("GEOID" = "GEOID20")) |>
   st_as_sf() |>
-  select(variable, estimate, short_name, neighborhood, ward, geometry)
+  select(variable, estimate, short_name, neighborhood, ward, geometry, percent, dollars, pop)
 
 abs_var <- unique(geo_abs_joined$variable)
 
@@ -583,9 +585,6 @@ reg_step_text <- c("Median Household Income"  = "$10,000 increase",
                    "Percent Foreign-Born"     = "10-point increase",
                    "Number of Crimes in 2025" = "10-point increase")
 
-# bdd691cddd8e503d7d82f0f37497bd5dd58a44f1
-  select(variable, estimate, short_name, neighborhood, ward, geometry, percent, dollars)
-
 # this is for fixing the legend so the NA value part goes below the legend
 css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
 html_fix <- as.character(htmltools::tags$style(type = "text/css", css_fix))
@@ -611,6 +610,7 @@ ui <- fluidPage(
                       checkboxInput("show_air_quality1", "2024 Air Quality Monitoring Sites", value = FALSE),
                       leafletOutput("map1", height = "500px"),
                       # added summary stats and histogram to output
+                      textOutput("pct1"),
                       tableOutput("stats1"),
                       plotOutput("hist1", height = "250px")
                ),
@@ -621,56 +621,58 @@ ui <- fluidPage(
                       checkboxInput("show_air_quality2", "2024 Air Quality Monitoring Sites", value = FALSE),
                       leafletOutput("map2", height = "500px"),
                       # added summary stats and histogram to output (2nd side)
+                      textOutput("pct2"),
                       tableOutput("stats2"),
                       plotOutput("hist2", height = "250px")
                )
-    ),
-    
-  # 2- MESSY! messing around with block / school sf bullshit
-    tabPanel("Block/Neighborhood/School Breakdown",
-    fluidRow(
-      column(width = 12,
-             selectInput("area_block", "Area", choices = area_choices),
-             selectInput("var_block", "Variable", choices = unique(block_long$variable)),
-             leafletOutput("map_block", height="600px"),
-             tableOutput("stats_block"),
-             plotOutput("hist_block", height="250px")
-  )
-  )
-  ),
-  
-  # 3- initial mockup regression with few variables 
-  # title explanation
-  tabPanel("Initial OLS Regression"),
-  p("What is the impact of Variable 1 on School Chronic absenteeism rate, while controlling for Variable 2?"),
-    fluidRow(
-      # drop down to select var1
-      # set default to perc white
-      column(width = 6,
-             selectInput("var_reg1", "Variable 1", choices = reg_vars,
-                         selected = "Percent White Only")
              ),
-      # dropdonw to select var2
-      # se default to income
-      column(width = 6,
-             selectInput("var_reg2", "Variable 2", choices = reg_vars,
-                         selected = "Median Household Income")
-      )
-      ),
-  # super quick label- need to change
-  h4("Simple Linear Regression Between Variables"),
-  # text description
-  textOutput("reg_interpretation"),
-  # coef table
-  h4("Coefficient table"),
-  # regression table
-  tableOutput("reg_table"),
-  # scatterplot with var 1 and chronic abs, fitted value lined is 
-  plotOutput("reg_scatter", height = "400px"),
-  # residual plot
-  plotOutput("reg_resid", height = "300px")
+             
+             # 2- MESSY! messing around with block / school sf bullshit
+             tabPanel("Block/Neighborhood/School Breakdown",
+                      fluidRow(
+                        column(width = 12,
+                               selectInput("area_block", "Area", choices = area_choices),
+                               selectInput("var_block", "Variable", choices = unique(block_long$variable)),
+                               leafletOutput("map_block", height="600px"),
+                               textOutput("pct_block"),
+                               tableOutput("stats_block"),
+                               plotOutput("hist_block", height="250px")
+                        )
+                      )
+             ),
+             
+             # 3- initial mockup regression with few variables 
+             # title explanation
+             tabPanel("Initial OLS Regression"),
+             p("What is the impact of Variable 1 on School Chronic absenteeism rate, while controlling for Variable 2?"),
+             fluidRow(
+               # drop down to select var1
+               # set default to perc white
+               column(width = 6,
+                      selectInput("var_reg1", "Variable 1", choices = reg_vars,
+                                  selected = "Percent White Only")
+               ),
+               # dropdonw to select var2
+               # se default to income
+               column(width = 6,
+                      selectInput("var_reg2", "Variable 2", choices = reg_vars,
+                                  selected = "Median Household Income")
+               )
+             ),
+             # super quick label- need to change
+             h4("Simple Linear Regression Between Variables"),
+             # text description
+             textOutput("reg_interpretation"),
+             # coef table
+             h4("Coefficient table"),
+             # regression table
+             tableOutput("reg_table"),
+             # scatterplot with var 1 and chronic abs, fitted value lined is 
+             plotOutput("reg_scatter", height = "400px"),
+             # residual plot
+             plotOutput("reg_resid", height = "300px")
+    )
   )
-)
 )
 
 # reactive function, will continue changes
@@ -685,6 +687,24 @@ server <- function(input, output) {
       # only rows where column name matches for ward
       d <- d |> filter(neighborhood == input$area1 | ward == input$area1)
     }
+    if (unique(d$variable) %in% c("Poverty Rate (%)", "Percent Foreign-Born", "Percent White Only")) {
+      d <- d |>
+        mutate(var_count = case_when(!is.na(estimate) & !is.na(pop) ~ (estimate/100) * pop,
+                                     .default = NA),
+               summary_type = "percent pop")
+    } else if (substr(unique(d$variable), 1, 20) == "Percent Tract Within") {
+      d <- d |>
+        mutate(var_count = case_when(!is.na(estimate) & !is.na(land_area) ~ (estimate/100) * land_area,
+                                     .default = NA),
+               summary_type = "percent land")
+    }
+    else if (unique(d$variable) %in% c("Crimes Per Capita in 2025", "Child Development Centers Per Capita", "Affordable Housing Units Constructed Since 2015 Per Capita", "Transit Stops Per Capita", "Parks Per Capita")) {
+      d <- d |>
+        mutate(var_count = estimate*pop, summary_type = "per capita")
+    } else {
+      d <- d |>
+        mutate(var_count = NA, summary_type = "none")
+    }
     d
     
   })
@@ -694,12 +714,31 @@ server <- function(input, output) {
     if (input$area2 != "Citywide") {
       d <- d |> filter(neighborhood == input$area2 | ward == input$area2)
     }
+    if (unique(d$variable) %in% c("Poverty Rate (%)", "Percent Foreign-Born", "Percent White Only")) {
+      d <- d |>
+        mutate(var_count = case_when(!is.na(estimate) & !is.na(pop) ~ (estimate/100) * pop,
+                                     .default = NA),
+               summary_type = "percent pop")
+    }
+    else if (substr(unique(d$variable), 1, 20) == "Percent Tract Within") {
+      d <- d |>
+        mutate(var_count = case_when(!is.na(estimate) & !is.na(pop) ~ (estimate/100) * land_area,
+                                     .default = NA),
+               summary_type = "percent land")
+    }
+    else if (unique(d$variable) %in% c("Crimes Per Capita in 2025", "Child Development Centers Per Capita", "Affordable Housing Units Constructed Since 2015 Per Capita", "Transit Stops Per Capita", "Parks Per Capita")) {
+      d <- d |>
+        mutate(var_count = estimate*pop, summary_type = "per capita")
+    } else {
+      d <- d |>
+        mutate(var_count = NA, summary_type = "none")
+    }
     d
   })
   
   make_map <- function(map_data, show_schools = FALSE, show_air_quality = FALSE) {
     pal <- colorNumeric(colorRamp(c("#F7FBFC", "#8B95C5", "#4D004A", "#140013"), interpolate = "spline"), domain = data[data$variable == unique(map_data$variable),]$estimate)
-
+    
     
     # Una, this is Alice! I realized the problem was that the second statement was supposed to be an "if else"
     # If is a point shapefile, will show circles 
@@ -721,17 +760,17 @@ server <- function(input, output) {
       # If it is a polygod shapefile, will show polygons
       
       if (unique(map_data$variable) %in% data$variable) {
-      m <- leaflet(map_data) |>
-        leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
-        addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7,
-                    label = ~paste0(short_name, " | ",
-                                    case_when(dollars == TRUE ~ "$",
-                                              .default = ""),
-                                    case_when(!is.na(estimate) ~ format(estimate, big.mark = ",", scientific = FALSE), 
-                                              .default = "No data"),
-                                    case_when(percent == TRUE ~ "%",
-                                              .default = "")))|>
-        addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable), labFormat = labelFormat(prefix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$dollars), "$", ""), suffix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$percent), "%", "")), na.label = "No data")
+        m <- leaflet(map_data) |>
+          leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
+          addPolygons(color = "black", weight = 1, fillColor = ~pal(estimate), fillOpacity = 0.7,
+                      label = ~paste0(short_name, " | ",
+                                      case_when(dollars == TRUE ~ "$",
+                                                .default = ""),
+                                      case_when(!is.na(estimate) ~ format(estimate, big.mark = ",", scientific = FALSE), 
+                                                .default = "No data"),
+                                      case_when(percent == TRUE ~ "%",
+                                                .default = "")))|>
+          addLegend(pal = pal, values = ~estimate, title = unique(map_data$variable), labFormat = labelFormat(prefix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$dollars), "$", ""), suffix = ifelse(TRUE %in% unique(data[data$variable == unique(map_data$variable),]$percent), "%", "")), na.label = "No data")
       } else if (unique(map_data$variable) %in% block_long$variable) {
         m <- leaflet(map_data) |>
           leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
@@ -842,11 +881,51 @@ server <- function(input, output) {
   output$hist1 <- renderPlot({ make_hist(filtered1()) })
   output$hist2 <- renderPlot({ make_hist(filtered2()) })
   
-# function block by block for tab 2
+  # overall percent output
+  output$pct1 <- renderText(
+    {
+      if (unique(filtered1()$summary_type == "per capita")) {
+        paste("Per capita statistic for overall area:", round((sum(filtered1()$var_count, na.rm = TRUE)/sum(filtered1()$pop, na.rm = TRUE)), 2))
+      }
+      else if (unique(filtered1()$summary_type == "percent land")) {
+        paste0("Overall percentage for land area: ", round((sum(filtered1()$var_count, na.rm = TRUE)/sum(filtered1()$land_area, na.rm = TRUE))*100, 2), "%")
+      }
+      else if (unique(filtered1()$summary_type == "percent pop")) {
+        paste0("Overall percentage for area population: ", round((sum(filtered1()$var_count, na.rm = TRUE)/sum(filtered1()$pop, na.rm = TRUE))*100, 2), "%")
+      }
+      else
+      {""}
+    })
+  output$pct2 <- renderText(
+    {
+      if (unique(filtered2()$summary_type == "per capita")) {
+        paste("Per capita statistic for overall area:", round((sum(filtered2()$var_count, na.rm = TRUE)/sum(filtered2()$pop, na.rm = TRUE)), 2))
+      }
+      else if (unique(filtered2()$summary_type == "percent land")) {
+        paste0("Overall percentage for land area: ", round((sum(filtered2()$var_count, na.rm = TRUE)/sum(filtered2()$land_area, na.rm = TRUE))*100, 2), "%")
+      }
+      else if (unique(filtered2()$summary_type == "percent pop")) {
+        paste0("Overall percentage for area population: ", round((sum(filtered2()$var_count, na.rm = TRUE)/sum(filtered2()$pop, na.rm = TRUE))*100, 2), "%")
+      }
+      else
+      {""}
+    })
+  
+  # function block by block for tab 2
   filtered3 <- reactive({
     d <- block_long |> filter(variable == input$var_block)
     if (input$area_block != "Citywide") {
       d <- d |> filter(neighborhood == input$area_block | ward == input$area_block)
+    }
+    if (!(unique(d$variable) == "Total Population (2020)")) {
+      d <- d |>
+        mutate(var_count = case_when(!is.na(estimate) & !is.na(pop) ~ (estimate/100) * pop,
+                                     .default = NA),
+               summary_type = "percent pop")
+    }
+    else {
+      d <- d |>
+        mutate(var_count = pop, summary_type = "total pop")
     }
     d
   })
@@ -855,74 +934,81 @@ server <- function(input, output) {
   output$map_block   <- renderLeaflet({ make_map(filtered3()) })
   output$stats_block <- renderTable({ make_stats(filtered3()) })
   output$hist_block  <- renderPlot({ make_hist(filtered3()) })
-
-# tab 3 (regression) 
-# one row per tract (y = absenteeism, x1 = var 1, x2 = var 2) 
-reg_data <- reactive({
-  validate(need(input$var_reg1 != input$var_reg2, "Pick different variables."))
-  d <- tract_data |>                                              
-    transmute(tract,                                                
-              y  = absentee_rate,
-              x1 = .data[[input$var_reg1]],
-              x2 = .data[[input$var_reg2]]) |>
-    drop_na()
-  validate(need(nrow(d) > 3, "Not enough tracts with data for this pair of variables."))   # SWAP: neighborhoods
-  d
-})
-
-# multiple linear regression, fit by ordinary least squares (OLS)
-reg_model <- reactive({ lm(y ~ x1 + x2, data = reg_data()) })
-
-# coefficient table
-output$reg_table <- renderTable({
-  broom::tidy(reg_model()) |>
-    mutate(term = recode(term, "(Intercept)" = "Intercept",
-                         x1 = input$var_reg1, x2 = input$var_reg2)) |>
-    select(Term = term, Estimate = estimate, `Std. Error` = std.error, `p-value` = p.value)
-}, digits = 3)
-
-# scatterplot: points are tracts (SWAP: neighborhoods), lines are the model's fit at low / median / high var 2
-output$reg_scatter <- renderPlot({
-  d <- reg_data()
-  m <- reg_model()
-  lvls    <- c("Low (25th percentile)", "Median", "High (75th percentile)")
-  x2_vals <- unname(quantile(d$x2, c(0.25, 0.5, 0.75)))
-  lines_df <- expand_grid(x1 = seq(min(d$x1), max(d$x1), length.out = 50),
-                          level = lvls) |>
-    mutate(x2 = x2_vals[match(level, lvls)])
-  lines_df$fit   <- predict(m, newdata = lines_df)
-  lines_df$level <- factor(lines_df$level, levels = lvls)
+  output$pct_block <- renderText({
+    if (unique(filtered1()$summary_type == "percent pop")) {
+      paste0("Overall percentage for area population: ", round((sum(filtered1()$var_count, na.rm = TRUE)/sum(filtered1()$pop, na.rm = TRUE))*100, 2), "%")
+    } else if (unique(filtered3()$summary_type == "total pop")) {
+      paste("Total area population:", sum(var_count, na.rm = TRUE))
+    }
+  })
   
-  ggplot() +
-    geom_point(data = d, aes(x = x1, y = y), color = "#8856a7", size = 2.5, alpha = 0.8) +
-    geom_line(data = lines_df, aes(x = x1, y = fit, color = level), linewidth = 1) +
-    scale_color_brewer(palette = "Dark2") +
-    labs(x = input$var_reg1, y = abs_var, color = paste0(input$var_reg2, ":")) +
-    theme_minimal()
-})
-
-# residuals vs. fitted: actual minus predicted, against predicted
-output$reg_resid <- renderPlot({
-  m <- reg_model()
-  ggplot(data.frame(fitted = fitted(m), resid = resid(m)), aes(x = fitted, y = resid)) +
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    geom_point(color = "#8856a7", size = 2.5, alpha = 0.8) +
-    labs(x = "Fitted values (predicted absenteeism rate)",
-         y = "Residual (actual - predicted)") +
-    theme_minimal()
-})
-
-# interpretation of the coefficient table (shown right under the dropdowns in the ui)
-reg_interpretation <- reactive({
-  b      <- coef(reg_model())[["x1"]]
-  change <- b * reg_steps[[input$var_reg1]]
-  paste0("For every ", reg_step_text[[input$var_reg1]], " in a tract's ",
-         input$var_reg1, ", the absentee rate of schools in that tract is (hypothetically) predicted to ",
-         if (change >= 0) "increase" else "decrease"," by ", round(abs(change), 2), 
-         " percentage points, compared to tracts with the same level of ",   
-         input$var_reg2, ".")
-})
-output$reg_interpretation <- renderText({ reg_interpretation() })
+  # tab 3 (regression) 
+  # one row per tract (y = absenteeism, x1 = var 1, x2 = var 2) 
+  reg_data <- reactive({
+    validate(need(input$var_reg1 != input$var_reg2, "Pick different variables."))
+    d <- tract_data |>                                              
+      transmute(tract,                                                
+                y  = absentee_rate,
+                x1 = .data[[input$var_reg1]],
+                x2 = .data[[input$var_reg2]]) |>
+      drop_na()
+    validate(need(nrow(d) > 3, "Not enough tracts with data for this pair of variables."))   # SWAP: neighborhoods
+    d
+  })
+  
+  # multiple linear regression, fit by ordinary least squares (OLS)
+  reg_model <- reactive({ lm(y ~ x1 + x2, data = reg_data()) })
+  
+  # coefficient table
+  output$reg_table <- renderTable({
+    broom::tidy(reg_model()) |>
+      mutate(term = recode(term, "(Intercept)" = "Intercept",
+                           x1 = input$var_reg1, x2 = input$var_reg2)) |>
+      select(Term = term, Estimate = estimate, `Std. Error` = std.error, `p-value` = p.value)
+  }, digits = 3)
+  
+  # scatterplot: points are tracts (SWAP: neighborhoods), lines are the model's fit at low / median / high var 2
+  output$reg_scatter <- renderPlot({
+    d <- reg_data()
+    m <- reg_model()
+    lvls    <- c("Low (25th percentile)", "Median", "High (75th percentile)")
+    x2_vals <- unname(quantile(d$x2, c(0.25, 0.5, 0.75)))
+    lines_df <- expand_grid(x1 = seq(min(d$x1), max(d$x1), length.out = 50),
+                            level = lvls) |>
+      mutate(x2 = x2_vals[match(level, lvls)])
+    lines_df$fit   <- predict(m, newdata = lines_df)
+    lines_df$level <- factor(lines_df$level, levels = lvls)
+    
+    ggplot() +
+      geom_point(data = d, aes(x = x1, y = y), color = "#8856a7", size = 2.5, alpha = 0.8) +
+      geom_line(data = lines_df, aes(x = x1, y = fit, color = level), linewidth = 1) +
+      scale_color_brewer(palette = "Dark2") +
+      labs(x = input$var_reg1, y = abs_var, color = paste0(input$var_reg2, ":")) +
+      theme_minimal()
+  })
+  
+  # residuals vs. fitted: actual minus predicted, against predicted
+  output$reg_resid <- renderPlot({
+    m <- reg_model()
+    ggplot(data.frame(fitted = fitted(m), resid = resid(m)), aes(x = fitted, y = resid)) +
+      geom_hline(yintercept = 0, linetype = "dashed") +
+      geom_point(color = "#8856a7", size = 2.5, alpha = 0.8) +
+      labs(x = "Fitted values (predicted absenteeism rate)",
+           y = "Residual (actual - predicted)") +
+      theme_minimal()
+  })
+  
+  # interpretation of the coefficient table (shown right under the dropdowns in the ui)
+  reg_interpretation <- reactive({
+    b      <- coef(reg_model())[["x1"]]
+    change <- b * reg_steps[[input$var_reg1]]
+    paste0("For every ", reg_step_text[[input$var_reg1]], " in a tract's ",
+           input$var_reg1, ", the absentee rate of schools in that tract is (hypothetically) predicted to ",
+           if (change >= 0) "increase" else "decrease"," by ", round(abs(change), 2), 
+           " percentage points, compared to tracts with the same level of ",   
+           input$var_reg2, ".")
+  })
+  output$reg_interpretation <- renderText({ reg_interpretation() })
 }
 
 # this is what runs shiny app
