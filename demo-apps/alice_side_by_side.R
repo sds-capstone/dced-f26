@@ -625,7 +625,7 @@ ui <- fluidPage(
                       tableOutput("stats2"),
                       plotOutput("hist2", height = "250px")
                )
-    ),
+    )),
     
   # 2- MESSY! messing around with block / school sf bullshit
     tabPanel("Block/Neighborhood/School Breakdown",
@@ -642,7 +642,7 @@ ui <- fluidPage(
   
   # 3- initial mockup regression with few variables 
   # title explanation
-  tabPanel("Initial OLS Regression"),
+  tabPanel("Initial OLS Regression",
   p("What is the impact of Variable 1 on School Chronic absenteeism rate, while controlling for Variable 2?"),
     fluidRow(
       # drop down to select var1
@@ -671,8 +671,7 @@ ui <- fluidPage(
   # residual plot
   plotOutput("reg_resid", height = "300px")
   )
-)
-)
+))
 
 # reactive function, will continue changes
 # since its reactive, will call back
