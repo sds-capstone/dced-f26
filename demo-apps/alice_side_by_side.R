@@ -47,6 +47,7 @@ tracts_projected <- st_transform(tracts, 4326)
 points_projected <- st_transform(neighborhood_points, 4326)
 
 # adding the ward shapefile
+# here() is a function from the here package. this was was suggested by claude when debugging, just to be transparent about that. 
 ward_shapefile <- st_read(here::here("data-files", "ward_2022"))   
 
 # same set of things as other shapefiles
@@ -148,7 +149,10 @@ crime_tracts <- left_join(crime_tracts, tract_pop, by = join_by(short_name)) |>
   mutate(variable = "Crimes Per Capita in 2025") |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
-#School Absenteeism - point data for checkbox
+# Loading in HS grad grads (includes demographic rates too), but doesn't include charter schools
+hs_grad_rates <- read.csv(here::here("data-files", "hs_grad_rates.csv"))
+
+# point data for school absente checkbox 
 
 # Loading in the absenteeism by school data
 absentee <- read.csv(here::here("data-files", "absenteeism_ds.csv"))
@@ -625,25 +629,24 @@ ui <- fluidPage(
                       tableOutput("stats2"),
                       plotOutput("hist2", height = "250px")
                )
-             ),
-             
-             # 2- MESSY! messing around with block / school sf bullshit
-             tabPanel("Block/Neighborhood/School Breakdown",
-                      fluidRow(
-                        column(width = 12,
-                               selectInput("area_block", "Area", choices = area_choices),
-                               selectInput("var_block", "Variable", choices = unique(block_long$variable)),
-                               leafletOutput("map_block", height="600px"),
-                               textOutput("pct_block"),
-                               tableOutput("stats_block"),
-                               plotOutput("hist_block", height="250px")
-                        )
-                      )
-             ),
-             
+    )),
+    
+    # 2- MESSY! messing around with block / school sf bullshit
+    tabPanel("Block/Neighborhood/School Breakdown",
+             fluidRow(
+               column(width = 12,
+                      selectInput("area_block", "Area", choices = area_choices),
+                      selectInput("var_block", "Variable", choices = unique(block_long$variable)),
+                      leafletOutput("map_block", height="600px"),
+                      textOutput("pct_block"),
+                      tableOutput("stats_block"),
+                      plotOutput("hist_block", height="250px")
+               )
+             )
+    ),
              # 3- initial mockup regression with few variables 
              # title explanation
-             tabPanel("Initial OLS Regression"),
+             tabPanel("Initial OLS Regression",
              p("What is the impact of Variable 1 on School Chronic absenteeism rate, while controlling for Variable 2?"),
              fluidRow(
                # drop down to select var1
@@ -935,12 +938,49 @@ server <- function(input, output) {
   output$stats_block <- renderTable({ make_stats(filtered3()) })
   output$hist_block  <- renderPlot({ make_hist(filtered3()) })
   output$pct_block <- renderText({
-    if (unique(filtered1()$summary_type == "percent pop")) {
-      paste0("Overall percentage for area population: ", round((sum(filtered1()$var_count, na.rm = TRUE)/sum(filtered1()$pop, na.rm = TRUE))*100, 2), "%")
+    if (unique(filtered3()$summary_type == "percent pop")) {
+      paste0("Overall percentage for area population: ", round((sum(filtered3()$var_count, na.rm = TRUE)/sum(filtered3()$pop, na.rm = TRUE))*100, 2), "%")
     } else if (unique(filtered3()$summary_type == "total pop")) {
-      paste("Total area population:", sum(var_count, na.rm = TRUE))
+      paste("Total area population:", sum(filtered3()$var_count, na.rm = TRUE))
     }
   })
+
+# tab 3 (regression) 
+# one row per tract (y = absenteeism, x1 = var 1, x2 = var 2) 
+reg_data <- reactive({
+  validate(need(input$var_reg1 != input$var_reg2, "Pick different variables."))
+  d <- tract_data |>                                              
+    transmute(tract,                                                
+              y  = absentee_rate,
+              x1 = .data[[input$var_reg1]],
+              x2 = .data[[input$var_reg2]]) |>
+    drop_na()
+  validate(need(nrow(d) > 3, "Not enough tracts with data for this pair of variables."))   # SWAP: neighborhoods
+  d
+})
+
+# multiple linear regression, fit by ordinary least squares (OLS)
+reg_model <- reactive({ lm(y ~ x1 + x2, data = reg_data()) })
+
+# coefficient table
+output$reg_table <- renderTable({
+  broom::tidy(reg_model()) |>
+    mutate(term = recode(term, "(Intercept)" = "Intercept",
+                         x1 = input$var_reg1, x2 = input$var_reg2)) |>
+    select(Term = term, Estimate = estimate, `Std. Error` = std.error, `p-value` = p.value)
+}, digits = 3)
+
+# scatterplot: points are tracts, lines are the model's fit at low / median / high var 2
+output$reg_scatter <- renderPlot({
+  d <- reg_data()
+  m <- reg_model()
+  lvls    <- c("Low (25th percentile)", "Median", "High (75th percentile)")
+  x2_vals <- unname(quantile(d$x2, c(0.25, 0.5, 0.75)))
+  lines_df <- expand_grid(x1 = seq(min(d$x1), max(d$x1), length.out = 50),
+                          level = lvls) |>
+    mutate(x2 = x2_vals[match(level, lvls)])
+  lines_df$fit   <- predict(m, newdata = lines_df)
+  lines_df$level <- factor(lines_df$level, levels = lvls)
   
   # tab 3 (regression) 
   # one row per tract (y = absenteeism, x1 = var 1, x2 = var 2) 
@@ -1009,6 +1049,8 @@ server <- function(input, output) {
            input$var_reg2, ".")
   })
   output$reg_interpretation <- renderText({ reg_interpretation() })
+}
+)
 }
 
 # this is what runs shiny app
