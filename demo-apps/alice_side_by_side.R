@@ -152,6 +152,12 @@ crime_tracts <- left_join(crime_tracts, tract_pop, by = join_by(short_name)) |>
 # Loading in HS grad grads (includes demographic rates too), but doesn't include charter schools
 hs_grad_rates <- read.csv(here::here("data-files", "hs_grad_rates.csv"))
 
+# student commute patterns by school planning area- 10 planning areas
+commute_pl <- read.csv(here::here("data-files", "commute_patterns_sp_area.csv"))
+
+# student commute patterns by ward
+commute_ward <- read.csv(here::here("data-files", "commute_patterns_ward.csv"))
+
 # point data for school absente checkbox 
 
 # Loading in the absenteeism by school data
