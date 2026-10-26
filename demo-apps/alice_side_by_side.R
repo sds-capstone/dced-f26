@@ -459,6 +459,10 @@ park_tracts <- tracts |>
   ) |>
   select(variable, estimate, short_name, neighborhood, ward, geometry)
 
+# parks and recs overlay for checkbox
+
+dc_parks_overlay <- dc_parks_sf |>
+  select(c(NAME, geometry))
 # Putting all dfs into one thing for the shiny app
 data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, transit_tracts, park_tracts)
 
@@ -618,6 +622,7 @@ ui <- fluidPage(
                       selectInput("var1", "Variable 1", choices = unique(data$variable)),
                       checkboxInput("show_schools1", "% of Students Chronically Absent by School", value = FALSE),
                       checkboxInput("show_air_quality1", "2024 Air Quality Monitoring Sites", value = FALSE),
+                      checkboxInput("show_parks1", "Show Parks and Recreation Locations", value = FALSE),
                       leafletOutput("map1", height = "500px"),
                       # added summary stats and histogram to output
                       textOutput("pct1"),
@@ -629,6 +634,7 @@ ui <- fluidPage(
                       selectInput("var2", "Variable 2", choices = unique(data$variable)),
                       checkboxInput("show_schools2", "% of Students Chronically Absent by School", value = FALSE),
                       checkboxInput("show_air_quality2", "2024 Air Quality Monitoring Sites", value = FALSE),
+                      checkboxInput("show_parks2", "Show Parks and Recreation Locations", value = FALSE),
                       leafletOutput("map2", height = "500px"),
                       # added summary stats and histogram to output (2nd side)
                       textOutput("pct2"),
@@ -745,7 +751,7 @@ server <- function(input, output) {
     d
   })
   
-  make_map <- function(map_data, show_schools = FALSE, show_air_quality = FALSE) {
+  make_map <- function(map_data, show_schools = FALSE, show_air_quality = FALSE, show_parks = FALSE) {
     pal <- colorNumeric(colorRamp(c("#F7FBFC", "#8B95C5", "#4D004A", "#140013"), interpolate = "spline"), domain = data[data$variable == unique(map_data$variable),]$estimate)
     
     
@@ -804,7 +810,12 @@ server <- function(input, output) {
         addLegend(data = geo_abs_joined, pal = school_pal, values = ~estimate,
                   title = "% Chronically Absent", position = "bottomleft")
     }
-    
+    if (show_parks){
+
+      m <- m |>
+        addPolygons(data = dc_parks_overlay, group = "parks", fillColor = "forestgreen", fillOpacity = 0.6, color = "darkgreen", weight = 1,
+                         label = ~paste0(NAME))
+    }
     if (show_air_quality){
       air_quality_pal <- colorNumeric(
         palette = c("#D9F0A3", "#78C679", "#238443", "#004529"),
@@ -879,8 +890,8 @@ server <- function(input, output) {
   }
   
   # two maps output
-  output$map1 <- renderLeaflet({ make_map(filtered1(), show_air_quality = input$show_air_quality1, show_schools = input$show_schools1) })
-  output$map2 <- renderLeaflet({ make_map(filtered2(), show_air_quality = input$show_air_quality2, show_schools = input$show_schools2) })
+  output$map1 <- renderLeaflet({ make_map(filtered1(), show_air_quality = input$show_air_quality1, show_schools = input$show_schools1, show_parks = input$show_parks1) })
+  output$map2 <- renderLeaflet({ make_map(filtered2(), show_air_quality = input$show_air_quality2, show_schools = input$show_schools2, show_parks = input$show_parks2) })
   
   # two summary stats output
   output$stats1 <- renderTable({ make_stats(filtered1()) })
