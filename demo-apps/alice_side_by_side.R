@@ -180,12 +180,14 @@ abs_clean <-
 
 # absentee by demographic breakdown
 # rates not percentages!
-abs_demog <- read.csv(here::here("data-files", "abs_data_demograph.csv"))|>
-  rename(School.Code = school_code, 
-         Student.Group = stud_demographic,
-         Metric = yn_prek,
-         Metric.Score = metric_score,
-         Metric.N = metric_n)
+abs_demog <- read.csv(here::here("data-files", "abs_data_demograph.csv"))
+
+abs_demog <- abs_demog |>
+  rename(school_code = School.Name, 
+         stud_demographic = Student.Group,
+         yn_prek = Metric,
+         metric_score = Metric.Score,
+         metric_n = Metric.N)
 
 # Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
 geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
@@ -407,7 +409,7 @@ affordable_housing_tracts <- tracts |>
 
 # loading transit stops data into R
 # it doesn't load in unless I do stop_type_text as a field
-transit_stops <- arc_select(arc_open("https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/NTAD_National_Transit_Map_Stops/FeatureServer/0"), fields = c("stop_type_text"))
+ transit_stops <- arc_select(arc_open("https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/NTAD_National_Transit_Map_Stops/FeatureServer/0"), fields = c("stop_type_text"))
 
 transit_stops <- st_transform(transit_stops, crs = "WGS84") |>
   mutate(stop_id = row_number())
@@ -475,7 +477,7 @@ park_tracts <- tracts |>
 dc_parks_overlay <- dc_parks_sf |>
   select(c(NAME, geometry))
 # Putting all dfs into one thing for the shiny app
-data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, transit_tracts, park_tracts)
+data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, park_tracts) #transit_tracts)
 
 # denoting which variables are percents vs. not, and which should have a dollar sign before them
 data <- data |>
@@ -548,7 +550,7 @@ block_lookup <- block_points |>
 block_long <- block_data |>
   mutate(pop2 = pop) |>
   select(GEOID, pop2, pop, starts_with("pct_")) |>
-  pivot_longer(-c(GEOID, pop), names_to = "variable", values_to = "estimate") |>
+ pivot_longer(-c(GEOID, pop), names_to = "variable", values_to = "estimate") |>
   mutate(
     # renaming all the variables- no hispanic yet, will add next time
     variable = recode(variable,
@@ -561,7 +563,7 @@ block_long <- block_data |>
     estimate   = if_else(is.finite(estimate), estimate, NA_real_),
     short_name = paste("Block", GEOID),
     percent = case_when((variable == "Total Population (2020)" | is.na(estimate)) ~ FALSE,
-                        .default = TRUE),
+                       .default = TRUE),
     # adding all-FALSE dollars variable so there won't be an error when my code I wrote for the other part of the app also runs for this one
     dollars = FALSE) |>
   left_join(block_lookup, by = c("GEOID" = "GEOID20")) |>
@@ -570,7 +572,7 @@ block_long <- block_data |>
   st_as_sf() |>
   select(variable, estimate, short_name, neighborhood, ward, geometry, percent, dollars, pop)
 
-abs_var <- unique(geo_abs_joined$variable)
+ abs_var <- unique(geo_abs_joined$variable)
 
 # this part is iffy but i did mean absenteeism of the schools in each tract for NOW
 tract_abs <- geo_abs_joined |>
@@ -696,7 +698,9 @@ ui <- fluidPage(
              # scatterplot with var 1 and chronic abs, fitted value lined is 
              plotOutput("reg_scatter", height = "400px"),
              # residual plot
-             plotOutput("reg_resid", height = "300px")
+             textOutput("assumptions_text"),
+             plotOutput("reg_resid", height = "300px"),
+             plotOutput("reg_qqplot", height = "300px")
     )
   )
 )
@@ -1010,6 +1014,7 @@ output$reg_scatter <- renderPlot({
   lines_df$fit   <- predict(m, newdata = lines_df)
   lines_df$level <- factor(lines_df$level, levels = lvls)
   
+  
   # tab 3 (regression) 
   # one row per tract (y = absenteeism, x1 = var 1, x2 = var 2) 
   reg_data <- reactive({
@@ -1066,6 +1071,18 @@ output$reg_scatter <- renderPlot({
       theme_minimal()
   })
   
+  # qq plot - to test for normality 
+  output$reg_qqplot <- renderPlot({
+    m <- reg_model()
+    ggplot(data.frame(resid = resid(m)), mapping = aes(sample = resid)) +
+      geom_qq(color= "#8856a7", size = 2.5 ) +
+      geom_qq_line(color = "black") +
+      labs(
+        x = "Theoretical",
+        y = "Sample"
+      ) +
+      theme_minimal()
+  })
   # interpretation of the coefficient table (shown right under the dropdowns in the ui)
   reg_interpretation <- reactive({
     b      <- coef(reg_model())[["x1"]]
@@ -1077,6 +1094,11 @@ output$reg_scatter <- renderPlot({
            input$var_reg2, ".")
   })
   output$reg_interpretation <- renderText({ reg_interpretation() })
+  
+  assumptions_text <- reactive ({
+    paste0("Plots for assessing assumptions of linear regression:")
+  })
+  output$assumptions_text <- renderText({assumptions_text()})
 }
 )
 }
