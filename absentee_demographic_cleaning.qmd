@@ -16,9 +16,12 @@ abs_demog <- read.csv(here::here("data-files", "abs_data_demograph.csv"))
 # for me
 colnames(abs_demog)
 
-abs_d_clean <- abs_demog |>
+# vectors for race, will use later on...
+race <- c("Asian", "American Indian/Alaskan Native", "Black/African-American", "White", "Two or more races")
+
+abs_en_clean <- abs_demog |>
   # rename cols
-  rename(school_Code = School.Code, 
+  rename(school_code = School.Code, 
          demographic = Student.Group,
          prek_abs_growth = Metric,
          metric_score = Metric.Score,
@@ -26,14 +29,31 @@ abs_d_clean <- abs_demog |>
          lea_code = LEA.Code)|>
   # new col, separating charter school and DCPS
   # DCPS always has LEA 1, everything else another num
-  mutate(pub_charter = ifelse(lea_code == 1, "DCPS", "Charter"))|>
+  mutate(pub_charter = ifelse(lea_code == 1, "DCPS", "Charter"))
+
+# ALL chronic absensteeism df
+chron_abs_all <- abs_en_clean |>
+  # only chron abs
+  filter(prek_abs_growth == "Chronic Absenteeism")|>
   # select vars 4 pivot
-  select(school_Code, demographic, prek_abs_growth, metric_score, metric_n, lea_code, pub_charter)|>
+  select(school_code, pub_charter, demographic, metric_score)|>
   # breaks down the student group and metric rows into columns
   # organizaed by the school and its LEA (public or charter) 
   # metric score measured, left out n for now but could add
-  pivot_wider(id_cols = c(school_Code, pub_charter), 
-              names_from = c(prek_abs_growth, demographic),
-              values_from = metric_n,
-              names_repair = "universal")
+  pivot_wider(names_from = demographic,
+              values_from = metric_score)
+
+# only pre-k chron abs
+chron_abs_prek <- abs_en_clean |>
+  filter(prek_abs_growth == "Pre-K Chronic Absenteeism")|>
+  select(school_code, pub_charter, demographic, metric_score)|>
+  pivot_wider(names_from = demographic,
+              values_from = metric_score)
+
+# attendance growth
+attendance_growth <- abs_en_clean |>
+  filter(prek_abs_growth == "Attendance Growth")|>
+  select(school_code, pub_charter, demographic, metric_score)|>
+  pivot_wider(names_from = demographic,
+              values_from = metric_score)
 ```
