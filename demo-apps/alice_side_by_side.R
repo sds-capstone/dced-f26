@@ -159,7 +159,7 @@ commute_pl <- read.csv(here::here("data-files", "commute_patterns_sp_area.csv"))
 # student commute patterns by ward
 commute_ward <- read.csv(here::here("data-files", "commute_patterns_ward.csv"))
 
-# point data for school absente checkbox 
+# point data for school absente checkbox
 
 # Loading in the absenteeism by school data
 absentee <- read.csv(here::here("data-files", "absenteeism_ds.csv"))
@@ -177,17 +177,54 @@ abs_clean <-
   mutate(percent_abs = as.numeric(sub("%", "", percent_abs)),
          SCHOOL_ID = as.integer(SCHOOL_ID))
 
-
+# DIFF! ABSENTEE DEMOGRAPHICS ------------DONEEEEEYAY____
 # absentee by demographic breakdown
-# rates not percentages!
+# measured by METRIC SCORE! see data dictionary i sent 
 abs_demog <- read.csv(here::here("data-files", "abs_data_demograph.csv"))
 
-abs_demog <- abs_demog |>
-  rename(school_code = School.Name, 
-         stud_demographic = Student.Group,
-         yn_prek = Metric,
+# for me
+colnames(abs_demog)
+
+# vectors for race, will use later on...
+race <- c("Asian", "American Indian/Alaskan Native", "Black/African-American", "White", "Two or more races")
+
+abs_en_clean <- abs_demog |>
+  # rename cols
+  rename(school_code = School.Code, 
+         demographic = Student.Group,
+         prek_abs_growth = Metric,
          metric_score = Metric.Score,
-         metric_n = Metric.N)
+         metric_n = Metric.N,
+         lea_code = LEA.Code)|>
+  # new col, separating charter school and DCPS
+  # DCPS always has LEA 1, everything else another num
+  mutate(pub_charter = ifelse(lea_code == 1, "DCPS", "Charter"))
+
+# ALL chronic absensteeism df
+chron_abs_all <- abs_en_clean |>
+  # only chron abs
+  filter(prek_abs_growth == "Chronic Absenteeism")|>
+  # select vars 4 pivot
+  select(school_code, pub_charter, demographic, metric_score)|>
+  # breaks down the student group and metric rows into columns
+  # organizaed by the school and its LEA (public or charter) 
+  # metric score measured, left out n for now but could add
+  pivot_wider(names_from = demographic,
+              values_from = metric_score)
+
+# only pre-k chron abs
+chron_abs_prek <- abs_en_clean |>
+  filter(prek_abs_growth == "Pre-K Chronic Absenteeism")|>
+  select(school_code, pub_charter, demographic, metric_score)|>
+  pivot_wider(names_from = demographic,
+              values_from = metric_score)
+
+# attendance growth
+attendance_growth <- abs_en_clean |>
+  filter(prek_abs_growth == "Attendance Growth")|>
+  select(school_code, pub_charter, demographic, metric_score)|>
+  pivot_wider(names_from = demographic,
+              values_from = metric_score)
 
 # Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
 geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
