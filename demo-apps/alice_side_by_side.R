@@ -119,6 +119,7 @@ data <- data |>
 # Loading in the public schools absentee and coordinates shapefile
 schools_shapefile <- st_read(here::here("data-files", "school_geospatial"))
 
+# transform shapefile
 schools_shapefile <- st_transform(
   schools_shapefile,
   st_crs(tracts)
@@ -175,6 +176,16 @@ abs_clean <-
   filter(year == "2024-25") |>
   mutate(percent_abs = as.numeric(sub("%", "", percent_abs)),
          SCHOOL_ID = as.integer(SCHOOL_ID))
+
+
+# absentee by demographic breakdown
+# rates not percentages!
+abs_demog <- read.csv(here::here("data-files", "abs_data_demograph.csv"))|>
+  rename(School.Code = school_code, 
+         Student.Group = stud_demographic,
+         Metric = yn_prek,
+         Metric.Score = metric_score,
+         Metric.N = metric_n)
 
 # Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
 geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
