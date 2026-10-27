@@ -1,0 +1,39 @@
+---
+title: "absentee demographic cleaning"
+author: "alice"
+format: html
+editor: visual
+---
+
+```{r}
+library(dplyr)
+library(tidyr)
+
+# absentee by demographic breakdown
+# measured by METRIC SCORE! see data dictionary i sent 
+abs_demog <- read.csv(here::here("data-files", "abs_data_demograph.csv"))
+
+# for me
+colnames(abs_demog)
+
+abs_d_clean <- abs_demog |>
+  # rename cols
+  rename(school_Code = School.Code, 
+         demographic = Student.Group,
+         prek_abs_growth = Metric,
+         metric_score = Metric.Score,
+         metric_n = Metric.N,
+         lea_code = LEA.Code)|>
+  # new col, separating charter school and DCPS
+  # DCPS always has LEA 1, everything else another num
+  mutate(pub_charter = ifelse(lea_code == 1, "DCPS", "Charter"))|>
+  # select vars 4 pivot
+  select(school_Code, demographic, prek_abs_growth, metric_score, metric_n, lea_code, pub_charter)|>
+  # breaks down the student group and metric rows into columns
+  # organizaed by the school and its LEA (public or charter) 
+  # metric score measured, left out n for now but could add
+  pivot_wider(id_cols = c(school_Code, pub_charter), 
+              names_from = c(prek_abs_growth, demographic),
+              values_from = metric_n,
+              names_repair = "universal")
+```
