@@ -177,6 +177,8 @@ abs_clean <-
   mutate(percent_abs = as.numeric(sub("%", "", percent_abs)),
          SCHOOL_ID = as.integer(SCHOOL_ID))
 
+
+# DIFF! ABSENTEE DEMOGRAPHICS ------------DONEEEEEYAY____
 # absentee by demographic breakdown
 # rates not percentages!
 abs_demog <- read.csv(here::here("data-files", "abs_data_demograph.csv"))
