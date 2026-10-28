@@ -5,6 +5,7 @@ library(leaflet)
 library(sf)
 library(tigris)
 library(arcgislayers)
+library(readxl)
 
 # Setting API key for census data. Pulls data from census package
 census_api_key("6fdd3d02e0762b982b0c2188bfd0d01b406d7c60")
@@ -513,8 +514,42 @@ park_tracts <- tracts |>
 
 dc_parks_overlay <- dc_parks_sf |>
   select(c(NAME, geometry))
+
+
+
+# PreK enrollment data
+
+preK_enrollment <- read_excel(here::here("data-files", "Public Pre-K Enrollment by Ward.xlsx"))
+
+preK_enrollment <- preK_enrollment |>
+  filter(Location != "District of Columbia") |>
+  filter(TimeFrame == "2023-24") |>
+  group_by(Location) |>
+  select(c("Location", "Data")) |>
+  rename(ward = Location) 
+
+preK_enrollment <- tracts |>
+  left_join(tract_weighted, by = "TRACTCE") |>
+  left_join(preK_enrollment, by = "ward") |>
+  mutate(
+    estimate = Data,
+    variable = "PreK Enrollment 2023-24",
+    short_name = NAMELSAD) |>
+  select(
+    variable, estimate, short_name, neighborhood, ward, geometry) |>
+  st_as_sf()
+
+
+  
+   
+
+
+
 # Putting all dfs into one thing for the shiny app
-data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, park_tracts) #transit_tracts)
+data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, park_tracts, transit_tracts, preK_enrollment)
+
+
+
 
 # denoting which variables are percents vs. not, and which should have a dollar sign before them
 data <- data |>
