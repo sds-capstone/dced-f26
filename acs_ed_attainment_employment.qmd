@@ -1,0 +1,96 @@
+---
+title: "adult_upward_mobil"
+format: html
+editor: visual
+---
+
+new acs data for enrollment (pre k , nursery, kindergarten) broken down by race. and for educational attainment (HS grad, bachelors or higher) also broken down by race. the data was by gender but i just did sum of male and female... but do we wanna have gender as interaction term?
+
+tomorrow i'm going to do employment outcomes and then i'll create the regression we talked about with the interaction terms
+
+deleted api key but will add to our app tmr
+
+```{r}
+library(tidycensus)
+library(tidyverse)
+
+# vector for race 
+# acs language not mine
+# the letter is the letter that the race table ID uses- white A, etc
+# ppl left out, esp for hispanic (but dw  cuz i didnt sum them or anything)
+# white alone is white total including "white" latino, so idk how or if we should include that 
+races <- c(A = "White alone", 
+          B = "Black alone",
+          C = "American Indian/Alaska Native alone", 
+          D = "Asian alone",
+          E = "Native Hawaiian/Pacific Islander alone",
+          F = "Some other race alone", 
+          G = "Two or more races",
+          H = "White alone, not Hispanic",
+          I = "Hispanic or Latino")
+
+# vector for levels of educational attainment 
+# easier for me to make this and then pull from acs
+attain_vars <- c(
+  # 3rd all bc DP02 not split by sex
+  # DP02_0062 (high school grad) is a count 
+  # DP02_0068 (bachelors) is also a count? *need to check!!!
+  "HS graduate|All races|All"        = "DP02_0062",
+  "Bachelor's or higher|All races|All" = "DP02_0068",
+  
+  # by race 
+    # setname makes new vector from the 2 vectors... 
+    # paste0 vectorijed vector over the 9 race letters... make NEW
+  # gender
+    # structured by 5 bc woman codes r 5 vars below man codes
+  # using the | thing to mean all 3. for example "HS graduate|White alone|Male" would be C15002A_004
+  
+    # HS grad, M, by race
+  setNames(paste0("C15002", names(races), "_004"), paste0("HS graduate|", races, "|Male")),
+    # HS grad, F, by race 
+  setNames(paste0("C15002", names(races), "_009"), paste0("HS graduate|", races, "|Female")),
+    # bachelors, M, by race 
+  setNames(paste0("C15002", names(races), "_006"), paste0("Bachelor's or higher|", races, "|Male")),
+    # bachelors, F, by race 
+  setNames(paste0("C15002", names(races), "_011"), paste0("Bachelor's or higher|", races, "|Female")))
+
+# same as before, modeled off unas code (thx una)
+attainment <- get_acs(geography = "tract",
+                      variables = attain_vars,
+                      year = 2024,
+                      state = "DC",
+                      geometry = FALSE,
+                      survey = "acs5") |>
+  mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
+  mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
+  # makes into 3 columns (why \\)
+  separate(variable, into = c("measure", "race", "sex"), sep = "\\|") |>
+  # the data was by gender but i just did sum of male and female... but do we wanna have gender as interaction term?
+  group_by(short_name, TRACTCE, measure, race) |>
+  summarise(moe = moe_sum(moe, estimate),
+            estimate = sum(estimate), .groups = "drop")
+
+# vector for enrollment variables 
+enroll_vector <- c(
+  # all (this is language from acs not mine)
+  "Total enrolled (3+)|All races"    = "B14007_002",
+  "Nursery/preschool|All races"      = "B14007_003",
+  "Kindergarten|All races"           = "B14007_004",
+  # by race
+  setNames(paste0("B14007", names(races), "_002"), paste0("Total enrolled (3+)|", races)),
+  setNames(paste0("B14007", names(races), "_003"), paste0("Nursery/preschool|", races)),
+  setNames(paste0("B14007", names(races), "_004"), paste0("Kindergarten|", races)))
+
+# pulling from acs
+enrollment <- get_acs(geography = "tract",
+                      variables = enroll_vars,
+                      year = 2024,
+                      state = "DC",
+                      # just so it doesnt load super slow rn
+                      geometry = FALSE,
+                      survey = "acs5") |>
+  mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
+  mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
+  separate(variable, into = c("measure", "race"), sep = "\\|") |>
+  select(c(measure, race, estimate, moe, short_name, TRACTCE))
+```
