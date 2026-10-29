@@ -798,6 +798,120 @@ reg_step_text <- c("Median Household Income"  = "$10,000 increase",
                    "Percent Foreign-Born"     = "10-point increase",
                    "Number of Crimes in 2025" = "10-point increase")
 
+
+# removing absenteeism percent cuz it was put as an indicator but its not 
+indicator_choices <- setdiff(unique(data$variable),
+                             c(abs_var, "PreK Enrollment 2023-24"))
+
+# outcome variables for for model 1 (multiple regression)
+outcome_choices_multi <- c(abs_var,                      # chronic absenteeism (av of the schools in tract)
+                           "PreK Enrollment 2023-24",    # OSSE (fuck is this ward not tract?)
+                           "Nursery/Pre-K Enrollment",   # ACS counts, all races
+                           "Kindergarten Enrollment",    # ACS counts, all races
+                           "High School Graduate",       # ACS counts, all races
+                           "Bachelor's or higher")       # ACS counts, all races
+
+# outcome variables for model 2 (race interaction)
+# only 4 vars with cleaned race data
+outcome_choices_race <- c("Nursery/Pre-K Enrollment",
+                          "Kindergarten Enrollment",
+                          "High School Graduate",
+                          "Bachelor's or higher")
+
+# RACE groups for model 2 = the `races` vector you made above (unname() drops the A, B, C letters).
+# These groups overlap (Hispanic people are also counted in "White alone", for example)
+# because they were pulled straight from ACS and not summed. Delete names to shorten the dropdown.
+race_choices <- unname(races)
+
+# ---- 2. outcome data by race (for model 2) --------------------------------
+
+# `enrollment` and `attainment` already have the same shape (measure, race, estimate, short_name),
+# so we stack them into ONE long table: one row per tract x race x outcome.
+# case_when() renames the ACS "measure" labels to the names shown in the dropdown.
+anova_long <- bind_rows(
+  enrollment |>
+    mutate(outcome = case_when(measure == "Nursery/preschool" ~ "Nursery/Pre-K Enrollment",
+                               measure == "Kindergarten"      ~ "Kindergarten Enrollment")),
+  attainment |>
+    mutate(outcome = case_when(measure == "HS graduate"          ~ "High School Graduate",
+                               measure == "Bachelor's or higher" ~ "Bachelor's or higher"))
+) |>
+  # keep only what we need. tract = the tract name, the same key used in tract_vars
+  select(tract = short_name, outcome, race, outcome_value = estimate)
+
+# ---- 3. one wide table for model 1 ----------------------------------------
+
+# the "All races" version of the four ACS outcomes, one column per outcome
+acs_outcomes_all <- anova_long |>
+  filter(race == "All races") |>
+  select(tract, outcome, outcome_value) |>
+  pivot_wider(names_from = outcome, values_from = outcome_value)
+
+# absenteeism by tract, with the column named exactly like abs_var
+# (`!!abs_var :=` is the trick for "name this column whatever is stored in abs_var")
+abs_by_tract <- tract_abs |>
+  transmute(tract, !!abs_var := absentee_rate)
+
+# model_data = one row per tract, one column per indicator AND per outcome
+#   tract_vars        -> all the indicators (+ the OSSE Pre-K number)
+#   abs_by_tract      -> absenteeism
+#   acs_outcomes_all  -> the four ACS outcomes
+model_data <- tract_vars |>
+  left_join(abs_by_tract,     by = "tract") |>
+  left_join(acs_outcomes_all, by = "tract")
+
+# ---- 4. helper functions used by both models ------------------------------
+
+# (a) INTERACTIVE fitted values plot.
+#   d = the data used to fit the model (needs columns `tract` and `y`), model = the fitted lm
+# Each dot is one tract: x = what the model predicts, y = the actual value.
+# Dots on the dashed line are predicted perfectly. Hover over a dot to see the tract.
+make_fitted_plot <- function(d, model, outcome_label) {
+  plot_df <- d |> mutate(fitted = fitted(model))
+  
+  p <- ggplot(plot_df,
+              # `text` is what shows up on hover (<br> = new line)
+              aes(x = fitted, y = y,
+                  text = paste0(tract,
+                                "<br>Actual: ", round(y, 2),
+                                "<br>Fitted: ", round(fitted, 2)))) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed") +   # the "perfect fit" line
+    geom_point(color = "#8856a7", size = 2.5, alpha = 0.8) +
+    labs(x = "Fitted values (predicted by the model)",
+         y = paste("Actual:", outcome_label)) +
+    theme_minimal()
+  
+  # ggplotly turns the ggplot into an interactive plot.
+  # tooltip = "text" means: on hover, show ONLY the text we wrote above
+  # (you may see an "unknown aesthetics: text" warning in the console. That's normal.)
+  plotly::ggplotly(p, tooltip = "text")
+}
+
+# (b) basic (not interactive) RESIDUAL plot. residual = actual - predicted
+make_resid_plot <- function(model) {
+  ggplot(data.frame(fitted = fitted(model), resid = resid(model)),
+         aes(x = fitted, y = resid)) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_point(color = "#8856a7", size = 2.5, alpha = 0.8) +
+    labs(x = "Fitted values", y = "Residual (actual - predicted)") +
+    theme_minimal()
+}
+
+# (c) COEFFICIENT TABLE with readable row names.
+# broom::tidy() turns the lm into a data frame. Its raw row names are "x1", "x2", "x",
+# "raceBlack alone"... so case_when() swaps them for the real variable names.
+make_coef_table <- function(model, x_label, x2_label = "Indicator 2") {
+  broom::tidy(model) |>
+    mutate(term = case_when(
+      term == "(Intercept)"      ~ "Intercept",
+      term %in% c("x", "x1")     ~ x_label,                  # the (first) indicator
+      term == "x2"               ~ x2_label,                 # the second indicator (model 1 only)
+      str_starts(term, "x:race") ~ paste0(x_label, " x ", str_remove(term, "^x:race")),  # interaction rows
+      str_starts(term, "race")   ~ str_remove(term, "^race"),                            # race rows
+      .default = term)) |>
+    select(Term = term, Estimate = estimate, `Std. Error` = std.error, `p-value` = p.value)
+}
+
 # this is for fixing the legend so the NA value part goes below the legend
 css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
 html_fix <- as.character(htmltools::tags$style(type = "text/css", css_fix))
