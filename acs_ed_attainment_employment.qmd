@@ -11,8 +11,41 @@ tomorrow i'm going to do employment outcomes and then i'll create the regression
 deleted api key but will add to our app tmr
 
 ```{r}
+
 library(tidycensus)
 library(tidyverse)
+library(sf)
+
+# adult employment
+
+# j making sure i have the right age groups
+load_variables(2024, "acs5/subject", cache = TRUE) |>
+  filter(str_starts(name, "S2301_C04")) |>
+  select(name, label)
+
+employment <- get_acs(geography = "tract",
+                      variables = c("Unemployment Rate 20-24" = "S2301_C04_003",
+                                    "Unemployment Rate 25-29" = "S2301_C04_004"),
+                      year = 2024,
+                      state = "DC",
+                      geometry = FALSE,
+                      survey = "acs5") |>
+  mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
+  mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
+  select(c(variable, estimate, moe, short_name, TRACTCE)) |>
+  pivot_wider(names_from = variable, values_from = c(estimate, moe))
+
+# join to tracts
+dc_tracts <- tigris::tracts("DC", year = 2024) |>
+  st_transform(crs = 4326) |>
+  select(TRACTCE, geometry)
+
+employment_sf <- dc_tracts |> 
+  left_join(employment, by = "TRACTCE")
+```
+
+```{r}
+#Enrollment
 
 # vector for race 
 # acs language not mine
@@ -29,8 +62,38 @@ races <- c(A = "White alone",
           H = "White alone, not Hispanic",
           I = "Hispanic or Latino")
 
-# vector for levels of educational attainment 
+# vector for enrollment variables 
 # easier for me to make this and then pull from acs
+enroll_vector <- c(
+  # lang acs not mone
+  "Total enrolled (3+)|All races"    = "B14007_002",
+  "Nursery/preschool|All races"      = "B14007_003",
+  "Kindergarten|All races"           = "B14007_004",
+  # by race
+  setNames(paste0("B14007", names(races), "_002"), paste0("Total enrolled (3+)|", races)),
+  setNames(paste0("B14007", names(races), "_003"), paste0("Nursery/preschool|", races)),
+  setNames(paste0("B14007", names(races), "_004"), paste0("Kindergarten|", races)))
+
+# pulling from acs
+# same as before, modeled off unas code (thx una)
+enrollment <- get_acs(geography = "tract",
+                      variables = enroll_vars,
+                      year = 2024,
+                      state = "DC",
+                      # just so it doesnt load super slow rn
+                      geometry = FALSE,
+                      survey = "acs5") |>
+  mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
+  mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
+  # makes into 3 columns (why \\)
+  separate(variable, into = c("measure", "race"), sep = "\\|") |>
+  select(c(measure, race, estimate, moe, short_name, TRACTCE))
+```
+
+```{r}
+# High school and college grads
+
+# vector for levels of educational attainment 
 attain_vars <- c(
   # 3rd all bc DP02 not split by sex
   # DP02_0062 (high school grad) is a count 
@@ -69,28 +132,4 @@ attainment <- get_acs(geography = "tract",
   group_by(short_name, TRACTCE, measure, race) |>
   summarise(moe = moe_sum(moe, estimate),
             estimate = sum(estimate), .groups = "drop")
-
-# vector for enrollment variables 
-enroll_vector <- c(
-  # all (this is language from acs not mine)
-  "Total enrolled (3+)|All races"    = "B14007_002",
-  "Nursery/preschool|All races"      = "B14007_003",
-  "Kindergarten|All races"           = "B14007_004",
-  # by race
-  setNames(paste0("B14007", names(races), "_002"), paste0("Total enrolled (3+)|", races)),
-  setNames(paste0("B14007", names(races), "_003"), paste0("Nursery/preschool|", races)),
-  setNames(paste0("B14007", names(races), "_004"), paste0("Kindergarten|", races)))
-
-# pulling from acs
-enrollment <- get_acs(geography = "tract",
-                      variables = enroll_vars,
-                      year = 2024,
-                      state = "DC",
-                      # just so it doesnt load super slow rn
-                      geometry = FALSE,
-                      survey = "acs5") |>
-  mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
-  mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
-  separate(variable, into = c("measure", "race"), sep = "\\|") |>
-  select(c(measure, race, estimate, moe, short_name, TRACTCE))
 ```
