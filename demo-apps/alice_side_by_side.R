@@ -178,9 +178,20 @@ abs_clean <-
   mutate(percent_abs = as.numeric(sub("%", "", percent_abs)),
          SCHOOL_ID = as.integer(SCHOOL_ID))
 
-# DIFF! ABSENTEE DEMOGRAPHICS ------------DONEEEEEYAY____
+# Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
+geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
+  filter(!is.na(percent_abs)) |>
+  st_transform(crs = "WGS84") |>
+  mutate(variable = "% of Students Chronically Absent, 24-25",
+         estimate = percent_abs,
+         short_name = SCHOOL_NAM) |>
+  select(variable, estimate, short_name, geometry)
+
+
+# now this is DIFFERENT absenteeism... OSSE !!!
+# this is NOT PERCENT LIKE CHECKBOX, this is METRIC SCORE
 # absentee by demographic breakdown
-# measured by METRIC SCORE! see data dictionary i sent 
+# see data dictionary i sent 
 abs_demog <- read.csv(here::here("data-files", "abs_data_demograph.csv"))
 
 # for me
@@ -227,7 +238,6 @@ attendance_growth <- abs_en_clean |>
   pivot_wider(names_from = demographic,
               values_from = metric_score)
 
-
 # employment !!!
 #
 # j making sure i have the right age groups
@@ -247,23 +257,72 @@ employment <- get_acs(geography = "tract",
   select(c(variable, estimate, moe, short_name, TRACTCE)) |>
   pivot_wider(names_from = variable, values_from = c(estimate, moe))
 
-# join to tracts
+# enrollment!!!
+#
+# vector for race 
+# acs language not mine
+# the letter is the letter that the race table ID uses- white A, etc
+# ppl left out, esp for hispanic (but dw  cuz i didnt sum them or anything)
+# white alone is white total including "white" latino, so idk how or if we should include that 
+races <- c(A = "White alone", 
+           B = "Black alone",
+           C = "American Indian/Alaska Native alone", 
+           D = "Asian alone",
+           E = "Native Hawaiian/Pacific Islander alone",
+           F = "Some other race alone", 
+           G = "Two or more races",
+           H = "White alone, not Hispanic",
+           I = "Hispanic or Latino")
+
+# pulling from acs
+# same as before, modeled off unas code (thx una)
+# i could only get the race breakdown for the 2024 data
+enrollment <- get_acs(geography = "tract",
+                      variables = enroll_vars,
+                      year = 2024,
+                      state = "DC",
+                      # just so it doesnt load super slow rn
+                      geometry = FALSE,
+                      survey = "acs5") |>
+  mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
+  mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
+  # so that measure and race and two separate like "measure|race"
+  separate(variable, into = c("measure", "race"), sep = "\\|") |>
+  select(c(measure, race, estimate, moe, short_name, TRACTCE))
+
+# vector for enrollment variables 
+# easier for me to make this and then pull from acs
+enroll_vars <- c(
+  # all races
+  "Nursery/preschool|All races"      = "B14007_003",
+  "Kindergarten|All races"           = "B14007_004",
+  # by race
+  setNames(paste0("B14007", names(races), "_003"), paste0("Nursery/preschool|", races)),
+  setNames(paste0("B14007", names(races), "_004"), paste0("Kindergarten|", races)))
+
+# pulling from acs
+enrollment <- get_acs(geography = "tract",
+                      variables = enroll_vars,
+                      year = 2024,
+                      state = "DC",
+                      # just so it doesnt load super slow rn
+                      geometry = FALSE,
+                      survey = "acs5") |>
+  mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
+  mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
+  # splits "measure|race" into 2 columns
+  # sep() = separate = reg expression (had to search) but works like OR
+  separate(variable, into = c("measure", "race"), sep = "\\|") |>
+  select(c(measure, race, estimate, moe, short_name, TRACTCE))
+
+
+#tract join
 dc_tracts <- tigris::tracts("DC", year = 2024) |>
   st_transform(crs = 4326) |>
   select(TRACTCE, geometry)
 
 employment_sf <- dc_tracts |> 
   left_join(employment, by = "TRACTCE")
-
-
-# Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
-geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
-  filter(!is.na(percent_abs)) |>
-  st_transform(crs = "WGS84") |>
-  mutate(variable = "% of Students Chronically Absent, 24-25",
-         estimate = percent_abs,
-         short_name = SCHOOL_NAM) |>
-  select(variable, estimate, short_name, geometry)
 
 # joining with neighborhood and ward 
 neighborhood_join_abs <- neighborhood_polygons |>
