@@ -6,7 +6,6 @@ library(sf)
 library(tigris)
 library(arcgislayers)
 library(readxl)
-#library(shinydashboardPlus)
 
 # Setting API key for census data. Pulls data from census package
 census_api_key("6fdd3d02e0762b982b0c2188bfd0d01b406d7c60")
@@ -569,8 +568,8 @@ data <- left_join(data, tract_pop, by = join_by("short_name"))
 
 data <- left_join(data, tracts_join, by = join_by("short_name")) |>
   # computing population-weighted estimates for count variables
-  mutate(estimate = case_when(variable %in% c("Child Development Centers Per Capita", "Affordable Housing Units Constructed Since 2015 Per Capita", "Transit Stops Per Capita", "Parks Per Capita") ~ round(as.numeric(estimate) / pop, 2),
-                              .default = as.numeric(estimate)))
+  mutate(estimate = case_when(variable %in% c("Child Development Centers Per Capita", "Affordable Housing Units Constructed Since 2015 Per Capita", "Transit Stops Per Capita", "Parks Per Capita") ~ round(estimate / pop, 2),
+                              .default = estimate))
 
 # dropdown shows list of area type (but grouped)
 # filters to only that area type
@@ -699,162 +698,6 @@ ui <- fluidPage(
   # list of tabs on top
   tabsetPanel(
     id = "main_tabs",
-    tabPanel("Welcome!",
-             tags$p(""),
-             tags$b("This dashboard can be used to compare the impact of various indicator variables on upward mobility and educational attainment."),
-             tags$p(""),
-             fluidRow(
-               column(width = 6,
-                      tags$h3("Indicator Variables"),
-                      wellPanel(
-                        style = "border-width: 2px; border-color: black; background-color: white",
-                      tags$b("TRACT-LEVEL DATA:"),
-                      tags$p(""),
-                      wellPanel(
-                        style = "border-width: 3px; border-color: green; background-color: white",
-                        tags$b("Economic Opportunity & Housing Affordability"),
-                        tags$ul(
-                          tags$li("Poverty Rate (%)"),
-                          tags$li("Median Household Income"),
-                          tags$li("Median Rent"),
-                          tags$li("Affordable Housing Units Constructed Since 2015 Per Capita")
-                        )
-                      ),
-                      wellPanel(
-                        style = "border-width: 3px; border-color: orange; background-color: white",
-                        tags$b("Demographic Diversity"),
-                        tags$ul(
-                          tags$li("Percent Foreign-Born"),
-                          tags$li("Percent White Only")
-                        )
-                      ),
-                      wellPanel(
-                        style = "border-width: 3px; border-color: red; background-color: white",
-                        tags$b("Public Safety & Neighborhood Quality"),
-                        tags$ul(
-                          tags$li("Land Use Diversity Score (0-1)"),
-                          tags$li("Percent Positive Land Uses"),
-                          tags$li("Parks Per Capita"),
-                          tags$li("Crimes Per Capita in 2025")
-                        )
-                        ),
-                        wellPanel(
-                          style = "border-width: 3px; border-color: blue; background-color: white",
-                          tags$b("Transportation & Recreational Access"),
-                          tags$ul(
-                            tags$li("Child Development Centers Per Capita"),
-                            tags$li("Transit Stops Per Capita")
-                          )
-                        ),
-                        wellPanel(
-                          style = "border-width: 3px; border-color: gray; background-color: white",
-                          tags$b("Built Environment Indicators"),
-                          tags$p(""),
-                          tags$i("Access to School"),
-                          tags$ul(
-                            tags$li("Percent Tract Within 15-Minute Walk to School"),
-                            tags$li("Percent Tract Within 15-Minute Walk to Modernized School"),
-                            tags$li("Percent Tract Within 2-Minute Walk of School Crossing Guard"),
-                            tags$li("Percent Tract Along Safe Route to School")
-                            ),
-                          tags$i("Parks & Recreation Access"),
-                          tags$ul(
-                            tags$li("Percent Tract Within 15-Minute Walk to Playground"),
-                            tags$li("Percent Tract Within 15-Minute Walk of Recreation Center"),
-                            tags$li("Percent Tract Within 10-Minute Walk of Park"),
-                            tags$li("Percent Tract Within ¼ Mile of Trail")
-                          ),
-                          tags$i("Safety & Wellness"),
-                          tags$ul(
-                            tags$li("Percent Tract Within 15-Minute Walk of Health Care Facility"),
-                            tags$li("Percent Tract Within 15-Minute Walk of Mental Health Provider"),
-                            tags$li("Percent Tract Within 15-Minute Walk of Police Department"),
-                            tags$li("Percent Tract Within 15-Minute Walk of Fire Station"),
-                            tags$li("Percent Tract Within 250 Feet of High Injury Network Corridor"),
-                            tags$li("Percent Tract Within 15-Minute Walk of Liquor Store"),
-                            
-                          ),
-                          tags$i("Access to Transit"),
-                          tags$ul(
-                            tags$li("Percent Tract Within 2-Minute Walk of Bus Stop"),
-                            tags$li("Percent Tract Within 15-Minute Walk of Metro Station"),
-                            tags$li("Percent Tract Within 5-Minute Walk of Capital Bikeshare Location"),
-                            tags$li("Percent Street Area With Bike Lanes"),
-                            tags$li("Percent Households With Work Commute Under 45 Mins")
-                          ),
-                          tags$i("Public Safety & Tract Infrastructure"),
-                          tags$ul(
-                            tags$li("Percent Buildings of Good Quality"),
-                            tags$li("Percent Homes Built Since 1970"),
-                            tags$li("Percent 311 Calls Made for Sidewalk Repair"),
-                            tags$li("Percent Tract Within 2-Minute Walk of Vacant or Blighted House"),
-                            tags$li("Percent Tract Within 2-Minute Walk of Vacant Lot"),
-                            tags$li("Percent Sidewalks Within 30 Feet of Streetlight"),
-                            tags$li("Percent Tracts Alleys and Parking Lots")
-                          ),
-                          tags$i("Digital Access & Educational Resources"),
-                          tags$ul(
-                            tags$li("Percent Tract Within 15-Minute Walk of Library"),
-                            tags$li("Percent Tract Within 15-Minute Walk of Wireless Hotspot"),
-                            tags$li("Percent Households With Broadband Internet")
-                          ),
-                          tags$i("Economic & Financial Access"),
-                          tags$ul(
-                            tags$li("Percent Tract Within 15-Minute Walk of Banking Institution"),
-                            tags$li("Percent Tract Within 15-Minute Walk of Cash Checking Institution"),
-                            tags$li("Percent Housing Units Affordable")
-                          ),
-                          tags$i("Food Access"),
-                          tags$ul(
-                            tags$li("Percent Tract Within 15-Minute Walk of Farmers Market"),
-                            tags$li("Percent Tract Within 5-Minute Walk of Restaurant"),
-                            tags$li("Percent Tract Within 15-Minute Walk of Grocery Store"),
-                            tags$li("Percent Tract in Low Food Access Area"),
-                            tags$li("Percent Tract Within 15-Minute Walk of Healthy Corner Store"),
-                          ),
-                          tags$i("Climate Resilience"),
-                          tags$ul(
-                            tags$li("Percent Tract With Tree Canopy"),
-                            tags$li("Percent Tract Within Floodplain")
-                          )
-                        )
-                        ),
-                      wellPanel(
-                        style = "border-width: 2px; border-color: black; background-color: white",
-                        tags$b("POINT AND POLYGON DATA:"),
-                        tags$p(""),
-                        tags$ul(
-                          tags$li("% of Students Chronically Absent by School"),
-                          tags$li("2024 Air Quality Monitoring Sites"),
-                          tags$li("Parks and Recreation Locations")
-                        )
-                      ),
-                      wellPanel(
-                        style = "border-width: 2px; border-color: black; background-color: white",
-                        tags$b("BLOCK-LEVEL DATA:"),
-                        tags$p(""),
-                        tags$ul(
-                          tags$li("Total Population"),
-                          tags$li("Percent White Alone"),
-                          tags$li("Percent Black Alone"),
-                          tags$li("Percent Asian Alone"),
-                          tags$li("Percent Renter Occupied"),
-                          tags$li("Percent Owner Occupied")
-                        )
-                      )
-               ),
-               column(width = 6,
-                      tags$h3("Outcome Variables"),
-                      tags$ul(
-                        tags$li("% of Students Chronically Absent by School"),
-                        tags$li("Pre-K Enrollment"),
-                        tags$li("High School Graduation Rate")
-                      )
-                      )
-                        
-                      
-             )
-             ),
     # 1- side by side maps and histograms and sum stats 
     tabPanel("Compare Maps and Visualizations",
              fluidRow(
@@ -864,7 +707,7 @@ ui <- fluidPage(
                       selectInput("var1", "Variable 1", choices = unique(data$variable)),
                       checkboxInput("show_schools1", "% of Students Chronically Absent by School", value = FALSE),
                       checkboxInput("show_air_quality1", "2024 Air Quality Monitoring Sites", value = FALSE),
-                      checkboxInput("show_parks1", "Parks and Recreation Locations", value = FALSE),
+                      checkboxInput("show_parks1", "Show Parks and Recreation Locations", value = FALSE),
                       leafletOutput("map1", height = "500px"),
                       # added summary stats and histogram to output
                       textOutput("pct1"),
@@ -876,14 +719,14 @@ ui <- fluidPage(
                       selectInput("var2", "Variable 2", choices = unique(data$variable)),
                       checkboxInput("show_schools2", "% of Students Chronically Absent by School", value = FALSE),
                       checkboxInput("show_air_quality2", "2024 Air Quality Monitoring Sites", value = FALSE),
-                      checkboxInput("show_parks2", "Parks and Recreation Locations", value = FALSE),
+                      checkboxInput("show_parks2", "Show Parks and Recreation Locations", value = FALSE),
                       leafletOutput("map2", height = "500px"),
                       # added summary stats and histogram to output (2nd side)
                       textOutput("pct2"),
                       tableOutput("stats2"),
                       plotOutput("hist2", height = "250px")
                )
-             )),
+    )),
     
     # 2- MESSY! messing around with block / school sf bullshit
     tabPanel("Block/Neighborhood/School Breakdown",
