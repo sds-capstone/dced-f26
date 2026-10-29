@@ -6,6 +6,7 @@ library(sf)
 library(tigris)
 library(arcgislayers)
 library(readxl)
+library(plotly)
 
 # Setting API key for census data. Pulls data from census package
 census_api_key("6fdd3d02e0762b982b0c2188bfd0d01b406d7c60")
@@ -1002,8 +1003,16 @@ ui <- fluidPage(
              plotOutput("reg_resid", height = "300px"),
              plotOutput("reg_qqplot", height = "300px")
     )
+  ),
+  # from the style guide that rory sent
+  theme = bs_theme(
+    bg = "#FFFFFF", # white
+    fg = "#0a2c39", # blue
+    primary = "#be1e2e",  # red
+    secondary = "#9e9e9e",  # gray
+    base_font = font_google("Montserrat")
   )
-)
+)  
 
 # reactive function, will continue changes
 # since its reactive, will call back
