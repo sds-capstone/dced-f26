@@ -227,6 +227,35 @@ attendance_growth <- abs_en_clean |>
   pivot_wider(names_from = demographic,
               values_from = metric_score)
 
+
+# employment !!!
+#
+# j making sure i have the right age groups
+load_variables(2024, "acs5/subject", cache = TRUE) |>
+  filter(str_starts(name, "S2301_C04")) |>
+  select(name, label)
+
+employment <- get_acs(geography = "tract",
+                      variables = c("Unemployment Rate 20-24" = "S2301_C04_003",
+                                    "Unemployment Rate 25-29" = "S2301_C04_004"),
+                      year = 2024,
+                      state = "DC",
+                      geometry = FALSE,
+                      survey = "acs5") |>
+  mutate(TRACTCE = substr(GEOID, nchar(GEOID) - 5, nchar(GEOID))) |>
+  mutate(short_name = substr(NAME, 1, nchar(NAME) - 44)) |>
+  select(c(variable, estimate, moe, short_name, TRACTCE)) |>
+  pivot_wider(names_from = variable, values_from = c(estimate, moe))
+
+# join to tracts
+dc_tracts <- tigris::tracts("DC", year = 2024) |>
+  st_transform(crs = 4326) |>
+  select(TRACTCE, geometry)
+
+employment_sf <- dc_tracts |> 
+  left_join(employment, by = "TRACTCE")
+
+
 # Joining shapefile and csv! Going to be honest I copied some of Una's code for this part! 
 geo_abs_joined <- left_join(schools_shapefile, abs_clean, by = "SCHOOL_ID") |>
   filter(!is.na(percent_abs)) |>
