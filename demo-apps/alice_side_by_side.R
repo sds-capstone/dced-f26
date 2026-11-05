@@ -619,7 +619,8 @@ load <- function(new_data = FALSE) {
         short_name = NAMELSAD,
         variable = "Transit Stops Per Capita"
       ) |>
-      select(variable, estimate, short_name, neighborhood, ward, geometry)
+      select(variable, estimate, short_name, neighborhood, ward, geometry) |>
+      distinct()
 
   # 2.2.13 Parks & Rec Data ====
 
