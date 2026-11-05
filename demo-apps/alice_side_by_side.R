@@ -856,6 +856,29 @@ load <- function(new_data = FALSE) {
   css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
   html_fix <- as.character(htmltools::tags$style(type = "text/css", css_fix))
 
+  # 2.4 Theming ----
+    # theming! see the theming doc i created for more themeing options we could do
+    # https://docs.google.com/document/d/1OP1wcjPOscsBWhuMeGXRL6NeRck9Z2xCrjg9wSYaoVE/edit?usp=sharing
+    # for now, theme- default bootstrap w DME colors and edscape fonts 
+    # montserrat for headings/everything else, open sans for paragraphs, jetbrains mono for code
+    # see rory style guide
+  dme_theme <- bs_theme(
+    version = 5,
+    preset = "bootstrap",
+    bg = "#FFFFFF", # white
+    fg = "#0a2c39", # blue
+    primary = "#be1e2e", # red
+    secondary = "#9e9e9e", # gray
+    base_font = font_google("Montserrat", wght = c(400, 500, 700)),
+    heading_font = font_google("Montserrat", wght = c(400, 500, 700)),
+    code_font = font_google("JetBrains Mono"),
+    "font-family-p" = font_google("Open Sans", wght = c(400, 700))
+  ) |>
+    # wanted the labels inside the p tags to still be montserrart
+    bs_add_rules("p { font-family: $font-family-p; } label p { font-family: inherit; }") |>
+    # text wrap in longer category names (like built enviro) don't go off the panel thingy
+    bs_add_rules(".dropdown-toggle { white-space: normal; }")
+
   
   
   # 3.1 UI for Shiny App ----
@@ -864,6 +887,7 @@ load <- function(new_data = FALSE) {
   # The ui tells you how to set up the page. divided in half by map1 and map2
   # *This is Alice*- I think that you can do the side by side in server but I did it in the ui part
   ui <- fluidPage(
+    theme = dme_theme,
     # this fixes the HTML for the legend so the NA value part goes below the legend
     HTML(html_fix),
     titlePanel("Washington, D.C. Census Tract Demographics"),
@@ -885,7 +909,7 @@ load <- function(new_data = FALSE) {
               tags$b("TRACT-LEVEL DATA:"),
               tags$p(""),
               wellPanel(
-                style = "border-width: 3px; border-color: green; background-color: white",
+                style = "border-width: 3px; border-color: #0a3308; background-color: white",
                 tags$b("Economic Opportunity & Housing Affordability"),
                 tags$ul(
                   tags$li("Poverty Rate (%)"),
@@ -895,7 +919,7 @@ load <- function(new_data = FALSE) {
                 )
               ),
               wellPanel(
-                style = "border-width: 3px; border-color: orange; background-color: white",
+                style = "border-width: 3px; border-color: #194d4d; background-color: white",
                 tags$b("Demographic Diversity"),
                 tags$ul(
                   tags$li("Percent Foreign-Born"),
@@ -903,7 +927,7 @@ load <- function(new_data = FALSE) {
                 )
               ),
               wellPanel(
-                style = "border-width: 3px; border-color: red; background-color: white",
+                style = "border-width: 3px; border-color: #c0504d; background-color: white",
                 tags$b("Public Safety & Neighborhood Quality"),
                 tags$ul(
                   tags$li("Land Use Diversity Score (0-1)"),
@@ -913,7 +937,7 @@ load <- function(new_data = FALSE) {
                 )
               ),
               wellPanel(
-                style = "border-width: 3px; border-color: blue; background-color: white",
+                style = "border-width: 3px; border-color: #1d497d; background-color: white",
                 tags$b("Transportation & Recreational Access"),
                 tags$ul(
                   tags$li("Child Development Centers Per Capita"),
@@ -921,7 +945,7 @@ load <- function(new_data = FALSE) {
                 )
               ),
               wellPanel(
-                style = "border-width: 3px; border-color: gray; background-color: white",
+                style = "border-width: 3px; border-color: #401155; background-color: white",
                 tags$b("Built Environment Indicators"),
                 tags$p(""),
                 tags$i("Access to School"),
@@ -1019,10 +1043,58 @@ load <- function(new_data = FALSE) {
           column(
             width = 6,
             tags$h3("Indicator Variables"),
-            tags$ul(
-              tags$li("% of Students Chronically Absent by School"),
-              tags$li("PreK Enrollment 2023-24"),
-              tags$li("High School Graduation Rate")
+            wellPanel(
+              style = "border-width: 2px; border-color: black; background-color: white",
+              tags$b("TRACT-LEVEL DATA:"),
+              tags$p(""),
+              wellPanel(
+                style = "border-width: 3px; border-color: #0a3308; background-color: white",
+                tags$b("Enrollment"),
+                tags$ul(
+                  tags$li("Nursery School and Preschool Enrollment"),
+                  tags$li("Kindergarten Enrollment")
+                )
+              ),
+              wellPanel(
+                style = "border-width: 3px; border-color: #194d4d; background-color: white",
+                tags$b("Level of Educational Attainment"),
+                tags$ul(
+                  tags$li("High School Graduation Percentage"),
+                  tags$li("Bachelor's or higher Percentage")
+                )
+              ),
+              wellPanel(
+                style = "border-width: 3px; border-color: #c0504d; background-color: white",
+                tags$b("Employment"),
+                tags$ul(
+                  tags$li("Employment Rate Age 20-24"),
+                  tags$li("Employment Rate Age 25-29")
+                )
+              )
+            ),
+            wellPanel(
+              style = "border-width: 2px; border-color: black; background-color: white",
+              tags$b("POINT DATA (BY DC SCHOOL):"),
+              tags$p(""),
+              wellPanel(
+                style = "border-width: 3px; border-color: #1d497d; background-color: white",
+                tags$b("Attendance"),
+                tags$ul(
+                  tags$li("Chronic Absenteeism Rate"),
+                  tags$li("Pre-K Chronic Absenteeism Rate"),
+                  tags$li("Attendance Growth")
+                )
+              ),
+              wellPanel(
+                style = "border-width: 3px; border-color: #401155; background-color: white",
+                tags$b("Graduation and College Enrollment"),
+                tags$ul(
+                  tags$li("Four-Year Graduation Rate"),
+                  tags$li("Five-Year Graduation Rate"),
+                  tags$li("6-Month Postsecondary Enrollment"),
+                  tags$li("12-Month Postsecondary Enrollment")
+                )
+              )
             )
           )
         )
@@ -1030,6 +1102,8 @@ load <- function(new_data = FALSE) {
       # 3.1.2 Side by Side Maps and Comparison Statistics ----
       tabPanel(
         "Compare Maps and Visualizations",
+        # fluidRow so the 4 columns stay side by side w bootstrap 5
+        fluidRow(
         column(
           width = 2,
           wellPanel(
@@ -1037,23 +1111,23 @@ load <- function(new_data = FALSE) {
             tags$h4("Variable to Display on Left"),
             navset_bar(
               nav_menu(
-                title = tags$b("Economic Opportunity & Housing Affordability", style = "color: green"),
+                title = tags$b("Economic Opportunity & Housing Affordability", style = "color: #0a3308"),
                 nav_item(radioButtons(label = "", inputId = "var1", choices = c("Poverty Rate (%)", "Median Household Income"), inline = TRUE))
               ),
               nav_menu(
-                title = tags$b("Demographic Diversity", style = "color: orange"),
+                title = tags$b("Demographic Diversity", style = "color: #194d4d"),
                 nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Foreign-Born", "Percent White Only"), inline = TRUE))
               ),
               nav_menu(
-                title = tags$b("Public Safety & Neighborhood Quality", style = "color: red"),
+                title = tags$b("Public Safety & Neighborhood Quality", style = "color: #c0504d"),
                 nav_item(radioButtons(label = "", inputId = "var1", choices = c("Land Use Diversity Score (0-1)", "Percent Positive Land Uses", "Parks Per Capita", "Crimes Per Capita in 2025"), inline = TRUE))
               ),
               nav_menu(
-                title = tags$b("Transportation & Recreational Access", style = "color: blue"),
+                title = tags$b("Transportation & Recreational Access", style = "color: #1d497d"),
                 nav_item(radioButtons(label = "", inputId = "var1", choices = c("Child Development Centers Per Capita", "Transit Stops Per Capita"), inline = TRUE))
               ),
               nav_menu(
-                title = tags$b("Built Environment Indicators", style = "color: gray"),
+                title = tags$b("Built Environment Indicators", style = "color: #401155"),
                 nav_item(radioButtons(label = tags$p("Access to School"), inputId = "var1", choices = c("Percent Tract Within 15-Minute Walk to School", "Percent Tract Within 15-Minute Walk to Modernized School", "Percent Tract Within 2-Minute Walk of School Crossing Guard", "Percent Tract Along Safe Route to School"))),
                 tags$p(""),
                 nav_item(radioButtons(label = tags$p("Parks & Recreation Access"), inputId = "var1", choices = c("Percent Tract Within 15-Minute Walk to Playground", "Percent Tract Within 15-Minute Walk of Recreation Center", "Percent Tract Within 10-Minute Walk of Park", "Percent Tract Within 1/4 Mile of Trail"))),
@@ -1108,23 +1182,23 @@ load <- function(new_data = FALSE) {
             tags$h4("Variable to Display on Right", .noWS = "after"),
             navset_bar(
               nav_menu(
-                title = tags$b("Economic Opportunity & Housing Affordability", style = "color: green"),
+                title = tags$b("Economic Opportunity & Housing Affordability", style = "color: #0a3308"),
                 nav_item(radioButtons(label = "", inputId = "var2", choices = c("Poverty Rate (%)", "Median Household Income"), inline = TRUE))
               ),
               nav_menu(
-                title = tags$b("Demographic Diversity", style = "color: orange"),
+                title = tags$b("Demographic Diversity", style = "color: #194d4d"),
                 nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Foreign-Born", "Percent White Only"), inline = TRUE))
               ),
               nav_menu(
-                title = tags$b("Public Safety & Neighborhood Quality", style = "color: red"),
+                title = tags$b("Public Safety & Neighborhood Quality", style = "color: #c0504d"),
                 nav_item(radioButtons(label = "", inputId = "var2", choices = c("Land Use Diversity Score (0-1)", "Percent Positive Land Uses", "Parks Per Capita", "Crimes Per Capita in 2025"), inline = TRUE))
               ),
               nav_menu(
-                title = tags$b("Transportation & Recreational Access", style = "color: blue"),
+                title = tags$b("Transportation & Recreational Access", style = "color: #1d497d"),
                 nav_item(radioButtons(label = "", inputId = "var2", choices = c("Child Development Centers Per Capita", "Transit Stops Per Capita"), inline = TRUE))
               ),
               nav_menu(
-                title = tags$b("Built Environment Indicators", style = "color: gray"),
+                title = tags$b("Built Environment Indicators", style = "color: #401155"),
                 nav_item(radioButtons(label = tags$p("Access to School"), inputId = "var2", choices = c("Percent Tract Within 15-Minute Walk to School", "Percent Tract Within 15-Minute Walk to Modernized School", "Percent Tract Within 2-Minute Walk of School Crossing Guard", "Percent Tract Along Safe Route to School"))),
                 tags$p(""),
                 nav_item(radioButtons(label = tags$p("Parks & Recreation Access"), inputId = "var2", choices = c("Percent Tract Within 15-Minute Walk to Playground", "Percent Tract Within 15-Minute Walk of Recreation Center", "Percent Tract Within 10-Minute Walk of Park", "Percent Tract Within 1/4 Mile of Trail"))),
@@ -1146,6 +1220,7 @@ load <- function(new_data = FALSE) {
               navbar_options = navbar_options(bg = "white")
             )
           )
+        )
         )
       ),
 
@@ -1697,3 +1772,6 @@ load <- function(new_data = FALSE) {
   # this is what runs shiny app
   shinyApp(ui = ui, server = server)
 }
+
+# una is it cool if we include this? to call load function 
+load(new_data = FALSE)
