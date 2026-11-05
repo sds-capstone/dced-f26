@@ -1043,10 +1043,58 @@ load <- function(new_data = FALSE) {
           column(
             width = 6,
             tags$h3("Indicator Variables"),
-            tags$ul(
-              tags$li("% of Students Chronically Absent by School"),
-              tags$li("PreK Enrollment 2023-24"),
-              tags$li("High School Graduation Rate")
+            wellPanel(
+              style = "border-width: 2px; border-color: black; background-color: white",
+              tags$b("TRACT-LEVEL DATA:"),
+              tags$p(""),
+              wellPanel(
+                style = "border-width: 3px; border-color: #0a3308; background-color: white",
+                tags$b("Enrollment"),
+                tags$ul(
+                  tags$li("Nursery School and Preschool Enrollment"),
+                  tags$li("Kindergarten Enrollment")
+                )
+              ),
+              wellPanel(
+                style = "border-width: 3px; border-color: #194d4d; background-color: white",
+                tags$b("Level of Educational Attainment"),
+                tags$ul(
+                  tags$li("High School Graduation Percentage"),
+                  tags$li("Bachelor's or higher Percentage")
+                )
+              ),
+              wellPanel(
+                style = "border-width: 3px; border-color: #c0504d; background-color: white",
+                tags$b("Employment"),
+                tags$ul(
+                  tags$li("Employment Rate Age 20-24"),
+                  tags$li("Employment Rate Age 25-29")
+                )
+              )
+            ),
+            wellPanel(
+              style = "border-width: 2px; border-color: black; background-color: white",
+              tags$b("POINT DATA (BY DC SCHOOL):"),
+              tags$p(""),
+              wellPanel(
+                style = "border-width: 3px; border-color: #1d497d; background-color: white",
+                tags$b("Attendance"),
+                tags$ul(
+                  tags$li("Chronic Absenteeism Rate"),
+                  tags$li("Pre-K Chronic Absenteeism Rate"),
+                  tags$li("Attendance Growth")
+                )
+              ),
+              wellPanel(
+                style = "border-width: 3px; border-color: #401155; background-color: white",
+                tags$b("Graduation and College Enrollment"),
+                tags$ul(
+                  tags$li("Four-Year Graduation Rate"),
+                  tags$li("Five-Year Graduation Rate"),
+                  tags$li("6-Month Postsecondary Enrollment"),
+                  tags$li("12-Month Postsecondary Enrollment")
+                )
+              )
             )
           )
         )
