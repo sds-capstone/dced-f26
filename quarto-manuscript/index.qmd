@@ -33,6 +33,12 @@ abstract: |
 date: last-modified
 bibliography: references.bib
 number-sections: true
+format:
+  pdf:
+    fig-width: 8
+    fig-height: 5
+    fig-format: pdf
+    out-width: "85%"
 ---
 
 ## Introduction
@@ -198,7 +204,8 @@ ggplot(key_variables_df, aes(factor(ward), estimate)) +
   geom_boxplot(fill = "steelblue", alpha = 0.6, outlier.size = 0.8) +
   facet_wrap(~ variable, scales = "free_y") +
   labs(x = "Ward", y = "Estimate") +
-  theme_minimal() 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 ```
   
   As aforementioned, D.C. is characterized by its variable discrepancies across the city. This is highlighted in @fig-ward where we say great variation in the percent of students chronically absent, percent positive lang uses, poverty rates, and percent foreign born. It is to be noted that Ward 6 is unique in that this is near the capital where few live, so there are more transit stops per capita. 
