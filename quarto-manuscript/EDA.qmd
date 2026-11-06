@@ -86,13 +86,28 @@ tracts_neighborhoods <- data |>
   count(neighborhood, sort = TRUE)
 
 ```
-
+  
+```{r}
+ggplot(tracts_neighborhoods, aes(x = neighborhood, y = n)) +
+  geom_col(fill = "lightblue") +
+   scale_y_continuous(labels = label_comma(),
+                     expand = expansion(mult = c(0, 0.05))) +
+  labs(x = "Neighborhood", y = "Number of Tracts") +
+  theme_minimal(base_size = 9) +
+  theme(
+    axis.text.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank() 
+  )
+```
+  
+  
 ```{r}
 ggplot(key_variables_df, aes(factor(ward), estimate)) +
   geom_boxplot(fill = "steelblue", alpha = 0.6, outlier.size = 0.8) +
   facet_wrap(~ variable, scales = "free_y") +
   labs(x = "Ward", y = "Estimate") +
-  theme_minimal()
+  theme_minimal() 
 ```
 
 
