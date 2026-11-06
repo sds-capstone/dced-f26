@@ -591,9 +591,15 @@ load <- function(new_data = FALSE) {
 
   # 2.2.12 Transit Stops Data ==== 
 
+    # retrieving DC polygon to filter transit_stops by when retrieving so the data retrieval can happen more quickly and reliably
+    dc <- places(state = "DC") |>
+      select(geometry) |>
+      st_as_sfc()
+      
+    
     # loading transit stops data into R
     # it doesn't load in unless I do stop_type_text as a field
-    transit_stops <- arc_select(arc_open("https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/NTAD_National_Transit_Map_Stops/FeatureServer/0"), fields = c("stop_type_text"))
+    transit_stops <- arc_select(arc_open("https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/NTAD_National_Transit_Map_Stops/FeatureServer/0"), fields = c("stop_type_text"), filter_geom = dc)
 
     transit_stops <- st_transform(transit_stops, crs = "WGS84") |>
       mutate(stop_id = row_number())
