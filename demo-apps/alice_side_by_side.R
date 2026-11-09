@@ -689,7 +689,7 @@ load <- function(new_data = FALSE) {
         variable, estimate, short_name, neighborhood, ward, geometry
       ) |>
       st_as_sf()
-
+    
 
   # 2.2.15 Binding and Joining all Data ====
     data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, park_tracts, transit_tracts, preK_enrollment)
