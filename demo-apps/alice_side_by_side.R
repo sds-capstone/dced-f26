@@ -727,6 +727,37 @@ load <- function(new_data = FALSE) {
       ) |>
       st_as_sf()
     
+  # 2.2.14.1 Charter Schools Data ==== 
+    
+    charters <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Education_WebMercator/MapServer/1"), fields = "SCHOOL_ID")
+    
+  # 2.2.14.1 Housing Characteristics Data ==== 
+    
+    housing_char <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Demographic_WebMercator/MapServer/44"),
+                               fields = "DP04_0047E", # Housing Tenture: Renter-occupied
+                                        "DP04_0046E", # Housing Tenture: ownner-occupied
+                                        "DP04_0048E", # Average household size of owner-occupied unit
+                                        "DP04_0049E", # Average household size of renter-occupied unit
+                                        "DP04_0004E", # Homeowner Vacancy Rate
+                                        "DP04_0005E", # Renter vacancy rate
+                                        "DP04_0091E", # Morgage status: Housing units with a mortgage
+                                        "DP04_0092E", # Morgage status: Housing units without a mortgage
+                                        "DP04_0101E", # SELECTED MONTHLY OWNER COSTS (SMOC): Housing units with a mortgage: Median (dollars)
+                                        "DP04_0110E", # SELECTED MONTHLY OWNER COSTS AS A PERCENTAGE OF HOUSEHOLD INCOME 
+                                        "DP04_0134E", # Occupied units paying rent: Median (dollars)
+                                        "DP04_0136E", # GROSS RENT AS A PERCENTAGE OF HOUSEHOLD INCOME (GRAPI)
+                                        "DP04_0089E", # VALUE: Owner-occupied units: Median (dollars)
+                                        "DP04_0050E", # YEAR HOUSEHOLDER MOVED INTO UNIT: Occupied housing units
+
+                                        # years- lots of options but this was the only way could get it sorry. they do counts by years.
+                                       "DP04_0051E", # Moved in 2021 or later
+                                       "DP04_0052E", # Moved in 2018 to 2020
+                                       "DP04_0053E", # Moved in 2010 to 2017
+                                       "DP04_0054E", # Moved in 2000 to 2009
+                                       "DP04_0055E", # Moved in 1990 to 1999
+                                       "DP04_0056E", #  Moved in 1989 and earlier
+                               )
+    
 
   # 2.2.15 Binding and Joining all Data ====
     data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, park_tracts, transit_tracts, preK_enrollment)

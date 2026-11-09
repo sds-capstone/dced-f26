@@ -171,4 +171,7 @@ twelve_month_post <- grad_post_clean |>
       pivot_wider(
         names_from = metric_type,
         values_from = metric_score)
+    
+    
+    # Added CLASS Metrics (indicator variables) for Pre-K Emotional Support, Pre-K Classroom Organization, Pre-K Instructional Support. Divided by Charter and Public.
 ```
