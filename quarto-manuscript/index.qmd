@@ -1,136 +1,262 @@
 ---
-title: La Palma Earthquakes
+title: Visualizing Educational Attainment as a Lever for Upward Mobility in the District of Columbia
 author:
-  - name: Steve Purves
-    orcid: 0000-0002-0760-5497
+  - name: Úna Gogstetter
     corresponding: true
-    email: steve@curvenote.com
-    roles:
-      - Investigation
-      - Project administration
-      - Software
-      - Visualization
     affiliations:
-      - Curvenote
-  - name: Rowan Cockett
-    orcid: 0000-0002-7859-8394
-    corresponding: false
-    roles: []
+      - name: "Department of Statistical & Data Sciences, Smith College"
+  - name: Ayla Hauser
+    corresponding: true
     affiliations:
-      - Curvenote
+      - name: "Department of Statistical & Data Sciences, Smith College"
+  - name: Simran Jayasinghe
+    corresponding: true
+    affiliations:
+      - name: "Department of Statistical & Data Sciences, Smith College"
+  - name: Alice MacGarvie Thompson
+    corresponding: true
+    affiliations:
+      - name: "Department of Statistical & Data Sciences, Smith College"
 keywords:
-  - La Palma
-  - Earthquakes
+  - Washington, D.C
+  - Upward Mobility 
+  - Educational Attainment
+  - Data Dashboard
+  
 abstract: |
-  In September 2021, a significant jump in seismic activity on the island of La Palma (Canary Islands, Spain) signaled the start of a volcanic crisis that still continues at the time of writing. Earthquake data is continually collected and published by the Instituto Geográphico Nacional (IGN). ...
+  The drastic economic disparities in Washington, District of Columbia, often obscure the impacts of poverty and inequity upon residents living in working-class and low-income communities. The immense wealth in parts of the city skews citywide data and masks these impacts. This limits the capability of city officials to use data to inform education policy.
+  
+  Many data-driven projects do not examine data with such granularity as the school, census tract, block, or neighborhood level. Projects such as the Urban Institute’s Upward Mobility Dashboard help policymakers understand conditions affecting upward mobility. However, many of these projects only cover data at the county level, not the census tract level.
+  
+  Our project seeks to visualize and model the impacts of key educational conditions and levers on upward mobility and educational attainment outcomes. We use data pulled from the school, block, tract, neighborhood, and ward levels to model this for the Department of the Deputy Mayor for Education for the District of Columbia.
+
 date: last-modified
 bibliography: references.bib
 number-sections: true
+format:
+  pdf:
+    fig-width: 8
+    fig-height: 5
+    fig-format: pdf
+    out-width: "85%"
 ---
 
 ## Introduction
 
 > Introduction and Motivation: What is the problem you are trying to solve? Why is this problem interesting? What has been tried before? What have been the shortcoming of those approaches that necessitate your efforts? Often, this section will conclude with a subsection (or paragraph) outlining “our contributions.” What is the new knowledge that this paper contributes?
 
-```{r}
-eruptions <- c(1492, 1585, 1646, 1677, 1712, 1949, 1971, 2021)
-n_eruptions <- length(eruptions)
-```
+  In the District of Columbia, significant disparities in resources and economic mobility outcomes create different realities of opportunity for residents across the district. Aggregate citywide statistics often mask contrasts between local metrics, losing track of inequities through broad averages of the data, an oversimplification that can be observed when exploring poverty and income across the district.
 
-```{r}
-#| label: fig-timeline
-#| fig-cap: Timeline of recent earthquakes on La Palma
-#| fig-alt: An event plot of the years of the last 8 eruptions on La Palma.
-#| fig-height: 1.5
-#| fig-width: 6
-par(mar = c(3, 1, 1, 1) + 0.1)
-plot(eruptions, rep(0, n_eruptions), 
-  pch = "|", axes = FALSE)
-axis(1)
-box()
-```
-
-```{r}
-#| output: false
-avg_years_between_eruptions <- mean(diff(eruptions[-n_eruptions]))
-avg_years_between_eruptions
-```
-
-Based on data up to and including 1971, eruptions on La Palma happen every `r round(avg_years_between_eruptions, 1)` years on average.
-
-
-![Map of La Palma](images/la-palma-map.png){#fig-map}
-
-La Palma is one of the west most islands in the Volcanic Archipelago of the Canary Islands (@fig-map). 
+  D.C. exhibits one of the highest levels of income inequality in the United States, where household income in the highest quintile exceeds that of the lowest quintile by nearly 29 times [@santillo2022washingtondc]. D.C.’s Gini coefficient — which is a value between 0 and 1 where 1 signifies the greatest income inequality — is 0.51 [@Census2023ACSDT5Y2023]. The county encompassing the District of Columbia is above the 95th percentile for income inequality (as measured by the Gini coefficient) among all counties in the United States [@Census2023ACSDT5Y2023]. These economic gaps are heavily spatialized across the city's eight wards; for instance, poverty concentrations predominantly cluster east of the Anacostia River in Wards 7 and 8 [@naveed2017income]. Since commonly reported citywide metrics average out these regional divides, effective policy design requires granular spatial analysis to reveal how opportunity drivers and community resources are distributed across specific neighborhoods.
+  
+  Because educational access and environment serve as catalysts for upward economic mobility, these systemic resource disparities directly impact outcomes across D.C.’s public education system. To address these structural inequities, the Office of the District of Columbia Deputy Mayor for Education (DME) works to create conditions that support academic acceleration across the PreK–12 public education system. The Office of the District of Columbia Deputy Mayor for Education (DME) works to create conditions that support educational attainment and academic acceleration at the PreK-12 levels, focusing on schools and their surrounding neighborhoods as sites for social and economic justice. This work relies on granular place-based insights to inform targeted policymaking, funding initiatives, and community programming, and ensure these programs are guided to areas of need.
+  
+  National data visualization platforms such as the Urban Institute’s Upward Mobility Data Dashboard provide helpful insights into key predictors of mobility indicators, but lack the neighborhood resolution required for D.C.’s urban landscape. Without multi-scalar analytical tools that synthesize local education and socio-economic outcomes simultaneously, government agencies face challenges in identifying where and how targeted interventions can close persistent opportunity gaps.
+  
+  To bridge this gap, this capstone project collaborates with the DME to adapt and refine the Urban Institute’s Upward Mobility Dashboard at the local level. This project specifically explores the impact of educational factors on upward mobility across the District of Columbia by aggregating disparate indicators into a unified structure across census tract, neighborhood, ward, and citywide scales. The project aims to create a public-facing web application that illustrates variations in opportunity and offers statistical analysis tools that can be used to evaluate how targeted policy interventions can close gaps in opportunity, providing a localized platform for public reporting, equitable resource allocation, and data-driven decision-making.
 
 
 
 ### Relevant work
 
-Studies of the magma systems feeding the volcano, such as @marrero2019, have proposed that there are two main magma reservoirs feeding the Cumbre Vieja volcano; one in the mantle (30-40km depth) which charges and in turn feeds a shallower crustal reservoir (10-20km depth).
 
-Eight eruptions have been recorded since the late 1400s (@fig-timeline).
 
 ### Our contribution
 
-Data and methods are discussed @sec-data and @sec-methods, respectively.
+
 
 ## Data {#sec-data}
 
 > Data: Where did it come from? What are some basic summary statistics, variable definitions, and/or visualizations that help the reader understand the data you are working with?
 
-Read a clean version of data:
+#### Data Sources 
 
+  As we are working to create a comprehensive list of variables that define educational attainment and upward mobility, we have been pulling data from many different sources. For more generalized data from Washington, D.C., we used the 2020 decennial census data, which holds the most recent census information. We have pulled census data for every defined census tract in Washington, D.C., which is a complete count of every resident. It must be noted that decennial census data has the lowest margin of error, as it is a complete count of the Washington, D.C. population, but it can still have discrepancies in census boundaries between years. For more up-to-date information, we have also been accumulating data from the American Community Survey (ACS) in 2024 to observe more accurate indicators of modern D.C. environments. The ACS allows us to collect more recent information, but it represents only a small subset of the D.C. population, as it is an annual survey that is optionally completed. 
+  
+  Additionally, our sponsors shared data from both EdScape and Open Data DC and identified variables that seemed the most important for the goals of the project. Open Data DC is managed by the Enterprise Data team in the Office of the Chief Technology Officer and uses city government open data [@opendatadc]. ED Scape, created by the Office of the Deputy Mayor of Education (DME), carries downloadable data sets from the DME specific to schools in Washington, DC [@edscape]. Cumulatively, the data is counted by populations, percentages, counts, and estimates in a specific D.C. ward, block, tract, or neighborhood. Most of our data can be pulled remotely; for functionality, we have our data pulled at the user's choice, not constantly. 
+
+#### Data Description
+
+  We have categorized all of the outcome data and their corresponding variables into different categories for upward mobility in @tbl-outcome-categories below. These can be broken down into 5 main categories: economic opportunity & housing affordability, demographic diversity, public safety & neighborhood quality, transportation & recreational access, and built environment indicators. Economic Opportunity & Housing Affordability covers poverty, income, rent, and affordable housing variables. Demographic diversity explores the percent of different ethnicity and nationalities. Public Safety & Neighborhood Quality highlights land use, crime, and parks & recreation. Transit & Recreational Access includes variables such as child development centers and transit stops per capital. The built environment indicators are divided into the subcategories: access to school, parks & recreation access, safety and wellness indicators, access to transit, public safety & tract infrastructure, digital access & educational resources, economic & financial access, food access, and climate resilience. Ultimately, our outcome data compiles into 53 different observable variables and 14,393 observations. Most of our data can be visualized across neighborhood, ward, and census tract. However, total population, percentage race, percentage renter-occupied, and percent owner-occupied data are only available by D.C. block level.
 ```{r}
+#| label: tbl-outcome-categories
+#| tbl-cap: "Categorized Outcome Variables"
+#| echo: false
+
 library(tidyverse)
-la_palma <- read_csv(here::here("data/la-palma.csv"))
+library(knitr)
+categories <- tibble(
+  Category = c("Economic Opportunity & Housing Affordability", "Demographic Diversity", "Public Safety & Neighborhood Quality", "Transportation & Recreational Access", "Built Environment Indicators"),
+  variable1 = c("Poverty Rate", "Percent Foreign-born", "Land Use Diversity Score (0-1)", "Child Development Centers Per Capita", "Access to School"),
+  variable2 = c("Median Household Income", "Percent White Only", "Percent Positive Land Uses", "Transit Stops Per Capita", "Parks + Recreation Access" ),
+  variable3 = c("Median Rent", NA, "Parks Per Capita", NA, "Safety Wellness Indicators"),
+  variable4 = c("Affordable Housing Units Constructed Since 2015 Per Capita", NA, "Crimes Per Capita", NA, "Access to Transit" )
+)
+
+kable(categories, col.names = c("Category", "Variable 1", "Variable 2", "Variable 3", "Variable 4"))
+
 ```
-
-Create spatial plot:
-
+  
+ Our predictor variables have 4 main categories: attendance, graduation & college enrollment, enrollment, level of educational attainment, and employment, with some available by DC school district and others by census tract (@tbl-predictor-categories)
 ```{r}
-#| label: fig-spatial-plot
-#| fig-cap: "Locations of earthquakes on La Palma since 2017"
-#| fig-alt: "A scatterplot of earthquake locations plotting latitude
-#|   against longitude."
-la_palma |> 
-  ggplot(aes(Longitude, Latitude)) +
-  geom_point(aes(color = Magnitude, size = 40-`Depth(km)`)) +
-  scale_color_viridis_c(direction = -1) + 
-  scale_size(range = c(0.5, 2), guide = "none") +
-  theme_bw()
+#| label: tbl-predictor-categories
+#| tbl-cap: "Categorized Predictor Variables"
+#| echo: false
+
+
+categories_predictors <- tibble(
+  Category = c("Attendance (OSSE)", "Graduation and College Enrollment (OSSE)", "Enrollment (ACS)", "Level of Educational Attainment (ACS)", "Employment(ACS)"),
+  variable1 = c("Chronic Absenteeism Rate", 
+                "Four-Year Graduation Rate", 
+                "Nursery school, preschool", 
+                "High School Graduate",
+                "Employment Rate Age 20-24"),
+  variable2 = c("Pre-K Chronic Absenteeism Rate", 
+                "Five-Year Graduation Rate", 
+                "Kindergarten Enrollment",
+                "Bachelor's or higher", 
+                "Employment Rate Age 25-29" ),
+  variable3 = c("Attendance Growth", 
+                "6-Month Postsecondary Enrollment", 
+                NA,
+                NA, 
+                NA),
+  variable4 = c(NA, 
+                "12-Month Postsecondary Enrollment", 
+                NA, 
+                NA, 
+                NA
+                )
+)
+
+kable(categories_predictors, col.names = c("Category", "Variable 1", "Variable 2", "Variable 3", "Variable 4"))
 ```
 
+#### Data Cleaning and Preparation
+  All data sets were imported and cleaned individually to best suit the type of visualizations our sponsor wanted to observe. Each individual data set was eventually comprised of 6 columns: `variable`, `estimate`, `short_name`, `neighborhood`, `ward`, and `geometry`. `Variable` corresponds to the specific variable the data is examining (i.e., “Poverty Rate”, “Median Household Income”). `Estimate` is the given measure of the data and can be represented as a count or a percentage. `short_name` corresponds to the census tract that each estimate is a total for. The last three columns contain the specific neighborhood, ward, and polygon geometry for which each estimate is a count. Each of the 53 variables was weighted across the census, neighborhood, and ward populations. We included NA values, but converted them to a string called “No Data” for better readability in the visualizations. 
 
-@fig-spatial-plot shows the location of recent Earthquakes on La Palma.
+#### Summary Statistics and Exploratory Data Analysis
+  Overall, our combined data contains 14,393 rows (observations), 53 variables, 206 tracts, 107 neighborhoods, and 8 wards. To contextualize the spatial demographics of the number of census tracts to neighborhoods, we have provided @fig-tracts below. 
+  
+```{r}
+#| label: fig-tracts
+#| fig-cap: "Number of Census Tracts per D.C. Neighborhood"
+#| echo: false
+
+library(tidyverse)
+library(scales)
+data <- readRDS("C:/Users/aylah/OneDrive/Documents/Capston/dced-f26/quarto-manuscript/data/data")
+tracts_neighborhoods <- data |>
+  distinct(short_name, neighborhood) |>
+  count(neighborhood, sort = TRUE)
+
+ggplot(tracts_neighborhoods, aes(x = neighborhood, y = n)) +
+  geom_col(fill = "lightblue") +
+   scale_y_continuous(labels = label_comma(),
+                     expand = expansion(mult = c(0, 0.05))) +
+  labs(x = "Neighborhood", y = "Number of Tracts") +
+  theme_minimal(base_size = 9) +
+  theme(
+    axis.text.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank() 
+  ) 
+  
+```
+  
+   Most neighborhoods are made up of 1-2 census tracts, but some has as many as 8-9 census tracts, thus we must weight for population in our analyses. 
+  
+  For simplicity, the rest of this exploratory data analysis will contain 6 key variables that represent each of our outcome categories: poverty, percent foreign-born, parks per capita, child development centers per capita, percent tract within a 15-minute walk of a health care facility, and the predictor variable: chronic absenteeism rate. 
+  
+```{r}
+#| label: tbl-summary-stats
+#| tbl-cap: "Summary Statistics for Key Variables"
+#| echo: false
+
+library(dplyr)
+library(tidyverse)
+library(sf)
+
+  
+key_variables_df <- subset(data, variable %in% c("Poverty Rate (%)", "Percent Foreign-Born", "Percent Positive Land Uses", "Transit Stops Per Capita", "Percent Tract Within 15-Minute Walk of Health Care Facility", "% of Students Chronically Absent, 24-25")) |>
+  st_drop_geometry()
 
 
+summary_stats <- key_variables_df |>
+  group_by(variable) |>
+  summarize(
+    mean = mean(estimate, na.rm = TRUE),
+    median = median(estimate, na.rm = TRUE),
+    sd = sd(estimate, na.rm = TRUE),
+    min = min(estimate, na.rm = TRUE),
+    max = max(estimate, na.rm = TRUE)
+  ) 
+
+kable(summary_stats, col.names = c("Variable", "Mean", "Median", "Standard Deviation", "Minimum", "Maximum"))
+```
+  In @tbl-summary-stats, there is a quick summary of the statistics between our key variables. We can see that there is high variation in most of the data with standard deviations in the 10s and 20s. Additionally, a lot of our percentages have minimums of 0% and maximums of 100%, highlighting the variety within the D.C. tract environments. To better observe data variation across D.C., @fig-ward displays the variation of estimates across the key variables for each ward. 
+  
+```{r}
+#| label: fig-ward
+#| fig-cap: "Key Variables estimates by Ward"
+#| echo: false
+ggplot(key_variables_df, aes(factor(ward), estimate)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.6, outlier.size = 0.8) +
+  facet_wrap(~ variable, scales = "free_y") +
+  labs(x = "Ward", y = "Estimate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+  
+  As aforementioned, D.C. is characterized by its variable discrepancies across the city. This is highlighted in @fig-ward where we say great variation in the percent of students chronically absent, percent positive lang uses, poverty rates, and percent foreign born. It is to be noted that Ward 6 is unique in that this is near the capital where few live, so there are more transit stops per capita. 
+  While exploring variation in the city is beneficial, we are increasingly interested in the relationship between these variables. These relationships are exemplified in @fig-cor. 
+```{r}
+#| include: false
+dupes <- key_variables_df |>
+  st_drop_geometry() |>
+  count(short_name) |>
+  filter(n > 1)
+
+dupes
+
+key_variables_df |>
+  st_drop_geometry() |>
+  semi_join(head(dupes, 3), by = c("short_name")) |>
+  arrange(short_name)
+
+cors <- key_variables_df |>
+  st_drop_geometry() |>
+  select(short_name, variable, estimate) |>
+  distinct() |>
+  pivot_wider(names_from = variable, values_from = estimate) |>
+  select(-short_name) |>
+  cor(use = "pairwise.complete.obs") |>
+  as.data.frame() |>
+  rownames_to_column("v1") |>
+  pivot_longer(-v1, names_to = "v2", values_to = "r")
+```
+  
+```{r}
+#| label: fig-cor
+#| fig-cap: "Heatmap of Correlation Coefficients for each Key Variable"
+#| echo: false
+
+ggplot(cors, aes(v1, v2, fill = r)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(r, 2)), size = 3) +
+  scale_fill_gradient2(low = "firebrick", mid = "white", high = "steelblue",
+                       limits = c(-1, 1)) +
+  labs(x = NULL, y = NULL, fill = "r") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+  It can be observed that there is light, negative correlation between most variables. However, the relationship between poverty rate and percent of students chronically absent (-0.24), highlights the possibility of a stronger correlation. Additionally, we see few positive correlations, with the strongest between percent positive land uses and percent foreign born (0.23).
+  
+  
 ## Methods {#sec-methods}
 
 > Methods: What did you actually do? What techniques or methods did you employ? What were the specifications for any statistical models you used? What software or packages did you use or develop?
 
-Let $x$ denote the number of eruptions in a year. Then, $x$ can be modeled by a Poisson distribution
-
-$$
-p(x) = \frac{e^{-\lambda} \lambda^{x}}{x !}
-$$ {#eq-poisson}
-
-where $\lambda$ is the rate of eruptions per year. Using @eq-poisson, the probability of an eruption in the next $t$ years can be calculated.
-
-| Name                 | Year   |
-| -------------------- | ------ |
-| Current              | 2021   |
-| Teneguía             | 1971   |
-| Nambroque            | 1949   |
-| El Charco            | 1712   |
-| Volcán San Antonio   | 1677   |
-| Volcán San Martin    | 1646   |
-| Tajuya near El Paso  | 1585   |
-| Montaña Quemada      | 1492   |
-
-: Recent historic eruptions on La Palma {#tbl-history}
-
-@tbl-history summarises the eruptions recorded since the colonization of the islands by Europeans in the late 1400s.
 
 ## Results
 
