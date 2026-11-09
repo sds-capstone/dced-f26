@@ -279,6 +279,36 @@ load <- function(new_data = FALSE) {
         values_from = metric_score
       )
 
+    # 2.2.5 Pre-K CLASS Framework Metric Scores Data ====
+    
+    class_scores_original <- read.csv(here::here("data-files", "CLASS_metrics.csv"))
+    
+    class_scores_step1 <- class_scores_original |>
+      # rename cols
+      rename(
+        school_code = School.Code,
+        demographic = Student.Group,
+        metric_type = Metric,
+        metric_score = Metric.Score,
+        metric_n = Metric.N,
+        lea_code = LEA.Code
+      )|>
+      # new col, separating charter school and DCPS
+      # DCPS always has LEA 1, everything else another num
+      mutate(pub_charter = ifelse(lea_code == 1, "DCPS", "Charter"))
+    
+    # pivot wide
+    # so there are 3 metric types in the CLASS score framework. all in one column, need 3
+    # CLASS - Pre-K Emotional Support
+    # CLASS - Pre-K Classroom Organization
+    # CLASS - Pre-K Instructional Support
+    # got rid of other stuff didnt need
+    class_scores_clean <- class_scores_step1 |>
+      select(school_code, pub_charter, metric_type, metric_score)|>
+      pivot_wider(
+        names_from = metric_type,
+        values_from = metric_score)
+    
   # 2.2.6 Employment Data ====
     #
     # j making sure i have the right age groups
