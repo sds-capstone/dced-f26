@@ -9,6 +9,7 @@ library(tigris)
 library(arcgislayers)
 library(readxl)
 library(bslib)
+library(performance)
 
 # 2. Loading Function ----
 load <- function(new_data = FALSE) {
@@ -1345,8 +1346,7 @@ load <- function(new_data = FALSE) {
         plotOutput("reg_scatter", height = "400px"),
         # residual plot
         textOutput("assumptions_text"),
-        plotOutput("reg_resid", height = "300px"),
-        plotOutput("reg_qqplot", height = "300px")
+        plotOutput("reg_assumptions", height = "400px")
       )
     )
   )
@@ -1786,30 +1786,11 @@ load <- function(new_data = FALSE) {
           theme_minimal()
       })
 
-      # residuals vs. fitted: actual minus predicted, against predicted
-      output$reg_resid <- renderPlot({
-        m <- reg_model()
-        ggplot(data.frame(fitted = fitted(m), resid = resid(m)), aes(x = fitted, y = resid)) +
-          geom_hline(yintercept = 0, linetype = "dashed") +
-          geom_point(color = "#8856a7", size = 2.5, alpha = 0.8) +
-          labs(
-            x = "Fitted values (predicted absenteeism rate)",
-            y = "Residual (actual - predicted)"
-          ) +
-          theme_minimal()
-      })
-
       # qq plot - to test for normality
-      output$reg_qqplot <- renderPlot({
+      output$reg_assumptions <- renderPlot({
         m <- reg_model()
-        ggplot(data.frame(resid = resid(m)), mapping = aes(sample = resid)) +
-          geom_qq(color = "#8856a7", size = 2.5) +
-          geom_qq_line(color = "black") +
-          labs(
-            x = "Theoretical",
-            y = "Sample"
-          ) +
-          theme_minimal()
+        check_model(reg_model(), check = c("linearity", "qq"))
+  
       })
       # interpretation of the coefficient table (shown right under the dropdowns in the ui)
       reg_interpretation <- reactive({
