@@ -175,3 +175,9 @@ twelve_month_post <- grad_post_clean |>
     
     # Added CLASS Metrics (indicator variables) for Pre-K Emotional Support, Pre-K Classroom Organization, Pre-K Instructional Support. Divided by Charter and Public.
 ```
+
+```{r}
+
+initial_school_demogs <- read.csv(here::here("data-files", "school_profile.csv"))
+
+```
