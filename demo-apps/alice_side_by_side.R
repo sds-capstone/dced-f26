@@ -176,7 +176,6 @@ load <- function(new_data = FALSE) {
     
     
     
-    
   # 2.2.5 Grad and Commute Data ====
     # Loading in HS grad grads (includes demographic rates too), but doesn't include charter schools
     hs_grad_rates <- read.csv(here::here("data-files", "hs_grad_rates.csv"))
@@ -188,7 +187,6 @@ load <- function(new_data = FALSE) {
     commute_ward <- read.csv(here::here("data-files", "commute_patterns_ward.csv"))
 
     # point data for school absente checkbox
-    
     
     
     # 2.2.8 Absenteeism and Attendance Data
@@ -333,7 +331,13 @@ load <- function(new_data = FALSE) {
       select(c(variable, estimate, moe, short_name, TRACTCE)) |>
       pivot_wider(names_from = variable, values_from = c(estimate, moe))
 
-  # 2.2.7 Enrollment Data ====
+  # School Student Populations ===
+  
+    initial_school_demogs <- read.csv(here::here("data-files", "school_profile.csv"))
+    # this data is way crazier than I thought, gonna work on this tomorrow.
+    
+    
+  # 2.2.7 Census Pre-K Enrollment Data ====
     #
     # vector for race
     # acs language not mine
