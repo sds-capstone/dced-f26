@@ -1,0 +1,303 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  pdftitle={Visualizing Educational Attainment as a Lever for Upward Mobility in the District of Columbia},
+  pdfauthor={Úna Gogstetter; Ayla Hauser; Simran Jayasinghe; Alice MacGarvie Thompson},
+  pdfkeywords={\xmpquote{Washington, D.C}, \xmpquote{Upward
+Mobility}, \xmpquote{Educational Attainment}, \xmpquote{Data
+Dashboard}},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\title{Visualizing Educational Attainment as a Lever for Upward Mobility
+in the District of Columbia}
+\author{Úna Gogstetter \and Ayla Hauser \and Simran
+Jayasinghe \and Alice MacGarvie Thompson}
+\date{2026-11-08}
+\begin{document}
+\maketitle
+\begin{abstract}
+The drastic economic disparities in Washington, District of Columbia,
+often obscure the impacts of poverty and inequity upon residents living
+in working-class and low-income communities. The immense wealth in parts
+of the city skews citywide data and masks these impacts. This limits the
+capability of city officials to use data to inform education policy.
+
+Many data-driven projects do not examine data with such granularity as
+the school, census tract, block, or neighborhood level. Projects such as
+the Urban Institute's Upward Mobility Dashboard help policymakers
+understand conditions affecting upward mobility. However, many of these
+projects only cover data at the county level, not the census tract
+level.
+
+Our project seeks to visualize and model the impacts of key educational
+conditions and levers on upward mobility and educational attainment
+outcomes. We use data pulled from the school, block, tract,
+neighborhood, and ward levels to model this for the Department of the
+Deputy Mayor for Education for the District of Columbia.
+\end{abstract}
+
+
+\section{Introduction}\label{introduction}
+
+\begin{quote}
+Introduction and Motivation: What is the problem you are trying to
+solve? Why is this problem interesting? What has been tried before? What
+have been the shortcoming of those approaches that necessitate your
+efforts? Often, this section will conclude with a subsection (or
+paragraph) outlining ``our contributions.'' What is the new knowledge
+that this paper contributes?
+\end{quote}
+
+In the District of Columbia, significant disparities in resources and
+economic mobility outcomes create different realities of opportunity for
+residents across the district. Aggregate citywide statistics often mask
+contrasts between local metrics, losing track of inequities through
+broad averages of the data, an oversimplification that can be observed
+when exploring poverty and income across the district.
+
+D.C. exhibits one of the highest levels of income inequality in the
+United States, where household income in the highest quintile exceeds
+that of the lowest quintile by nearly 29 times (Santillo et al. 2022).
+D.C.'s Gini coefficient --- which is a value between 0 and 1 where 1
+signifies the greatest income inequality --- is 0.51 (U.S. Census Bureau
+2023). The county encompassing the District of Columbia is above the
+95th percentile for income inequality (as measured by the Gini
+coefficient) among all counties in the United States (U.S. Census Bureau
+2023). These economic gaps are heavily spatialized across the city's
+eight wards; for instance, poverty concentrations predominantly cluster
+east of the Anacostia River in Wards 7 and 8 (Naveed 2017). Since
+commonly reported citywide metrics average out these regional divides,
+effective policy design requires granular spatial analysis to reveal how
+opportunity drivers and community resources are distributed across
+specific neighborhoods.
+
+Because educational access and environment serve as catalysts for upward
+economic mobility, these systemic resource disparities directly impact
+outcomes across D.C.'s public education system. To address these
+structural inequities, the Office of the District of Columbia Deputy
+Mayor for Education (DME) works to create conditions that support
+academic acceleration across the PreK--12 public education system. The
+Office of the District of Columbia Deputy Mayor for Education (DME)
+works to create conditions that support educational attainment and
+academic acceleration at the PreK-12 levels, focusing on schools and
+their surrounding neighborhoods as sites for social and economic
+justice. This work relies on granular place-based insights to inform
+targeted policymaking, funding initiatives, and community programming,
+and ensure these programs are guided to areas of need.
+
+National data visualization platforms such as the Urban Institute's
+Upward Mobility Data Dashboard provide helpful insights into key
+predictors of mobility indicators, but lack the neighborhood resolution
+required for D.C.'s urban landscape. Without multi-scalar analytical
+tools that synthesize local education and socio-economic outcomes
+simultaneously, government agencies face challenges in identifying where
+and how targeted interventions can close persistent opportunity gaps.
+
+To bridge this gap, this capstone project collaborates with the DME to
+adapt and refine the Urban Institute's Upward Mobility Dashboard at the
+local level. This project specifically explores the impact of
+educational factors on upward mobility across the District of Columbia
+by aggregating disparate indicators into a unified structure across
+census tract, neighborhood, ward, and citywide scales. The project aims
+to create a public-facing web application that illustrates variations in
+opportunity and offers statistical analysis tools that can be used to
+evaluate how targeted policy interventions can close gaps in
+opportunity, providing a localized platform for public reporting,
+equitable resource allocation, and data-driven decision-making.
+
+\subsection{Relevant work}\label{relevant-work}
+
+\subsection{Our contribution}\label{our-contribution}
+
+\begin{verbatim}
+[1] "C:/Users/unael/Documents/dced-f26/quarto-manuscript"
+\end{verbatim}
+
+\textsubscript{Source:
+\href{https://sds-capstone.github.io/dced-f26/test.qmd.html}{Article
+Notebook}}
+
+\protect\phantomsection\label{refs}
+\begin{CSLReferences}{1}{1}
+\bibitem[\citeproctext]{ref-naveed2017income}
+Naveed, Minahil. 2017. {``Income Inequality in {DC} Highest in the
+Country.''} DC Fiscal Policy Institute, December 15.
+\url{https://dcfpi.org/all/income-inequality-dc-highest-country-2/}.
+
+\bibitem[\citeproctext]{ref-santillo2022washingtondc}
+Santillo, Miranda, Mingli Zhong, and Oriya Cohen. 2022. {``Washington,
+{DC}, Has Glaring Financial Health Inequities. So Do Most {American}
+Cities. Urban Wire.''} Urban Institute, October 6.
+\url{https://www.urban.org/urban-wire/washington-dc-has-glaring-financial-health-inequities-so-do-most-american-cities}.
+
+\bibitem[\citeproctext]{ref-Census2023ACSDT5Y2023}
+U.S. Census Bureau. 2023. {``Gini Index of Income Inequality.''} U.S.
+Department of Commerce.
+\url{https://data.census.gov/table/ACSDT5Y2023.B19083?q=income+inequality&g=010XX00US\%240500000}.
+
+\end{CSLReferences}
+
+
+
+
+\end{document}

@@ -739,7 +739,7 @@ load <- function(new_data = FALSE) {
   # 2.2.14.1 Housing Characteristics Data ==== 
     
     housing_char <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Demographic_WebMercator/MapServer/44"),
-                               fields = "DP04_0047E", # Housing Tenture: Renter-occupied
+                               fields = c("DP04_0047E", # Housing Tenture: Renter-occupied
                                         "DP04_0046E", # Housing Tenture: ownner-occupied
                                         "DP04_0048E", # Average household size of owner-occupied unit
                                         "DP04_0049E", # Average household size of renter-occupied unit
@@ -760,8 +760,9 @@ load <- function(new_data = FALSE) {
                                        "DP04_0053E", # Moved in 2010 to 2017
                                        "DP04_0054E", # Moved in 2000 to 2009
                                        "DP04_0055E", # Moved in 1990 to 1999
-                                       "DP04_0056E", #  Moved in 1989 and earlier
+                                       "DP04_0056E" #  Moved in 1989 and earlier
                                )
+    )
     
 
   # 2.2.15 Binding and Joining all Data ====
@@ -869,7 +870,7 @@ load <- function(new_data = FALSE) {
       filter(!is.na(tract)) |>
       group_by(tract) |>
       summarize(
-        absentee_rate = mean(estimate, na.rm = TRUE),
+        `Absentee Rate` = mean(estimate, na.rm = TRUE),
         n_schools = n(),
         .groups = "drop"
       )
@@ -904,25 +905,24 @@ load <- function(new_data = FALSE) {
 
   abs_var <- unique(geo_abs_joined$variable)
 
-  # remove absenteeism from b4 dropdown
-  reg_vars <- setdiff(unique(data$variable), abs_var)
+  # filtering variables to exclude indicator variables
+  outcome_vars <- colnames(tract_data)
+  
+  outcome_vars <- outcome_vars[!(outcome_vars %in% c("tract", "n_schools", "Absentee Rate", "PreK Enrollment 2023-24"))]
+  
+  # filtering variables to exclude outcome variables
+  indicator_vars <- colnames(tract_data)
+  
+  indicator_vars <- indicator_vars[indicator_vars %in% c("Absentee Rate", "PreK Enrollment 2023-24")]
 
   ## not relevant to map. renaming variables for the regression tab, do you guys like the 10-point thing?
   reg_steps <- c(
-    "Median Household Income" = 10000,
-    "Median Rent" = 100,
-    "Poverty Rate" = 10,
-    "Percent White Only" = 10,
-    "Percent Foreign-Born" = 10,
-    "Number of Crimes in 2025" = 10
+    "PreK Enrollment 2023-24" = 10,
+    "Absentee Rate" = 10
   )
   reg_step_text <- c(
-    "Median Household Income" = "$10,000 increase",
-    "Median Rent" = "$100 increase",
-    "Poverty Rate" = "10-point increase",
-    "Percent White Only" = "10-point increase",
-    "Percent Foreign-Born" = "10-point increase",
-    "Number of Crimes in 2025" = "10-point increase"
+    "PreK Enrollment 2023-24" = "10-person increase",
+    "Absentee Rate" = "10-point increase"
   )
 
   # this is for fixing the legend so the NA value part goes below the legend
@@ -1317,24 +1317,29 @@ load <- function(new_data = FALSE) {
       # title explanation
       tabPanel(
         "Initial OLS Regression",
-        p("What is the impact of Variable 1 on School Chronic absenteeism rate, while controlling for Variable 2?"),
+        p("What is the impact of Variable 1 on the outcome variable, while controlling for Variable 2?"),
         fluidRow(
           # drop down to select var1
-          # set default to perc white
           column(
             width = 6,
-            selectInput("var_reg1", "Variable 1",
-              choices = reg_vars,
-              selected = "Percent White Only"
+            selectInput("var_reg1", "Indicator Variable 1",
+              choices = indicator_vars,
+              selected = "Absentee Rate"
             )
           ),
           # dropdonw to select var2
-          # se default to income
           column(
             width = 6,
-            selectInput("var_reg2", "Variable 2",
-              choices = reg_vars,
-              selected = "Median Household Income"
+            selectInput("var_reg2", "Indicator Variable 2",
+              choices = indicator_vars,
+              selected = "PreK Enrollment 2023-24"
+            )
+          ),
+          # dropdown to select var3 (outcome var)
+          column(
+            width = 6,
+            selectInput("var_reg3", "Outcome Variable",
+                        choices = outcome_vars
             )
           )
         ),
@@ -1693,7 +1698,7 @@ load <- function(new_data = FALSE) {
       validate(need(input$var_reg1 != input$var_reg2, "Pick different variables."))
       d <- tract_data |>
         transmute(tract,
-          y  = absentee_rate,
+          y  = .data[[input$var_reg3]],
           x1 = .data[[input$var_reg1]],
           x2 = .data[[input$var_reg2]]
         ) |>
@@ -1741,7 +1746,7 @@ load <- function(new_data = FALSE) {
         validate(need(input$var_reg1 != input$var_reg2, "Pick different variables."))
         d <- tract_data |>
           transmute(tract,
-            y  = absentee_rate,
+            y  = .data[[input$var_reg3]],
             x1 = .data[[input$var_reg1]],
             x2 = .data[[input$var_reg2]]
           ) |>
@@ -1786,7 +1791,7 @@ load <- function(new_data = FALSE) {
           geom_point(data = d, aes(x = x1, y = y), color = "#8856a7", size = 2.5, alpha = 0.8) +
           geom_line(data = lines_df, aes(x = x1, y = fit, color = level), linewidth = 1) +
           scale_color_brewer(palette = "Dark2") +
-          labs(x = input$var_reg1, y = abs_var, color = paste0(input$var_reg2, ":")) +
+          labs(x = input$var_reg1, y = input$var_reg3, color = paste0(input$var_reg2, ":")) +
           theme_minimal()
       })
 
@@ -1802,7 +1807,7 @@ load <- function(new_data = FALSE) {
         change <- b * reg_steps[[input$var_reg1]]
         paste0(
           "For every ", reg_step_text[[input$var_reg1]], " in a tract's ",
-          input$var_reg1, ", the absentee rate of schools in that tract is (hypothetically) predicted to ",
+          input$var_reg1, ", the ", input$var_reg3, " is (hypothetically) predicted to ",
           if (change >= 0) "increase" else "decrease", " by ", round(abs(change), 2),
           " percentage points, compared to tracts with the same level of ",
           input$var_reg2, "."
