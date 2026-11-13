@@ -79,7 +79,6 @@ load <- function(new_data = FALSE) {
       mutate(ward = paste("Ward", WARD)) |>
       select(ward)
 
-
     # From Rory: "Weights: 2020 Census blocks with population (POP20)"
     dc_blocks <- blocks(state = "DC", year = 2020) |>
       # except i did st_transform instead of crs bc we alr have that
@@ -125,6 +124,26 @@ load <- function(new_data = FALSE) {
       summarise(.groups = "drop") |>
       st_transform(4326)
     
+  # 2.2.2.1 Point Data for Public and Charter Schools  ==== 
+    
+    charters_point <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Education_WebMercator/MapServer/1"), fields = "SCHOOL_ID")
+    
+    # Loading in the public schools (DCPS) coordinates shapefile
+    schools_shapefile <- st_read(here::here("data-files", "school_geospatial"))
+    
+    # Only coordinates and school ID (cuz this one was shapefile)
+    dcps_point <- dcps_point|>
+      select(SCHOOL_ID, geometry)
+    
+    # Join school and charter point data
+    dcps_charter_points <- rbind(charters_point, dcps_point)
+    
+    # transform shapefile
+    schools_shapefile <- st_transform(
+      schools_shapefile,
+      st_crs(tracts)
+    )
+    
   # 2.2.3 Getting ACS Data ====
     
     # Names of variables that your pulling
@@ -141,15 +160,6 @@ load <- function(new_data = FALSE) {
       left_join(tract_weighted, by = "TRACTCE") |>
       filter(!is.na(neighborhood)) |>
       select(variable, estimate, short_name, neighborhood, ward, geometry)
-
-    # Loading in the public schools absentee and coordinates shapefile
-    schools_shapefile <- st_read(here::here("data-files", "school_geospatial"))
-
-    # transform shapefile
-    schools_shapefile <- st_transform(
-      schools_shapefile,
-      st_crs(tracts)
-    )
 
     # END tract/ward/neighborhood part!
 
