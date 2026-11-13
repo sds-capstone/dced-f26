@@ -314,6 +314,9 @@ load <- function(new_data = FALSE) {
         names_from = metric_type,
         values_from = metric_score)
     
+    # data sets for each type of class scores!
+    qwerty
+    
   # 2.2.6 Employment Data ====
     #
     # j making sure i have the right age groups
@@ -1161,7 +1164,12 @@ load <- function(new_data = FALSE) {
                 tags$ul(
                   tags$li("Chronic Absenteeism Rate"),
                   tags$li("Pre-K Chronic Absenteeism Rate"),
-                  tags$li("Attendance Growth")
+                  tags$li("Attendance Growth"),
+                  tags$li("CLASS Framework - Pre-K Classroom Organization"),
+                  tags$li("CLASS Framework - Pre-K Emotional Support"),
+                  tags$li("CLASS Framework - Pre-K Instructional Support"),
+                  tags$li("3rd Grade ELA Scores"),
+                  tags$li("8th Grade Math Scores")
                 )
               ),
               wellPanel(
