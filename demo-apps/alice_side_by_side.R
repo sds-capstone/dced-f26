@@ -1344,6 +1344,165 @@ load <- function(new_data = FALSE) {
                              )
             )
         ),
+      
+      # 3.2.1 Tab- Indicator and Outcome Comparison- Alternative UI ----
+      tabPanel(
+        "Indicator and Outcome Comparison- Alternative UI",
+        # fluidRow so the 4 columns stay side by side w bootstrap 5
+        fluidRow(
+          column(
+            width = 2,
+            wellPanel(
+              style = "border-width: 3px; border-color: black; background-color: white",
+              tags$h4("Variable to Display on Left"),
+              navset_bar(
+                nav_menu(
+                  title = tags$b("Economic Opportunity & Housing Affordability", style = "color: #0a3308"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Poverty Rate (%)", "Median Household Income"), inline = TRUE))
+                ),
+                nav_menu(
+                  title = tags$b("Demographic Diversity", style = "color: #194d4d"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Foreign-Born", "Percent White Only"), inline = TRUE))
+                ),
+                nav_menu(
+                  title = tags$b("Public Safety & Neighborhood Quality", style = "color: #c0504d"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Land Use Diversity Score (0-1)", "Percent Positive Land Uses", "Parks Per Capita", "Crimes Per Capita in 2025"), inline = TRUE))
+                ),
+                nav_menu(
+                  title = tags$b("Transportation & Recreational Access", style = "color: #1d497d"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Child Development Centers Per Capita", "Transit Stops Per Capita"), inline = TRUE))
+                ),
+                nav_panel(title = tags$b("Built Environment Indicators")),
+                nav_menu(
+                  title = tags$i("Access to School", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Tract Within 15-Minute Walk to School", "Percent Tract Within 15-Minute Walk to Modernized School", "Percent Tract Within 2-Minute Walk of School Crossing Guard", "Percent Tract Along Safe Route to School")))
+                ),
+                nav_menu(
+                  title = tags$i("Parks & Recreation Access", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Tract Within 15-Minute Walk to Playground", "Percent Tract Within 15-Minute Walk of Recreation Center", "Percent Tract Within 10-Minute Walk of Park", "Percent Tract Within 1/4 Mile of Trail")))
+                ),
+                nav_menu(
+                  title = tags$i("Safety & Wellness", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Tract Within 15-Minute Walk of Health Care Facility", "Percent Tract Within 15-Minute Walk of Mental Health Provider", "Percent Tract Within 15-Minute Walk of Police Department", "Percent Tract Within 15-Minute Walk of Fire Station", "Percent Tract Within 250 Feet of High Injury Network Corridor", "Percent Tract Within 15-Minute Walk of Liquor Store")))
+                ),
+                nav_menu(
+                  title = tags$i("Access to Transit", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Tract Within 2-Minute Walk of Bus Stop", "Percent Tract Within 15-Minute Walk of Metro Station", "Percent Tract Within 5-Minute Walk of Capital Bikeshare Location", "Percent Street Area With Bike Lanes", "Percent Households With Work Commute Under 45 Mins")))
+                ),
+                nav_menu(
+                  title = tags$i("Public Safety & Tract Infrastructure", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Buildings of Good Quality", "Percent Homes Built Since 1970", "Percent 311 Calls Made for Sidewalk Repair", "Percent Tract Within 2-Minute Walk of Vacant or Blighted House", "Percent Tract Within 2-Minute Walk of Vacant Lot", "Percent Sidewalks Within 30 Feet of Streetlight", "Percent Tract Alleys and Parking Lots")))
+                ),
+                nav_menu(
+                  title = tags$i("Digital Access & Educational Resources", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Tract Within 15-Minute Walk of Library", "Percent Tract Within 15-Minute Walk of Wireless Hotspot", "Percent Households With Broadband Internet")))
+                ),
+                nav_menu(
+                  title = tags$i("Economic & Financial Access", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Tract Within 15-Minute Walk of Banking Institution", "Percent Tract Within 15-Minute Walk of Cash Checking Institution", "Percent Housing Units Affordable")))
+                ),
+                nav_menu(
+                  title = tags$i("Food Access", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Tract Within 15-Minute Walk of Farmers Market", "Percent Tract Within 5-Minute Walk of Restaurant", "Percent Tract Within 15-Minute Walk of Grocery Store", "Percent Tract in Low Food Access Area", "Percent Tract Within 15-Minute Walk of Healthy Corner Store")))
+                ),
+                nav_menu(
+                  title = tags$i("Climate Resilience", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var1", choices = c("Percent Tract With Tree Canopy", "Percent Tract Within Floodplain")))
+                ),
+                navbar_options = navbar_options(bg = "white")
+              )
+            )
+          ),
+          # i put 6 for width cuz half the page but we could change - alice
+          column(
+            width = 4,
+            selectInput("area1", "Area 1", choices = area_choices),
+            checkboxInput("show_schools1", "% of Students Chronically Absent by School", value = FALSE),
+            checkboxInput("show_air_quality1", "2024 Air Quality Monitoring Sites", value = FALSE),
+            checkboxInput("show_parks1", "Parks and Recreation Locations", value = FALSE),
+            leafletOutput("map1", height = "500px"),
+            # added summary stats and histogram to output
+            textOutput("pct1"),
+            tableOutput("stats1"),
+            plotOutput("hist1", height = "250px")
+          ),
+          column(
+            width = 4,
+            selectInput("area2", "Area 2", choices = area_choices),
+            checkboxInput("show_schools2", "% of Students Chronically Absent by School", value = FALSE),
+            checkboxInput("show_air_quality2", "2024 Air Quality Monitoring Sites", value = FALSE),
+            checkboxInput("show_parks2", "Parks and Recreation Locations", value = FALSE),
+            leafletOutput("map2", height = "500px"),
+            # added summary stats and histogram to output (2nd side)
+            textOutput("pct2"),
+            tableOutput("stats2"),
+            plotOutput("hist2", height = "250px")
+          ),
+          column(
+            width = 2,
+            wellPanel(
+              style = "border-width: 3px; border-color: black; background-color: white",
+              tags$h4("Variable to Display on Right", .noWS = "after"),
+              navset_bar(
+                nav_menu(
+                  title = tags$b("Economic Opportunity & Housing Affordability", style = "color: #0a3308"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Poverty Rate (%)", "Median Household Income"), inline = TRUE))
+                ),
+                nav_menu(
+                  title = tags$b("Demographic Diversity", style = "color: #194d4d"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Foreign-Born", "Percent White Only"), inline = TRUE))
+                ),
+                nav_menu(
+                  title = tags$b("Public Safety & Neighborhood Quality", style = "color: #c0504d"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Land Use Diversity Score (0-1)", "Percent Positive Land Uses", "Parks Per Capita", "Crimes Per Capita in 2025"), inline = TRUE))
+                ),
+                nav_menu(
+                  title = tags$b("Transportation & Recreational Access", style = "color: #1d497d"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Child Development Centers Per Capita", "Transit Stops Per Capita"), inline = TRUE))
+                ),
+                nav_panel(title = tags$b("Built Environment Indicators")),
+                nav_menu(
+                  title = tags$i("Access to School", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Tract Within 15-Minute Walk to School", "Percent Tract Within 15-Minute Walk to Modernized School", "Percent Tract Within 2-Minute Walk of School Crossing Guard", "Percent Tract Along Safe Route to School")))
+                ),
+                nav_menu(
+                  title = tags$i("Parks & Recreation Access", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Tract Within 15-Minute Walk to Playground", "Percent Tract Within 15-Minute Walk of Recreation Center", "Percent Tract Within 10-Minute Walk of Park", "Percent Tract Within 1/4 Mile of Trail")))
+                ),
+                nav_menu(
+                  title = tags$i("Safety & Wellness", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Tract Within 15-Minute Walk of Health Care Facility", "Percent Tract Within 15-Minute Walk of Mental Health Provider", "Percent Tract Within 15-Minute Walk of Police Department", "Percent Tract Within 15-Minute Walk of Fire Station", "Percent Tract Within 250 Feet of High Injury Network Corridor", "Percent Tract Within 15-Minute Walk of Liquor Store")))
+                ),
+                nav_menu(
+                  title = tags$i("Access to Transit", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Tract Within 2-Minute Walk of Bus Stop", "Percent Tract Within 15-Minute Walk of Metro Station", "Percent Tract Within 5-Minute Walk of Capital Bikeshare Location", "Percent Street Area With Bike Lanes", "Percent Households With Work Commute Under 45 Mins")))
+                ),
+                nav_menu(
+                  title = tags$i("Public Safety & Tract Infrastructure", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Buildings of Good Quality", "Percent Homes Built Since 1970", "Percent 311 Calls Made for Sidewalk Repair", "Percent Tract Within 2-Minute Walk of Vacant or Blighted House", "Percent Tract Within 2-Minute Walk of Vacant Lot", "Percent Sidewalks Within 30 Feet of Streetlight", "Percent Tract Alleys and Parking Lots")))
+                ),
+                nav_menu(
+                  title = tags$i("Digital Access & Educational Resources", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Tract Within 15-Minute Walk of Library", "Percent Tract Within 15-Minute Walk of Wireless Hotspot", "Percent Households With Broadband Internet")))
+                ),
+                nav_menu(
+                  title = tags$i("Economic & Financial Access", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Tract Within 15-Minute Walk of Banking Institution", "Percent Tract Within 15-Minute Walk of Cash Checking Institution", "Percent Housing Units Affordable")))
+                ),
+                nav_menu(
+                  title = tags$i("Food Access", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Tract Within 15-Minute Walk of Farmers Market", "Percent Tract Within 5-Minute Walk of Restaurant", "Percent Tract Within 15-Minute Walk of Grocery Store", "Percent Tract in Low Food Access Area", "Percent Tract Within 15-Minute Walk of Healthy Corner Store")))
+                ),
+                nav_menu(
+                  title = tags$i("Climate Resilience", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "var2", choices = c("Percent Tract With Tree Canopy", "Percent Tract Within Floodplain")))
+                ),
+                navbar_options = navbar_options(bg = "white")
+              )
+            )
+          )
+        )
+      ),
 
 
       # 3.1.3 Block DC Tab ----
