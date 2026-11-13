@@ -63,6 +63,9 @@ format:
 
 ### Our contribution
 
+```{r}
+print(getwd())
+```
 
 
 ## Data {#sec-data}
@@ -145,7 +148,7 @@ kable(categories_predictors, col.names = c("Category", "Variable 1", "Variable 2
 
 library(tidyverse)
 library(scales)
-data <- readRDS("C:/Users/aylah/OneDrive/Documents/Capston/dced-f26/quarto-manuscript/data/data")
+data <- readRDS(here::here("quarto-manuscript", "data", "data"))
 tracts_neighborhoods <- data |>
   distinct(short_name, neighborhood) |>
   count(neighborhood, sort = TRUE)
