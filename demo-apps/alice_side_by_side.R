@@ -226,12 +226,6 @@ load <- function(new_data = FALSE) {
     # see data dictionary i sent
     abs_demog <- read.csv(here::here("data-files", "abs_data_demograph.csv"))
 
-    # for me
-    colnames(abs_demog)
-
-    # vectors for race, will use later on...
-    race <- c("Asian", "American Indian/Alaskan Native", "Black/African-American", "White", "Two or more races")
-
     abs_en_clean <- abs_demog |>
       # rename cols
       rename(
