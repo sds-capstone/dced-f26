@@ -903,8 +903,59 @@ load <- function(new_data = FALSE) {
     saveRDS(dc_parks_overlay, file = here::here("data-files", "dc_parks_overlay"))
     saveRDS(air_quality_by_sites_sf, file = here::here("data-files", "air_quality_by_sites_sf"))
   }
-    # 2.3 Compiling Drop down ----
-  # dropdown shows list of area type (but grouped)
+  # 2.2.16 School Indicator Data (attendance + pre-k CLASS scores) ====
+  # this runs for both local and remote data, its built from the OSSE csvs in data-files
+  # all report card students only, by school (dcps and charter)
+
+  # school locations- dcps from the shapefile, charters from dc gis
+  dcps_locations <- st_read(here::here("data-files", "school_geospatial"), quiet = TRUE) |>
+    st_transform(4326) |>
+    mutate(SCHOOL_ID = as.integer(SCHOOL_ID)) |>
+    select(SCHOOL_ID, geometry)
+
+  charter_locations <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Education_WebMercator/MapServer/1"), fields = "SCHOOL_ID") |>
+    st_transform(4326) |>
+    mutate(SCHOOL_ID = as.integer(SCHOOL_ID)) |>
+    select(SCHOOL_ID, geometry)
+
+  school_locations <- rbind(dcps_locations, charter_locations) |>
+    distinct(SCHOOL_ID, .keep_all = TRUE)
+
+  # tract polygons w neighborhood and ward
+  tract_areas <- data |>
+    filter(variable == "Poverty Rate (%)") |>
+    select(neighborhood, ward)
+
+  school_indicators <- bind_rows(
+    # read as character bc some scores have n<10 in them
+    read.csv(here::here("data-files", "abs_data_demograph.csv"), colClasses = "character"),
+    read.csv(here::here("data-files", "CLASS_metrics.csv"), colClasses = "character")
+  ) |>
+    filter(Student.Group == "All Report Card Students") |>
+    mutate(
+      variable = recode(Metric,
+        "Chronic Absenteeism" = "Overall Chronic Absenteeism Rate",
+        "Pre-K Chronic Absenteeism" = "Pre-K Chronic Absenteeism Rate",
+        "Attendance Growth" = "Attendance Growth Rate",
+        "CLASS - Pre-K Classroom Organization" = "CLASS Metric - Pre-K Classroom Organization",
+        "CLASS - Pre-K Emotional Support" = "CLASS Metric - Pre-K Emotional Support",
+        "CLASS - Pre-K Instructional Support" = "CLASS Metric - Pre-K Instructional Support"
+      ),
+      # n<10 making NA
+      estimate = suppressWarnings(as.numeric(Metric.Score)),
+      SCHOOL_ID = as.integer(School.Code),
+      short_name = School.Name
+    ) |>
+    filter(!is.na(estimate)) |>
+    select(variable, estimate, short_name, SCHOOL_ID) |>
+    inner_join(school_locations, by = "SCHOOL_ID") |>
+    st_as_sf() |>
+    st_join(tract_areas, join = st_within) |>
+    mutate(percent = variable %in% c("Overall Chronic Absenteeism Rate", "Pre-K Chronic Absenteeism Rate")) |>
+    select(variable, estimate, short_name, neighborhood, ward, percent, geometry)
+
+    # 2.3 Variables for indicator Drop down ----
+  # dropdown shows list of area type 
   # filters to only that area type
   area_choices <- list(
     "Citywide"      = "Citywide",
