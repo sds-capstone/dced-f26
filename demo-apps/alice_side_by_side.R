@@ -23,6 +23,8 @@ load <- function(new_data = FALSE) {
     geo_abs_joined <- readRDS(here::here("data-files", "geo_abs_joined"))
     dc_parks_overlay <- readRDS(here::here("data-files", "dc_parks_overlay"))
     air_quality_by_sites_sf <- readRDS(here::here("data-files", "air_quality_by_sites_sf"))
+    elascores_geom <- readRDS(here::here("data-files", "elascores_geom"))
+  
   }
   # 2.2 Remote Data ----
     if (new_data == TRUE) {
@@ -132,11 +134,11 @@ load <- function(new_data = FALSE) {
     schools_shapefile <- st_read(here::here("data-files", "school_geospatial"))
     
     # Only coordinates and school ID (cuz this one was shapefile)
-    dcps_point <- dcps_point|>
-      select(SCHOOL_ID, geometry)
+   # dcps_point <- dcps_point|>
+  #    select(SCHOOL_ID, geometry)
     
     # Join school and charter point data
-    dcps_charter_points <- rbind(charters_point, dcps_point)
+   # dcps_charter_points <- rbind(charters_point, dcps_point)
     
     # transform shapefile
     schools_shapefile <- st_transform(
@@ -315,7 +317,7 @@ load <- function(new_data = FALSE) {
         values_from = metric_score)
     
     # data sets for each type of class scores!
-    qwerty
+    # qwerty
     
   # 2.2.6 Employment Data ====
     #
@@ -774,7 +776,34 @@ load <- function(new_data = FALSE) {
     )
     
 
-  # 2.2.15 Binding and Joining all Data ====
+  # 2.2.15 3rd Grade and 8th Grade Metrics Data ----
+    og_3rd_ela <- read_xlsx(here::here("data-files", "2025-26 Public File School Level DCCAPE and MSAA Data.xlsx"), sheet = 3)
+    
+    clean_3rd_ela <- og_3rd_ela |>
+      filter(`Student Group` == "All Students") |>
+      filter(`Enrolled Grade or Course` == "Grade 3-All") |>
+      filter(`Subject` == "ELA") |>
+      select(c("School Code", "Percent")) |>
+      rename("SCHOOL_ID" = "School Code") |>
+      mutate(variable = "Percent 3rd Grade Students Meeting/Exceeding ELA Requirements") 
+    
+    clean_3rd_ela$Percent <- as.integer(gsub("[<>%]", "", clean_3rd_ela$Percent))
+    
+    
+    
+    schools_geom <- schools_shapefile |>
+      select(c("SCHOOL_ID", "geometry")) |>
+      mutate("SCHOOL_ID" = as.character(SCHOOL_ID)
+      )
+    
+    elascores_geom <- schools_geom |>
+      right_join(clean_3rd_ela, by = "SCHOOL_ID") |>
+      rename(estimate = "Percent") |>
+      rename(`School Code` = "SCHOOL_ID")
+      
+    elascores_geom$estimate <- as.integer(elascores_geom$estimate)
+    
+  # 2.2.16 Binding and Joining all Data ====
     data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, park_tracts, transit_tracts, preK_enrollment)
 
 
@@ -903,6 +932,7 @@ load <- function(new_data = FALSE) {
     saveRDS(geo_abs_joined, file = here::here("data-files", "geo_abs_joined"))
     saveRDS(dc_parks_overlay, file = here::here("data-files", "dc_parks_overlay"))
     saveRDS(air_quality_by_sites_sf, file = here::here("data-files", "air_quality_by_sites_sf"))
+    saveRDS(elascores_geom, file = here::here("data-files", "elascores_geom"))
   }
   # 2.2.16 School Indicator Data (attendance + pre-k CLASS scores) ====
 
@@ -1313,6 +1343,7 @@ load <- function(new_data = FALSE) {
           checkboxInput("show_schools1", "% of Students Chronically Absent by School", value = FALSE),
           checkboxInput("show_air_quality1", "2024 Air Quality Monitoring Sites", value = FALSE),
           checkboxInput("show_parks1", "Parks and Recreation Locations", value = FALSE),
+          checkboxInput("show_elascores1", "3rd Grade ELA Scores", value = FALSE),
           leafletOutput("map1", height = "500px"),
           # added summary stats and histogram to output
           textOutput("pct1"),
@@ -1325,6 +1356,7 @@ load <- function(new_data = FALSE) {
           checkboxInput("show_schools2", "% of Students Chronically Absent by School", value = FALSE),
           checkboxInput("show_air_quality2", "2024 Air Quality Monitoring Sites", value = FALSE),
           checkboxInput("show_parks2", "Parks and Recreation Locations", value = FALSE),
+          checkboxInput("show_elascores2", "3rd Grade ELA Scores", value = FALSE),
           leafletOutput("map2", height = "500px"),
           # added summary stats and histogram to output (2nd side)
           textOutput("pct2"),
@@ -1510,6 +1542,7 @@ load <- function(new_data = FALSE) {
             checkboxInput("show_schools_out", "% of Students Chronically Absent by School", value = FALSE),
             checkboxInput("show_air_quality_out", "2024 Air Quality Monitoring Sites", value = FALSE),
             checkboxInput("show_parks_out", "Parks and Recreation Locations", value = FALSE),
+            checkboxInput("show_elascores_out", "3rd Grade ELA Scores", value = FALSE),
             leafletOutput("map_out", height = "500px"),
             textOutput("pct_out"),
             tableOutput("stats_out"),
@@ -1655,7 +1688,7 @@ load <- function(new_data = FALSE) {
     })
   
     # 4.1.2 Make Map Function for each Dataset ====
-    make_map <- function(map_data, show_schools = FALSE, show_air_quality = FALSE, show_parks = FALSE) {
+    make_map <- function(map_data, show_schools = FALSE, show_air_quality = FALSE, show_parks = FALSE, show_elascores = FALSE) {
       pal <- colorNumeric(colorRamp(c("#F7FBFC", "#8B95C5", "#4D004A", "#140013"), interpolate = "spline"), domain = data[data$variable == unique(map_data$variable), ]$estimate)
 
 
@@ -1743,8 +1776,23 @@ load <- function(new_data = FALSE) {
         m <- m |>
           addPolygons(
             data = dc_parks_overlay, group = "parks", fillColor = "forestgreen", fillOpacity = 0.6, color = "darkgreen", weight = 1,
-            label = ~ paste0(NAME)
+            label = ~ paste0(NAME) 
           )
+      }
+      if(show_elascores) {
+        ela_pal <- colorNumeric(palette = "YlGn", domain = elascores_geom$estimate)
+        
+        m <- m |>
+          addCircleMarkers(
+            data = elascores_geom, radius = 6, color = "red", weight = 1,
+            fillColor = ~ela_pal(estimate), fillOpacity = 0.9,
+            label = ~paste0(`School Code`)
+          ) |>
+          addLegend(
+            data = elascores_geom, pal = ela_pal, values = ~estimate,
+            title = "Percent 3rd Graders Meeting/Exceeding ELA Requirements", position = "bottomright"
+          )
+          
       }
       if (show_air_quality) {
         air_quality_pal <- colorNumeric(
@@ -1825,10 +1873,10 @@ load <- function(new_data = FALSE) {
     # 4.1.4 All Outputs - Maps, Stats, Histogram, Percent ----
     # two maps output
     output$map1 <- renderLeaflet({
-      make_map(filtered1(), show_air_quality = input$show_air_quality1, show_schools = input$show_schools1, show_parks = input$show_parks1)
+      make_map(filtered1(), show_air_quality = input$show_air_quality1, show_schools = input$show_schools1, show_parks = input$show_parks1, show_elascores = input$show_elascores1)
     })
     output$map2 <- renderLeaflet({
-      make_map(filtered2(), show_air_quality = input$show_air_quality2, show_schools = input$show_schools2, show_parks = input$show_parks2)
+      make_map(filtered2(), show_air_quality = input$show_air_quality2, show_schools = input$show_schools2, show_parks = input$show_parks2, show_elascores = input$show_elascores1)
     })
 
     # two summary stats output
