@@ -1,0 +1,46 @@
+---
+title: "school point data"
+author: "alice"
+format: html
+editor: visual
+---
+
+```{r}
+library(shiny)
+library(tidyverse)
+library(tidycensus)
+library(leaflet)
+library(sf)
+library(tigris)
+library(arcgislayers)
+library(readxl)
+
+# 2.2.2.1 Point Data for Public and Charter Schools  ==== 
+    
+    charters_point <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Education_WebMercator/MapServer/1"), fields = "SCHOOL_ID")
+    
+    # Loading in the public schools (DCPS) coordinates shapefile
+    schools_shapefile <- st_read(here::here("data-files", "school_geospatial"))
+    
+    # Only coordinates and school ID (cuz this one was shapefile)
+    dcps_point <- dcps_point|>
+      select(SCHOOL_ID, geometry)
+    
+    # Join school and charter point data
+    dcps_charter_points <- rbind(charters_point, dcps_point)
+    
+    # transform shapefile
+    schools_shapefile <- st_transform(
+      schools_shapefile,
+      st_crs(tracts)
+    )
+```
+
+```{r}
+    
+    # transform shapefile
+    schools_shapefile <- st_transform(
+      schools_shapefile,
+      st_crs(tracts)
+    )
+```

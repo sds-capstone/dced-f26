@@ -1,3 +1,5 @@
+# I use this to load. shiny::runApp("demo-apps/alice_side_by_side.R")
+
 # 1. Packages ----
 
 library(shiny)
@@ -77,7 +79,6 @@ load <- function(new_data = FALSE) {
       mutate(ward = paste("Ward", WARD)) |>
       select(ward)
 
-
     # From Rory: "Weights: 2020 Census blocks with population (POP20)"
     dc_blocks <- blocks(state = "DC", year = 2020) |>
       # except i did st_transform instead of crs bc we alr have that
@@ -123,6 +124,26 @@ load <- function(new_data = FALSE) {
       summarise(.groups = "drop") |>
       st_transform(4326)
     
+  # 2.2.2.1 Point Data for Public and Charter Schools  ==== 
+    
+    charters_point <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Education_WebMercator/MapServer/1"), fields = "SCHOOL_ID")
+    
+    # Loading in the public schools (DCPS) coordinates shapefile
+    schools_shapefile <- st_read(here::here("data-files", "school_geospatial"))
+    
+    # Only coordinates and school ID (cuz this one was shapefile)
+    dcps_point <- dcps_point|>
+      select(SCHOOL_ID, geometry)
+    
+    # Join school and charter point data
+    dcps_charter_points <- rbind(charters_point, dcps_point)
+    
+    # transform shapefile
+    schools_shapefile <- st_transform(
+      schools_shapefile,
+      st_crs(tracts)
+    )
+    
   # 2.2.3 Getting ACS Data ====
     
     # Names of variables that your pulling
@@ -139,15 +160,6 @@ load <- function(new_data = FALSE) {
       left_join(tract_weighted, by = "TRACTCE") |>
       filter(!is.na(neighborhood)) |>
       select(variable, estimate, short_name, neighborhood, ward, geometry)
-
-    # Loading in the public schools absentee and coordinates shapefile
-    schools_shapefile <- st_read(here::here("data-files", "school_geospatial"))
-
-    # transform shapefile
-    schools_shapefile <- st_transform(
-      schools_shapefile,
-      st_crs(tracts)
-    )
 
     # END tract/ward/neighborhood part!
 
@@ -301,6 +313,9 @@ load <- function(new_data = FALSE) {
       pivot_wider(
         names_from = metric_type,
         values_from = metric_score)
+    
+    # data sets for each type of class scores!
+    qwerty
     
   # 2.2.6 Employment Data ====
     #
@@ -880,7 +895,8 @@ load <- function(new_data = FALSE) {
     # theres only one row for tract- join by tract
     tract_data <- left_join(tract_abs, tract_vars, by = "tract")
 
-    # saving datasets to data-files for use when new datasets don't need to be retrieved
+    # una is this what you wanted! to make it run faster????
+    # i tried to save everything to data files so make sure it works when u run
     saveRDS(data, file = here::here("data-files", "data"))
     saveRDS(block_long, file = here::here("data-files", "block_long"))
     saveRDS(tract_data, file = here::here("data-files", "tract_data"))
@@ -888,8 +904,59 @@ load <- function(new_data = FALSE) {
     saveRDS(dc_parks_overlay, file = here::here("data-files", "dc_parks_overlay"))
     saveRDS(air_quality_by_sites_sf, file = here::here("data-files", "air_quality_by_sites_sf"))
   }
-    # 2.3 Compiling Drop down ----
-  # dropdown shows list of area type (but grouped)
+  # 2.2.16 School Indicator Data (attendance + pre-k CLASS scores) ====
+
+  # all report card students only, by school (dcps and charter)
+
+  # school locations- dcps from the shapefile, charters from dc gis
+  dcps_locations <- st_read(here::here("data-files", "school_geospatial"), quiet = TRUE) |>
+    st_transform(4326) |>
+    mutate(SCHOOL_ID = as.integer(SCHOOL_ID)) |>
+    select(SCHOOL_ID, geometry)
+
+  charter_locations <- arc_select(arc_open("https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Education_WebMercator/MapServer/1"), fields = "SCHOOL_ID") |>
+    st_transform(4326) |>
+    mutate(SCHOOL_ID = as.integer(SCHOOL_ID)) |>
+    select(SCHOOL_ID, geometry)
+
+  school_locations <- rbind(dcps_locations, charter_locations) |>
+    distinct(SCHOOL_ID, .keep_all = TRUE)
+
+  # tract polygons w neighborhood and ward
+  tract_areas <- data |>
+    filter(variable == "Poverty Rate (%)") |>
+    select(neighborhood, ward)
+
+  school_indicators <- bind_rows(
+    # read as character bc some scores have n<10 in them
+    read.csv(here::here("data-files", "abs_data_demograph.csv"), colClasses = "character"),
+    read.csv(here::here("data-files", "CLASS_metrics.csv"), colClasses = "character")
+  ) |>
+    filter(Student.Group == "All Report Card Students") |>
+    mutate(
+      variable = recode(Metric,
+        "Chronic Absenteeism" = "Overall Chronic Absenteeism Rate",
+        "Pre-K Chronic Absenteeism" = "Pre-K Chronic Absenteeism Rate",
+        "Attendance Growth" = "Attendance Growth Rate",
+        "CLASS - Pre-K Classroom Organization" = "CLASS Metric - Pre-K Classroom Organization",
+        "CLASS - Pre-K Emotional Support" = "CLASS Metric - Pre-K Emotional Support",
+        "CLASS - Pre-K Instructional Support" = "CLASS Metric - Pre-K Instructional Support"
+      ),
+      # n<10 making NA
+      estimate = suppressWarnings(as.numeric(Metric.Score)),
+      SCHOOL_ID = as.integer(School.Code),
+      short_name = School.Name
+    ) |>
+    filter(!is.na(estimate)) |>
+    select(variable, estimate, short_name, SCHOOL_ID) |>
+    inner_join(school_locations, by = "SCHOOL_ID") |>
+    st_as_sf() |>
+    st_join(tract_areas, join = st_within) |>
+    mutate(percent = variable %in% c("Overall Chronic Absenteeism Rate", "Pre-K Chronic Absenteeism Rate")) |>
+    select(variable, estimate, short_name, neighborhood, ward, percent, geometry)
+
+    # 2.3 Variables for indicator Drop down ----
+  # dropdown shows list of area type 
   # filters to only that area type
   area_choices <- list(
     "Citywide"      = "Citywide",
@@ -1149,7 +1216,12 @@ load <- function(new_data = FALSE) {
                 tags$ul(
                   tags$li("Chronic Absenteeism Rate"),
                   tags$li("Pre-K Chronic Absenteeism Rate"),
-                  tags$li("Attendance Growth")
+                  tags$li("Attendance Growth"),
+                  tags$li("CLASS Framework - Pre-K Classroom Organization"),
+                  tags$li("CLASS Framework - Pre-K Emotional Support"),
+                  tags$li("CLASS Framework - Pre-K Instructional Support"),
+                  tags$li("3rd Grade ELA Scores"),
+                  tags$li("8th Grade Math Scores")
                 )
               ),
               wellPanel(
@@ -1324,6 +1396,127 @@ load <- function(new_data = FALSE) {
                              )
             )
         ),
+      
+      # 3.2.1 Tab- Indicator and Outcome Comparison- Alternative UI ----
+      tabPanel(
+        "Indicator and Outcome Comparison- Alternative UI",
+        # variable choices go across the top so the page isnt as cramped
+        fluidRow(
+          column(
+            width = 6,
+            wellPanel(
+              style = "border-width: 3px; border-color: black; background-color: white",
+              tags$h4("Indicator Variables"),
+              navset_bar(
+                nav_menu(
+                  title = tags$b("Select an Indicator Variable"),
+                  # colored by type- attendance in blue, CLASS scores in red
+                  nav_item(radioButtons(
+                    label = "", inputId = "ind_var",
+                    choiceNames = list(
+                      tags$span("Overall Chronic Absenteeism Rate", style = "color: #1d497d"),
+                      tags$span("Pre-K Chronic Absenteeism Rate", style = "color: #1d497d"),
+                      tags$span("Attendance Growth Rate", style = "color: #1d497d"),
+                      tags$span("CLASS Metric - Pre-K Classroom Organization", style = "color: #c0504d"),
+                      tags$span("CLASS Metric - Pre-K Emotional Support", style = "color: #c0504d"),
+                      tags$span("CLASS Metric - Pre-K Instructional Support", style = "color: #c0504d")
+                    ),
+                    choiceValues = c(
+                      "Overall Chronic Absenteeism Rate", "Pre-K Chronic Absenteeism Rate", "Attendance Growth Rate",
+                      "CLASS Metric - Pre-K Classroom Organization", "CLASS Metric - Pre-K Emotional Support", "CLASS Metric - Pre-K Instructional Support"
+                    )
+                  ))
+                ),
+                navbar_options = navbar_options(bg = "white")
+              )
+            )
+          ),
+          column(
+            width = 6,
+            wellPanel(
+              style = "border-width: 3px; border-color: black; background-color: white",
+              tags$h4("Outcome Variables"),
+              navset_bar(
+                nav_menu(
+                  title = tags$b("Economic Opportunity & Housing Affordability", style = "color: #0a3308"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", choices = c("Poverty Rate (%)", "Median Household Income"), inline = TRUE))
+                ),
+                nav_menu(
+                  title = tags$b("Demographic Diversity", style = "color: #194d4d"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Percent Foreign-Born", "Percent White Only"), inline = TRUE))
+                ),
+                nav_menu(
+                  title = tags$b("Public Safety & Neighborhood Quality", style = "color: #c0504d"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Land Use Diversity Score (0-1)", "Percent Positive Land Uses", "Parks Per Capita", "Crimes Per Capita in 2025"), inline = TRUE))
+                ),
+                nav_menu(
+                  title = tags$b("Transportation & Recreational Access", style = "color: #1d497d"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Child Development Centers Per Capita", "Transit Stops Per Capita"), inline = TRUE))
+                ),
+                nav_panel(title = tags$b("Built Environment Indicators")),
+                nav_menu(
+                  title = tags$i("Access to School", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Percent Tract Within 15-Minute Walk to School", "Percent Tract Within 15-Minute Walk to Modernized School", "Percent Tract Within 2-Minute Walk of School Crossing Guard", "Percent Tract Along Safe Route to School")))
+                ),
+                nav_menu(
+                  title = tags$i("Parks & Recreation Access", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Percent Tract Within 15-Minute Walk to Playground", "Percent Tract Within 15-Minute Walk of Recreation Center", "Percent Tract Within 10-Minute Walk of Park", "Percent Tract Within 1/4 Mile of Trail")))
+                ),
+                nav_menu(
+                  title = tags$i("Safety & Wellness", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Percent Tract Within 15-Minute Walk of Health Care Facility", "Percent Tract Within 15-Minute Walk of Mental Health Provider", "Percent Tract Within 15-Minute Walk of Police Department", "Percent Tract Within 15-Minute Walk of Fire Station", "Percent Tract Within 250 Feet of High Injury Network Corridor", "Percent Tract Within 15-Minute Walk of Liquor Store")))
+                ),
+                nav_menu(
+                  title = tags$i("Access to Transit", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Percent Tract Within 2-Minute Walk of Bus Stop", "Percent Tract Within 15-Minute Walk of Metro Station", "Percent Tract Within 5-Minute Walk of Capital Bikeshare Location", "Percent Street Area With Bike Lanes", "Percent Households With Work Commute Under 45 Mins")))
+                ),
+                nav_menu(
+                  title = tags$i("Public Safety & Tract Infrastructure", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Percent Buildings of Good Quality", "Percent Homes Built Since 1970", "Percent 311 Calls Made for Sidewalk Repair", "Percent Tract Within 2-Minute Walk of Vacant or Blighted House", "Percent Tract Within 2-Minute Walk of Vacant Lot", "Percent Sidewalks Within 30 Feet of Streetlight", "Percent Tract Alleys and Parking Lots")))
+                ),
+                nav_menu(
+                  title = tags$i("Digital Access & Educational Resources", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Percent Tract Within 15-Minute Walk of Library", "Percent Tract Within 15-Minute Walk of Wireless Hotspot", "Percent Households With Broadband Internet")))
+                ),
+                nav_menu(
+                  title = tags$i("Economic & Financial Access", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Percent Tract Within 15-Minute Walk of Banking Institution", "Percent Tract Within 15-Minute Walk of Cash Checking Institution", "Percent Housing Units Affordable")))
+                ),
+                nav_menu(
+                  title = tags$i("Food Access", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Percent Tract Within 15-Minute Walk of Farmers Market", "Percent Tract Within 5-Minute Walk of Restaurant", "Percent Tract Within 15-Minute Walk of Grocery Store", "Percent Tract in Low Food Access Area", "Percent Tract Within 15-Minute Walk of Healthy Corner Store")))
+                ),
+                nav_menu(
+                  title = tags$i("Climate Resilience", style = "color: #401155"),
+                  nav_item(radioButtons(label = "", inputId = "out_var", selected = character(0), choices = c("Percent Tract With Tree Canopy", "Percent Tract Within Floodplain")))
+                ),
+                navbar_options = navbar_options(bg = "white")
+              )
+            )
+          )
+        ),
+        # indicator map on the left, outcome map on the right
+        fluidRow(
+          column(
+            width = 6,
+            selectInput("area_ind", "Area", choices = area_choices),
+            leafletOutput("map_ind", height = "500px"),
+            tableOutput("stats_ind"),
+            plotOutput("hist_ind", height = "250px")
+          ),
+          column(
+            width = 6,
+            selectInput("area_out", "Area", choices = area_choices),
+            checkboxInput("show_schools_out", "% of Students Chronically Absent by School", value = FALSE),
+            checkboxInput("show_air_quality_out", "2024 Air Quality Monitoring Sites", value = FALSE),
+            checkboxInput("show_parks_out", "Parks and Recreation Locations", value = FALSE),
+            leafletOutput("map_out", height = "500px"),
+            textOutput("pct_out"),
+            tableOutput("stats_out"),
+            plotOutput("hist_out", height = "250px")
+          )
+        )
+      ),
 
 
       # 3.1.3 Block DC Tab ----
@@ -1678,6 +1871,98 @@ load <- function(new_data = FALSE) {
       }
     })
     
+    # 4.1.4.1 Indicator and Outcome Comparison Tab ====
+    # indicator side- school points for the attendance and CLASS scores
+    filtered_ind <- reactive({
+      d <- school_indicators |> filter(variable == input$ind_var)
+      if (input$area_ind != "Citywide") {
+        d <- d |> filter(neighborhood == input$area_ind | ward == input$area_ind)
+      }
+      validate(need(nrow(d) > 0, "No schools with data for this variable in this area."))
+      d
+    })
+
+    # outcome side- same as filtered1 but w the outcome inputs
+    filtered_out <- reactive({
+      d <- data |> filter(variable == input$out_var)
+      if (input$area_out != "Citywide") {
+        d <- d |> filter(neighborhood == input$area_out | ward == input$area_out)
+      }
+      if (unique(d$variable) %in% c("Poverty Rate (%)", "Percent Foreign-Born", "Percent White Only")) {
+        d <- d |>
+          mutate(
+            var_count = case_when(!is.na(estimate) & !is.na(pop) ~ (estimate / 100) * pop,
+              .default = NA
+            ),
+            summary_type = "percent pop"
+          )
+      } else if (substr(unique(d$variable), 1, 20) == "Percent Tract Within") {
+        d <- d |>
+          mutate(
+            var_count = case_when(!is.na(estimate) & !is.na(land_area) ~ (estimate / 100) * land_area,
+              .default = NA
+            ),
+            summary_type = "percent land"
+          )
+      } else if (unique(d$variable) %in% c("Crimes Per Capita in 2025", "Child Development Centers Per Capita", "Affordable Housing Units Constructed Since 2015 Per Capita", "Transit Stops Per Capita", "Parks Per Capita")) {
+        d <- d |>
+          mutate(var_count = estimate * pop, summary_type = "per capita")
+      } else {
+        d <- d |>
+          mutate(var_count = NA, summary_type = "none")
+      }
+      d
+    })
+
+    # map for the school points, make_map uses data for the colors so needed a separate one
+    make_school_map <- function(map_data) {
+      # colors use all schools for that variable so they stay the same when you change area
+      all_vals <- school_indicators$estimate[school_indicators$variable == unique(map_data$variable)]
+      pal <- colorNumeric(colorRamp(c("#F7FBFC", "#8B95C5", "#4D004A", "#140013"), interpolate = "spline"), domain = all_vals)
+      suffix <- ifelse(any(map_data$percent), "%", "")
+      leaflet(map_data) |>
+        leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
+        addCircleMarkers(
+          radius = 6, color = "black", weight = 1,
+          fillColor = ~ pal(estimate), fillOpacity = 0.9,
+          label = ~ paste0(short_name, " | ", estimate, suffix)
+        ) |>
+        addLegend(pal = pal, values = all_vals, title = unique(map_data$variable), labFormat = labelFormat(suffix = suffix))
+    }
+
+    # indicator outputs
+    output$map_ind <- renderLeaflet({
+      make_school_map(filtered_ind())
+    })
+    output$stats_ind <- renderTable({
+      make_stats(filtered_ind())
+    })
+    output$hist_ind <- renderPlot({
+      make_hist(filtered_ind())
+    })
+
+    # outcome outputs
+    output$map_out <- renderLeaflet({
+      make_map(filtered_out(), show_air_quality = input$show_air_quality_out, show_schools = input$show_schools_out, show_parks = input$show_parks_out)
+    })
+    output$stats_out <- renderTable({
+      make_stats(filtered_out())
+    })
+    output$hist_out <- renderPlot({
+      make_hist(filtered_out())
+    })
+    output$pct_out <- renderText({
+      if (unique(filtered_out()$summary_type == "per capita")) {
+        paste("Per capita statistic for overall area:", round((sum(filtered_out()$var_count, na.rm = TRUE) / sum(filtered_out()$pop, na.rm = TRUE)), 2))
+      } else if (unique(filtered_out()$summary_type == "percent land")) {
+        paste0("Overall percentage for land area: ", round((sum(filtered_out()$var_count, na.rm = TRUE) / sum(filtered_out()$land_area, na.rm = TRUE)) * 100, 2), "%")
+      } else if (unique(filtered_out()$summary_type == "percent pop")) {
+        paste0("Overall percentage for area population: ", round((sum(filtered_out()$var_count, na.rm = TRUE) / sum(filtered_out()$pop, na.rm = TRUE)) * 100, 2), "%")
+      } else {
+        ""
+      }
+    })
+
     # 4.1.5 Function for Block DC Tab ====
     # function block by block for tab 2
     filtered3 <- reactive({
