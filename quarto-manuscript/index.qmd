@@ -23,7 +23,7 @@ keywords:
   - Educational Attainment
   - Data Dashboard
   
-abstract: |
+abstract: >
   The drastic economic disparities in Washington, District of Columbia, often obscure the impacts of poverty and inequity upon residents living in working-class and low-income communities. The immense wealth in parts of the city skews citywide data and masks these impacts. This limits the capability of city officials to use data to inform education policy.
   
   Many data-driven projects do not examine data with such granularity as the school, census tract, block, or neighborhood level. Projects such as the Urban Institute’s Upward Mobility Dashboard help policymakers understand conditions affecting upward mobility. However, many of these projects only cover data at the county level, not the census tract level.
@@ -43,34 +43,23 @@ format:
 
 ## Introduction
 
-> Introduction and Motivation: What is the problem you are trying to solve? Why is this problem interesting? What has been tried before? What have been the shortcoming of those approaches that necessitate your efforts? Often, this section will conclude with a subsection (or paragraph) outlining “our contributions.” What is the new knowledge that this paper contributes?
+In the District of Columbia, significant disparities in resources and economic mobility outcomes create different realities of opportunity for residents across the district. Aggregate citywide statistics often mask contrasts between local metrics, losing track of inequities through broad averages of the data, an oversimplification that can be observed when exploring poverty and income across the district.
 
-  In the District of Columbia, significant disparities in resources and economic mobility outcomes create different realities of opportunity for residents across the district. Aggregate citywide statistics often mask contrasts between local metrics, losing track of inequities through broad averages of the data, an oversimplification that can be observed when exploring poverty and income across the district.
-
-  D.C. exhibits one of the highest levels of income inequality in the United States, where household income in the highest quintile exceeds that of the lowest quintile by nearly 29 times [@santillo2022washingtondc]. D.C.’s Gini coefficient — which is a value between 0 and 1 where 1 signifies the greatest income inequality — is 0.51 [@Census2023ACSDT5Y2023]. The county encompassing the District of Columbia is above the 95th percentile for income inequality (as measured by the Gini coefficient) among all counties in the United States [@Census2023ACSDT5Y2023]. These economic gaps are heavily spatialized across the city's eight wards; for instance, poverty concentrations predominantly cluster east of the Anacostia River in Wards 7 and 8 [@naveed2017income]. Since commonly reported citywide metrics average out these regional divides, effective policy design requires granular spatial analysis to reveal how opportunity drivers and community resources are distributed across specific neighborhoods.
+D.C. exhibits one of the highest levels of income inequality in the United States, where household income in the highest quintile exceeds that of the lowest quintile by nearly 29 times [@santillo2022washingtondc]. D.C.’s Gini coefficient — which is a value between 0 and 1 where 1 signifies the greatest income inequality — is 0.51 [@Census2023ACSDT5Y2023]. The county encompassing the District of Columbia is above the 95th percentile for income inequality (as measured by the Gini coefficient) among all counties in the United States [@Census2023ACSDT5Y2023]. These economic gaps are heavily spatialized across the city's eight wards; for instance, poverty concentrations predominantly cluster east of the Anacostia River in Wards 7 and 8 [@naveed2017income]. Since commonly reported citywide metrics average out these regional divides, effective policy design requires granular spatial analysis to reveal how opportunity drivers and community resources are distributed across specific neighborhoods.
   
-  Because educational access and environment serve as catalysts for upward economic mobility, these systemic resource disparities directly impact outcomes across D.C.’s public education system. To address these structural inequities, the Office of the District of Columbia Deputy Mayor for Education (DME) works to create conditions that support academic acceleration across the PreK–12 public education system. The Office of the District of Columbia Deputy Mayor for Education (DME) works to create conditions that support educational attainment and academic acceleration at the PreK-12 levels, focusing on schools and their surrounding neighborhoods as sites for social and economic justice. This work relies on granular place-based insights to inform targeted policymaking, funding initiatives, and community programming, and ensure these programs are guided to areas of need.
-  
-  National data visualization platforms such as the Urban Institute’s Upward Mobility Data Dashboard provide helpful insights into key predictors of mobility indicators, but lack the neighborhood resolution required for D.C.’s urban landscape. Without multi-scalar analytical tools that synthesize local education and socio-economic outcomes simultaneously, government agencies face challenges in identifying where and how targeted interventions can close persistent opportunity gaps.
-  
-  To bridge this gap, this capstone project collaborates with the DME to adapt and refine the Urban Institute’s Upward Mobility Dashboard at the local level. This project specifically explores the impact of educational factors on upward mobility across the District of Columbia by aggregating disparate indicators into a unified structure across census tract, neighborhood, ward, and citywide scales. The project aims to create a public-facing web application that illustrates variations in opportunity and offers statistical analysis tools that can be used to evaluate how targeted policy interventions can close gaps in opportunity, providing a localized platform for public reporting, equitable resource allocation, and data-driven decision-making.
-
+Because educational access and environment serve as catalysts for upward economic mobility, these systemic resource disparities directly impact outcomes across D.C.’s public education system. To address these structural inequities, the Office of the District of Columbia Deputy Mayor for Education (DME) works to create conditions that support academic acceleration across the PreK–12 public education system. The Office of the District of Columbia Deputy Mayor for Education (DME) works to create conditions that support educational attainment and academic acceleration at the PreK-12 levels, focusing on schools and their surrounding neighborhoods as sites for social and economic justice. This work relies on granular place-based insights to inform targeted policymaking, funding initiatives, and community programming, and ensure these programs are guided to areas of need.
 
 
 ### Relevant work
 
-
+National data visualization platforms such as the Urban Institute’s Upward Mobility Data Dashboard provide helpful insights into key predictors of mobility indicators, but lack the neighborhood resolution required for D.C.’s urban landscape. Without multi-scalar analytical tools that synthesize local education and socio-economic outcomes simultaneously, government agencies face challenges in identifying where and how targeted interventions can close persistent opportunity gaps.
 
 ### Our contribution
 
-```{r}
-print(getwd())
-```
+To bridge this gap, this capstone project collaborates with the DME to adapt and refine the Urban Institute’s Upward Mobility Dashboard at the local level. This project specifically explores the impact of educational factors on upward mobility across the District of Columbia by aggregating disparate indicators into a unified structure across census tract, neighborhood, ward, and citywide scales. The project aims to create a public-facing web application that illustrates variations in opportunity and offers statistical analysis tools that can be used to evaluate how targeted policy interventions can close gaps in opportunity, providing a localized platform for public reporting, equitable resource allocation, and data-driven decision-making.
 
 
 ## Data {#sec-data}
-
-> Data: Where did it come from? What are some basic summary statistics, variable definitions, and/or visualizations that help the reader understand the data you are working with?
 
 #### Data Sources 
 
@@ -148,7 +137,7 @@ kable(categories_predictors, col.names = c("Category", "Variable 1", "Variable 2
 
 library(tidyverse)
 library(scales)
-data <- readRDS(here::here("quarto-manuscript", "data", "data"))
+data <- readRDS("data/data")
 tracts_neighborhoods <- data |>
   distinct(short_name, neighborhood) |>
   count(neighborhood, sort = TRUE)
