@@ -1082,7 +1082,7 @@ load <- function(new_data = FALSE) {
   
 
     # 2.3 Variables for indicator Drop down ----
-  # dropdown shows list of area type 
+  # dropdown shows list of area type
   # filters to only that area type
   area_choices <- list(
     "Citywide"      = "Citywide",
@@ -1908,7 +1908,16 @@ platform for public reporting, equitable resource allocation, and data-driven de
       tabPanel(
         "Mockup Scatterplot Tab",
         # section 1 - tract stuff
-        h4("Section 1: Tract-Level Data Scatterplots"),
+        fluidRow(
+          column(
+            width = 8,
+            h4("Section 1: Tract-Level Data Scatterplots")
+          ),
+          column(
+            width = 4,
+            actionButton("clear_selection", "Clear Tract Selection")
+          )
+        ),
         fluidRow(
           column(
             width = 6,
@@ -1931,7 +1940,16 @@ platform for public reporting, equitable resource allocation, and data-driven de
           )
         ),
         # section 2 - schools
-        h4("Section 2: School-Level Scatterplots (Point Data)"),
+        fluidRow(
+          column(
+            width = 8,
+            h4("Section 2: School-Level Scatterplots (Point Data)"),
+          ),
+          column(
+            width = 4,
+            actionButton("clear_school_selection", "Clear School Selection")
+          )
+        ),
         fluidRow(
           column(
             width = 6,
@@ -2467,6 +2485,7 @@ platform for public reporting, equitable resource allocation, and data-driven de
         make_map(filtered_ind(), show_air_quality = is_air, show_schools = FALSE, show_parks = is_parks)
       }
     })
+    
     output$stats_ind <- renderTable({ make_stats(filtered_ind()) })
     output$hist_ind <- renderPlot({ make_hist(filtered_ind()) })
     
@@ -2662,6 +2681,13 @@ platform for public reporting, equitable resource allocation, and data-driven de
     # 4.1.7 Mockup Scatterplot Tab ----
     # tract scatter
     # all tracts
+      
+      # initializing plotly_data as a reactive value so it can be accessed and updated within reactive contexts
+      plotly_data <- reactiveVal(NULL)
+      
+      # initializing restyle_colors as a reactive value so it can be accessed and updated within reactive contexts
+      restyle_colors <- reactiveVal(NULL)
+      
     output$sc_tract_plot <- plotly::renderPlotly({
       d <- data |>
         st_drop_geometry() |>
@@ -2673,10 +2699,19 @@ platform for public reporting, equitable resource allocation, and data-driven de
           y = .data[[input$sc_tract_y]]
         ) |>
         drop_na()
+      
+      d <- d |>
+        mutate(plotly_row = 1:nrow(d)) |>
+        mutate(plotly_id = paste(as.character(plotly_row), tract))
+      
+      plotly_data(d)
+      
+      # updating restyle colors according to the data
+      restyle_colors(rep("#8856a7", nrow(d)))
 
       plotly::plot_ly(
         d, x = ~x, y = ~y, type = "scatter", mode = "markers",
-        key = ~tract, source = "sc_tract",
+        key = ~plotly_id, source = "sc_tract",
         text = ~ paste0(
           "Tract: ", sub("Census Tract ", "", tract),
           "<br>", input$sc_tract_x, ": ", round(x, 2),
@@ -2696,29 +2731,93 @@ platform for public reporting, equitable resource allocation, and data-driven de
     sc_tracts <- data |>
       filter(variable == "Poverty Rate (%)") |>
       select(tract = short_name, neighborhood, ward)
-
+    
+    sc_tracts <- sc_tracts |>
+      # adding ID for use in selecting tracts on map
+      mutate(id = 1:nrow(sc_tracts))
+    
     output$sc_tract_map <- renderLeaflet({
       leaflet(sc_tracts) |>
         leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addPolygons(
           color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.5,
-          label = ~ paste0("Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward)
+          label = ~ paste0("Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
+          layerId = sc_tracts$id
         )
     })
-
-    # click highlight
-    observeEvent(plotly::event_data("plotly_click", source = "sc_tract"), {
-      clicked <- plotly::event_data("plotly_click", source = "sc_tract")$key
-      sel <- sc_tracts |> filter(tract == clicked)
-
+    
+    # initializing sel_old as a reactive value so it can be updated within observe
+    sel_old <- reactiveVal(NULL)
+    
+    observe({
+      event <- input$sc_tract_map_shape_click
+      
+      sel <- sc_tracts |>
+        filter(id == event$id)
+      
       leafletProxy("sc_tract_map") |>
-        clearGroup("selected") |>
         addPolygons(
           data = sel, group = "selected",
           color = "#be1e2e", weight = 3, fillColor = "#be1e2e", fillOpacity = 0.6,
-          label = ~ paste0("Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward)
+          label = ~ paste0("Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
+          layerId = sel$id
         )
+      
+      selected_tract <- sel$tract
+      
+      plotly_tract <- plotly_data() |>
+        filter(tract == selected_tract)
+      
+      # modifying restyle_colors to include new red point
+      restyle_colors_modify <- restyle_colors()
+      restyle_colors_modify[plotly_tract$plotly_row] <- "#be1e2e"
+      restyle_colors(restyle_colors_modify)
+      
+      plotly::plotlyProxy("sc_tract_plot") |>
+        plotly::plotlyProxyInvoke(
+          method = "update",
+          list(marker = list(color = restyle_colors(), size = 9, opacity = 0.8))
+        )
+      
+      sel_old(sel)
+    }) |>
+      bindEvent(input$sc_tract_map_shape_click)
+
+    # click highlight
+    observeEvent(plotly::event_data("plotly_click", source = "sc_tract"), {
+      clicked_id <- plotly::event_data("plotly_click", source = "sc_tract")$key
+      match_id <- as.numeric(gsub(" .*", "", clicked_id))
+      clicked <- substr(clicked_id, nchar(match_id) + 2, nchar(clicked_id))
+      
+      sel <- sc_tracts |> filter(tract == clicked)
+      
+      # modifying restyle_colors to include new red point
+      restyle_colors_modify <- restyle_colors()
+      restyle_colors_modify[match_id] <- "#be1e2e"
+      restyle_colors(restyle_colors_modify)
+      
+      plotly::plotlyProxy("sc_tract_plot") |>
+        plotly::plotlyProxyInvoke(
+          method = "update",
+          list(marker = list(color = restyle_colors(), size = 9, opacity = 0.8))
+        )
+      
+      leafletProxy("sc_tract_map") |>
+        addPolygons(
+          data = sel, group = "selected",
+          color = "#be1e2e", weight = 3, fillColor = "#be1e2e", fillOpacity = 0.6,
+          label = ~ paste0("Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
+          layerId = sel$id
+        )
+      
+      sel_old(sel)
     })
+    
+    # initializing plotly_school_data as a reactive value so it can be accessed and updated within reactive contexts
+    plotly_school_data <- reactiveVal(NULL)
+    
+    # initializing restyle_school_colors as a reactive value so it can be accessed and updated within reactive contexts
+    restyle_school_colors <- reactiveVal(NULL)
 
     # school scatter
     output$sc_school_plot <- plotly::renderPlotly({
@@ -2729,10 +2828,19 @@ platform for public reporting, equitable resource allocation, and data-driven de
         ) |>
         drop_na()
       req(nrow(d) > 0)
+      
+      d <- d |>
+        mutate(plotly_row = 1:nrow(d)) |>
+        mutate(plotly_id = paste(as.character(plotly_row), short_name))
+      
+      plotly_school_data(d)
+      
+      # updating restyle colors according to the data
+      restyle_school_colors(rep("#8856a7", nrow(d)))
 
       plotly::plot_ly(
         d, x = ~x, y = ~y, type = "scatter", mode = "markers",
-        key = ~short_name, source = "sc_school",
+        key = ~plotly_id, source = "sc_school",
         text = ~ paste0(
           short_name,
           "<br>", input$sc_school_x, ": ", round(x, 2),
@@ -2747,6 +2855,10 @@ platform for public reporting, equitable resource allocation, and data-driven de
         ) |>
         plotly::event_register("plotly_click")
     })
+    
+    school_points <- school_points |>
+      # adding ID for use in selecting points on map
+      mutate(id = 1:nrow(school_points))
 
     # school map
     output$sc_school_map <- renderLeaflet({
@@ -2754,23 +2866,126 @@ platform for public reporting, equitable resource allocation, and data-driven de
         leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addCircleMarkers(
           radius = 5, color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.8,
-          label = ~ paste0(short_name, " | ", neighborhood, ", ", ward)
+          label = ~ paste0(short_name, " | ", neighborhood, ", ", ward),
+          layerId = school_points$id
         )
     })
+    
+    # initializing sel_old as a reactive value so it can be updated within observe
+    sel_school_old <- reactiveVal(NULL)
+    
+    observe({
+      event <- input$sc_school_map_marker_click
+      
+      sel_school <- school_points |>
+        filter(id == event$id)
+      
+      leafletProxy("sc_school_map") |>
+        addCircleMarkers(
+          data = sel_school, group = "selected",
+          radius = 5, color = "white", weight = 1, fillColor = "#be1e2e", fillOpacity = 0.8,
+          label = ~ paste0(short_name, " | ", neighborhood, ", ", ward),
+          layerId = sel_school$id
+        )
+      
+      selected_school <- sel_school$short_name
+      
+      plotly_school <- plotly_school_data() |>
+        filter(short_name == selected_school)
+      
+      # modifying restyle_school_colors to include new red point
+      restyle_school_colors_modify <- restyle_school_colors()
+      restyle_school_colors_modify[plotly_school$plotly_row] <- "#be1e2e"
+      restyle_school_colors(restyle_school_colors_modify)
+      
+      plotly::plotlyProxy("sc_school_plot") |>
+        plotly::plotlyProxyInvoke(
+          method = "update",
+          list(marker = list(color = restyle_school_colors(), size = 9, opacity = 0.8))
+        )
+      
+      sel_school_old(sel_school)
+    }) |>
+      bindEvent(input$sc_school_map_marker_click)
 
     # school highlight
     observeEvent(plotly::event_data("plotly_click", source = "sc_school"), {
-      clicked <- plotly::event_data("plotly_click", source = "sc_school")$key
-      sel <- school_points |> filter(short_name == clicked)
+      clicked_id <- plotly::event_data("plotly_click", source = "sc_school")$key
+      match_id <- as.numeric(gsub(" .*", "", clicked_id))
+      clicked <- substr(clicked_id, nchar(match_id) + 2, nchar(clicked_id))
+      
+      sel_school <- school_points |> filter(short_name == clicked)
+      
+      # modifying restyle_colors to include new red point
+      restyle_school_colors_modify <- restyle_school_colors()
+      restyle_school_colors_modify[match_id] <- "#be1e2e"
+      restyle_school_colors(restyle_school_colors_modify)
+      
+      plotly::plotlyProxy("sc_school_plot") |>
+        plotly::plotlyProxyInvoke(
+          method = "update",
+          list(marker = list(color = restyle_school_colors(), size = 9, opacity = 0.8))
+        )
 
+      leafletProxy("sc_school_map") |>
+        addCircleMarkers(
+          data = sel_school, group = "selected",
+          radius = 8, color = "white", weight = 2, fillColor = "#be1e2e", fillOpacity = 1,
+          label = ~ paste0(short_name, " | ", neighborhood, ", ", ward),
+          layerId = sel_school$id
+        )
+      
+      sel_school_old(sel_school)
+    })
+    
+    # resetting map when x or y is changed, or when selection is cleared
+    observe({
+      leafletProxy("sc_tract_map") |>
+        clearGroup("selected") |>
+        addPolygons(data = sel_old(),
+                    color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.5,
+                    label = ~ paste0("Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
+                    layerId = sel_old()$id
+        )
+    }) |>
+      bindEvent(input$sc_tract_x, input$sc_tract_y, input$clear_selection, ignoreInit = TRUE)
+    
+    # resetting graph when selection is cleared
+    observe({
+      restyle_colors(rep("#8856a7", nrow(plotly_data())))
+      
+      plotly::plotlyProxy("sc_tract_plot") |>
+        plotly::plotlyProxyInvoke(
+          method = "update",
+          list(marker = list(color = restyle_colors(), size = 9, opacity = 0.8))
+        )
+    }) |>
+      bindEvent(input$clear_selection)
+    
+    # resetting map when x or y is changed, or when selection is cleared
+    observe({
       leafletProxy("sc_school_map") |>
         clearGroup("selected") |>
         addCircleMarkers(
-          data = sel, group = "selected",
-          radius = 8, color = "white", weight = 2, fillColor = "#be1e2e", fillOpacity = 1,
-          label = ~ paste0(short_name, " | ", neighborhood, ", ", ward)
+          data = sel_school_old(),
+          radius = 5, color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.8,
+          label = ~ paste0(short_name, " | ", neighborhood, ", ", ward),
+          layerId = school_points$id
         )
-    })
+    }) |>
+      bindEvent(input$sc_school_x, input$sc_school_y, input$clear_school_selection, ignoreInit = TRUE)
+    
+    # resetting graph when selection is cleared
+    observe({
+      restyle_school_colors(rep("#8856a7", nrow(plotly_school_data())))
+      
+      plotly::plotlyProxy("sc_school_plot") |>
+        plotly::plotlyProxyInvoke(
+          method = "update",
+          list(marker = list(color = restyle_school_colors(), size = 9, opacity = 0.8))
+        )
+    }) |>
+      bindEvent(input$clear_school_selection)
   }
 
     # 5.1 Run App ----
