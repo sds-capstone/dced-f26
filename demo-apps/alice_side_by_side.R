@@ -298,11 +298,6 @@ load <- function(new_data = FALSE) {
     # 40 schools have six month post-secondary enrollment 
     # 39 schools have six month post-secondary enrollment 
     
-    # doesnt make sense to use the 4-year grad part since we have 4-year grad rate for all schools
-    # but should we show include the five year and postsecondary enrollment?
-    # 5 year seems not very important and doesn't quite make sense cuz we have for 4 year
-    # but since we don't have anything else for college enrollment, that part might make sense to use?
-    
     # grad rates 4 and 5 year, college enrollment 6 and 12 months after grad
     grad_post_enrol <- read.csv(here::here("data-files", "graduation_college_enrollment.csv"))
     

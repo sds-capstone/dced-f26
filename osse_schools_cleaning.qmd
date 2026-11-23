@@ -8,7 +8,13 @@ editor: visual
 ```{r}
 library(dplyr)
 library(tidyr)
+```
 
+```{r}
+schools_data_all <- readRDS(here::here("data-files", "schools_data_all"))
+```
+
+```{r}
 # in order to see four and five year grad rates and 6 and 12 month postsecondary enrollment, OSSE only had data for 43 schools... see count chunk
 
 # 43 (all) schools have the four-year graduation rate
@@ -225,7 +231,7 @@ twelve_month_post <- grad_post_clean |>
 ```
 
 ```{r}
-  # 2.2.5 Pre-K CLASS Framework Metric Scores Data ====
+  # Pre-K CLASS Framework Metric Scores Data
     
     class_scores_original <- read.csv(here::here("data-files", "CLASS_metrics.csv"))
     
@@ -260,9 +266,19 @@ twelve_month_post <- grad_post_clean |>
 ```
 
 ```{r}
+# CLASS long for ayla
+class_long <- class_scores_step1 |>
+  select(school_code, variable = metric_type, percent = metric_score) |>
+  mutate(school_code = as.character(school_code),
+         percent = as.character(percent))
 
+schools_data_all <- bind_rows(schools_data_all, class_long)
+
+saveRDS(schools_data_all, file = here::here("data-files", "schools_data_all"))
+```
+
+```{r}
 initial_school_demogs <- read.csv(here::here("data-files", "school_profile.csv"))
-
 ```
 
 ```{r}
