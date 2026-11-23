@@ -264,3 +264,7 @@ twelve_month_post <- grad_post_clean |>
 initial_school_demogs <- read.csv(here::here("data-files", "school_profile.csv"))
 
 ```
+
+```{r}
+enroll_by_grade <- read.csv(here::here("data-files", "enroll_by_grade.csv"))
+```

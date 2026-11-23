@@ -194,7 +194,6 @@ load <- function(new_data = FALSE) {
       mutate(variable = "Crimes Per Capita in 2025") |>
       select(variable, estimate, short_name, neighborhood, ward, geometry)
     
-    
   # 2.2.5 Grad and Commute Data ====
     # HS grad grads (includes demographic rates too), but doesn't include charter schools
     hs_grad_rates <- read.csv(here::here("data-files", "hs_grad_rates.csv"))
@@ -372,6 +371,13 @@ load <- function(new_data = FALSE) {
       pivot_wider(names_from = demographic,
                   values_from = metric_score)|>
       rename(overall_rate = `All Report Card Students`)
+    
+    # Enrollment by Grade ====
+    
+    # guys! I wonder if a way to include the level of school in the propensity scoring is to have a variable that is enrollment by grade!
+    # enrollment audit has that data
+    # but not for every school in DC
+    enroll_by_grade <- read.csv(here::here("data-files", "enroll_by_grade.csv"))
 
     # 2.2.5 Pre-K CLASS Framework Metric Scores Data ====
     
