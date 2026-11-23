@@ -211,4 +211,23 @@ tract_election_geo <- tract_precinct_geo |>
 # Save --------------------------------------------------------------------
 
 write_csv(precinct_tract_xwalk, "data-files/dc-precinct-tract-crosswalk.csv")
-write_sf(tract_election_geo, "data-files/dc-turnout-by-tract-2024.gpkg")
+#write_sf(tract_election_geo, "data-files/dc-turnout-by-tract-2024.gpkg")
+
+# Úna added to make the data in the same format as the "data" dataframe, and to save the shapefile as RDS
+
+data <- readRDS(here::here("data-files", "data"))
+
+tract_areas <- data |>
+  filter(variable == "Poverty Rate (%)") |>
+  select(neighborhood, ward, short_name)
+
+tract_election_geo <- tract_election_geo |>
+  mutate(variable = "2024 Voter Turnout (%)", estimate = round(turnout*100, 2), short_name = gsub(";.*", "", NAME))
+
+# dropping geometry in preparation to join with tract areas shapefile
+tract_election_geo <- sf::st_drop_geometry(tract_election_geo)
+
+tract_election_geo <- left_join(tract_areas, tract_election_geo, by = join_by(short_name)) |>
+  select(variable, estimate, short_name, neighborhood, ward, geometry)
+
+saveRDS(tract_election_geo, file = here::here("data-files", "dc_turnout_by_tract_2024"))

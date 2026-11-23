@@ -28,9 +28,13 @@ load <- function(new_data = FALSE) {
     mathscores_geom <- readRDS(here::here("data-files", "mathscores_geom"))
     econdis_geom <- readRDS(here::here("data-files", "econdis_geom"))
     wards_projected <- readRDS(here::here("data-files", "wards_2022_wgs84"))
+    tract_election_geo <- readRDS(here::here("data-files", "dc_turnout_by_tract_2024"))
   }
   # 2.2 Remote Data ----
     if (new_data == TRUE) {
+      # reading in voter turnout by tract, because the data source won't update itself across different years
+      tract_election_geo <- readRDS(here::here("data-files", "dc_turnout_by_tract_2024"))
+      
     # Setting API key for census data. Pulls data from census package
     census_api_key("6fdd3d02e0762b982b0c2188bfd0d01b406d7c60")
   
@@ -504,7 +508,7 @@ load <- function(new_data = FALSE) {
       rename(neighborhood = NEIGHBORHOOD) |>
       st_transform(st_crs(geo_abs_joined))
 
-    ward_join_abs <- st_transform(wards, st_crs(geo_abs_joined))
+    ward_join_abs <- st_transform(wards_projected, st_crs(geo_abs_joined))
 
     geo_abs_joined <- geo_abs_joined |>
       st_join(neighborhood_join_abs, join = st_within) |>
@@ -925,7 +929,7 @@ load <- function(new_data = FALSE) {
     
     
     # 2.2.16 Binding and Joining all Data ====
-    data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, park_tracts, transit_tracts, preK_enrollment)
+    data <- rbind(data, crime_tracts, geo_abs_joined, built_environment_tracts, child_development_tracts, affordable_housing_tracts, park_tracts, transit_tracts, preK_enrollment, tract_election_geo)
 
 
     # denoting which variables are percents vs. not, and which should have a dollar sign before them
@@ -1078,7 +1082,7 @@ load <- function(new_data = FALSE) {
   # tract polygons w neighborhood and ward
   tract_areas <- data |>
     filter(variable == "Poverty Rate (%)") |>
-    select(neighborhood, ward, short_name) |>
+    select(neighborhood, ward, short_name, pop, land_area) |>
     rename(tract = short_name)
 
   school_indicators <- bind_rows(
@@ -1241,7 +1245,8 @@ load <- function(new_data = FALSE) {
     "Percent Tract in Low Food Access Area",
     "Percent White Only",
     "Poverty Rate (%)",
-    "Transit Stops Per Capita"
+    "Transit Stops Per Capita",
+    "2024 Voter Turnout (%)"
   )
 
   # school vars
@@ -1310,7 +1315,7 @@ platform for public reporting, equitable resource allocation, and data-driven de
             tags$h3("Tract-Level Data:"),
             wellPanel(
               style = "border-width: 2px; border-color: black; background-color: white",
-              tags$b("American Community Survey & Open Data D.C."),
+              tags$b("American Community Survey, Open Data D.C., & D.C. Board of Elections"),
               tags$p(""),
               wellPanel(
                 style = "border-width: 3px; border-color: #194d4d; background-color: white",
@@ -1418,7 +1423,15 @@ platform for public reporting, equitable resource allocation, and data-driven de
                   tags$li("Percent Tract With Tree Canopy"),
                   tags$li("Percent Tract Within Floodplain")
                 )
-              )
+              ),
+              wellPanel(
+                style = "border-width: 3px; border-color: #194d4d; background-color: white",
+                tags$b("DC Board of Elections"),
+                tags$ul(
+                  tags$li("2024 Voter Turnout (%)"),
+                  
+                )
+              ),
             ),
         
           ),
@@ -1505,6 +1518,10 @@ platform for public reporting, equitable resource allocation, and data-driven de
               nav_menu(
                 title = tags$b("Transportation & Recreational Access", style = "color: #1d497d"),
                 nav_item(radioButtons(label = "", inputId = "var1", choices = c("Child Development Centers Per Capita", "Transit Stops Per Capita"), inline = TRUE))
+              ),
+              nav_menu(
+                title = tags$b("Civic Engagement", style = "color: green"),
+                nav_item(radioButtons(label = "", inputId = "var1", choices = "2024 Voter Turnout (%)", inline = TRUE))
               ),
               nav_panel(title = tags$b("Built Environment Indicators")),
               nav_menu(
@@ -1597,6 +1614,10 @@ platform for public reporting, equitable resource allocation, and data-driven de
               nav_menu(
                 title = tags$b("Transportation & Recreational Access", style = "color: #1d497d"),
                 nav_item(radioButtons(label = "", inputId = "var2", choices = c("Child Development Centers Per Capita", "Transit Stops Per Capita"), inline = TRUE))
+              ),
+              nav_menu(
+                title = tags$b("Civic Engagement", style = "color: green"),
+                nav_item(radioButtons(label = "", inputId = "var2", choices = "2024 Voter Turnout (%)", inline = TRUE))
               ),
               nav_panel(title = tags$b("Built Environment Indicators")),
               nav_menu(
@@ -1716,6 +1737,10 @@ platform for public reporting, equitable resource allocation, and data-driven de
                     nav_menu(
                       title = tags$b("Transportation & Recreational Access", style = "color: #1d497d"),
                       nav_item(radioButtons(label = "", inputId = "var_left", selected = character(0), choices = c("Child Development Centers Per Capita", "Transit Stops Per Capita"), inline = TRUE))
+                    ),
+                    nav_menu(
+                      title = tags$b("Civic Engagement", style = "color: green"),
+                      nav_item(radioButtons(label = "", inputId = "var_left", selected = character(0), choices = "2024 Voter Turnout (%)", inline = TRUE))
                     ),
                     nav_panel(title = tags$b("Built Environment Indicators")),
                     nav_menu(
@@ -1837,6 +1862,10 @@ platform for public reporting, equitable resource allocation, and data-driven de
                     nav_menu(
                       title = tags$b("Transportation & Recreational Access", style = "color: #1d497d"),
                       nav_item(radioButtons(label = "", inputId = "var_right", selected = character(0), choices = c("Child Development Centers Per Capita", "Transit Stops Per Capita"), inline = TRUE))
+                    ),
+                    nav_menu(
+                      title = tags$b("Civic Engagement", style = "color: green"),
+                      nav_item(radioButtons(label = "", inputId = "var_right", selected = character(0), choices = "2024 Voter Turnout (%)", inline = TRUE))
                     ),
                     nav_panel(title = tags$b("Built Environment Indicators")),
                     nav_menu(
