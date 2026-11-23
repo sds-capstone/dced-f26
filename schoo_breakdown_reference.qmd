@@ -1,0 +1,23 @@
+---
+title: "School Demographic and Characteristic Breakdowns"
+format: html
+editor: visual
+---
+
+## School Demographic and Characteristic Breakdowns
+
++-------------------------------------------------------------------------------------------------------+
+| 1.  Data frame one: school “characteristics”- this would be for identifying which schools are similar |
+|     1.  Student population breakdowns- demographics, ESL, economic disadvantage, etc.                 |
+|     2.  Size of school                                                                                |
+|     3.  Type of school: charter, public, by-right, in-boundary                                        |
+|     4.  Grade levels                                                                                  |
+| 2.  Data frame two: school metrics                                                                    |
+|     1.  Enrollment                                                                                    |
+|     2.  Test scores                                                                                   |
+|     3.  Grad rates                                                                                    |
+|     4.  College                                                                                       |
+|     5.  Etc etc more vars I’m not naming here                                                         |
+|                                                                                                       |
+| Then join to one big data frame, each school is a row.                                                |
++-------------------------------------------------------------------------------------------------------+
