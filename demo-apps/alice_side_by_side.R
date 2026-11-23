@@ -27,6 +27,7 @@ load <- function(new_data = FALSE) {
     elascores_geom <- readRDS(here::here("data-files", "elascores_geom"))
     mathscores_geom <- readRDS(here::here("data-files", "mathscores_geom"))
     econdis_geom <- readRDS(here::here("data-files", "econdis_geom"))
+    wards_projected <- readRDS(here::here("data-files", "wards_2022_wgs84"))
   }
   # 2.2 Remote Data ----
     if (new_data == TRUE) {
@@ -74,15 +75,6 @@ load <- function(new_data = FALSE) {
     tracts_projected <- st_transform(tracts, 4326)
     points_projected <- st_transform(neighborhood_points, 4326)
 
-    # adding the ward shapefile
-    # here() is a function from the here package. this was was suggested by claude when debugging, just to be transparent about that.
-    ward_shapefile <- st_read(here::here("data-files", "ward_2022"))
-
-    # same set of things as other shapefiles
-    wards <- ward_shapefile |>
-      mutate(ward = paste("Ward", WARD)) |>
-      select(ward)
-
     # From Rory: "Weights: 2020 Census blocks with population (POP20)"
     dc_blocks <- blocks(state = "DC", year = 2020) |>
       # except i did st_transform instead of crs bc we alr have that
@@ -95,12 +87,9 @@ load <- function(new_data = FALSE) {
     # (From Ayla) nearest neighborhoods points... but added block points too
     nearest_neighborhoods <- st_nearest_feature(block_points, points_projected)
     block_points$NEIGHBORHOOD <- neighborhoods$NAME[nearest_neighborhoods]
-
-    # changed the ward stuff to block points
-    # ward transform to point
-    # see what ward contains that point w the st_within join
-    # st_transform(4326) instead of WGS84 like b4
-    wards_projected <- st_transform(wards, 4326)
+    
+    wards_projected <- readRDS(here::here("data-files", "wards_2022_wgs84"))
+      
     block_points <- st_join(block_points, wards_projected, join = st_within)
 
     # sorting the tracts into neighborhoods and wards by weight
@@ -1007,7 +996,8 @@ load <- function(new_data = FALSE) {
   # tract polygons w neighborhood and ward
   tract_areas <- data |>
     filter(variable == "Poverty Rate (%)") |>
-    select(neighborhood, ward)
+    select(neighborhood, ward, short_name) |>
+    rename(tract = short_name)
 
   school_indicators <- bind_rows(
     # read as character bc some scores have n<10 in them
@@ -1036,7 +1026,7 @@ load <- function(new_data = FALSE) {
     st_as_sf() |>
     st_join(tract_areas, join = st_within) |>
     mutate(percent = variable %in% c("Overall Chronic Absenteeism Rate", "Pre-K Chronic Absenteeism Rate")) |>
-    select(variable, estimate, short_name, neighborhood, ward, percent, geometry)
+    select(variable, estimate, short_name, neighborhood, tract, percent, geometry)
   
   school_names <- read.csv(here::here("data-files", "abs_data_demograph.csv"), colClasses = "character") |>
     transmute(SCHOOL_ID = as.integer(School.Code), short_name = School.Name) |>
@@ -1062,11 +1052,14 @@ load <- function(new_data = FALSE) {
     mutate(short_name = coalesce(short_name, paste("School", SCHOOL_ID))) |>
     st_join(tract_areas, join = st_within) |>
     mutate(percent = TRUE) |>
-    select(variable, estimate, short_name, neighborhood, ward, percent, geometry) 
+    select(variable, estimate, short_name, neighborhood, tract, percent, geometry) 
     
     
   
   school_indicators <- rbind(school_indicators, school_geom_indicators)
+  
+  school_indicators <- school_indicators |>
+    st_join(wards_projected, join = st_within)
 
   # school scatter data
   school_scatter <- school_indicators |>
@@ -1076,7 +1069,7 @@ load <- function(new_data = FALSE) {
 
   # school points
   school_points <- school_indicators |>
-    select(short_name, neighborhood, ward) |>
+    select(short_name, neighborhood, tract, ward) |>
     distinct(short_name, .keep_all = TRUE)
   
   
@@ -1952,14 +1945,17 @@ platform for public reporting, equitable resource allocation, and data-driven de
         ),
         fluidRow(
           column(
-            width = 6,
+            width = 4,
             selectInput("sc_school_x", "X-Variable", choices = school_scatter_vars, selected = "Student Economic Disadvantage")
           ),
           column(
-            width = 6,
+            width = 4,
             selectInput("sc_school_y", "Y-Variable", choices = school_scatter_vars, selected = "Chronic Absenteeism Rates by School")
-          )
-        ),
+          ),
+          column(
+            width = 4,
+            selectInput("school_areas", "Select Schools by Tract or Ward", choices = c("No", "Select by Tract", "Select by Ward"), selected = "No")
+          )),
         # school scatter + map
         fluidRow(
           column(
@@ -2865,48 +2861,171 @@ platform for public reporting, equitable resource allocation, and data-driven de
       leaflet(school_points) |>
         leaflet::addProviderTiles("Stadia.StamenTonerLite") |>
         addCircleMarkers(
-          radius = 5, color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.8,
-          label = ~ paste0(short_name, " | ", neighborhood, ", ", ward),
+          radius = 5, color = "white", weight = 1, fillColor = "#8856a7", fillOpacity = 0.8,
+          label = ~ paste0(short_name, " | ", "Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
           layerId = school_points$id
         )
     })
     
-    # initializing sel_old as a reactive value so it can be updated within observe
+    # initializing sel_school_old as a reactive value so it can be updated within observe
     sel_school_old <- reactiveVal(NULL)
     
     observe({
-      event <- input$sc_school_map_marker_click
-      
-      sel_school <- school_points |>
-        filter(id == event$id)
       
       leafletProxy("sc_school_map") |>
-        addCircleMarkers(
-          data = sel_school, group = "selected",
-          radius = 5, color = "white", weight = 1, fillColor = "#be1e2e", fillOpacity = 0.8,
-          label = ~ paste0(short_name, " | ", neighborhood, ", ", ward),
-          layerId = sel_school$id
+        clearGroup("school_areas")
+    
+    if (input$school_areas == "Select by Tract") {
+      leafletProxy("sc_school_map") |>
+        addPolygons(data = tract_areas,
+          color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.5,
+          label = ~ paste0("Tract: ", sub("Census Tract ", "", tract)),
+          layerId = tract_areas$tract, group = "school_areas"
         )
       
-      selected_school <- sel_school$short_name
+      observe({
+        event <- input$sc_school_map_shape_click
+        
+        sel_school <- school_points |>
+          filter(tract == event$id)
+        
+        if (nrow(sel_school) > 0) {
+          
+          tracts_re_add <- tract_areas |>
+            filter(tract == event$id)
+        
+        leafletProxy("sc_school_map") |>
+            removeShape(event$id) |>
+          addCircleMarkers(
+            data = sel_school, group = "selected",
+            radius = 5, color = "white", weight = 1, fillColor = "#be1e2e", fillOpacity = 0.8,
+            label = ~ paste0(short_name, " | ", "Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
+            layerId = sel_school$id
+          ) |>
+            addPolygons(data = tracts_re_add,
+                        color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.5,
+                        label = ~ paste0("Tract: ", sub("Census Tract ", "", tract)),
+                        layerId = tracts_re_add$tract, group = "school_areas"
+            )
+        
+        selected_school <- sel_school$short_name
+        
+        plotly_school <- plotly_school_data() |>
+          filter(short_name %in% selected_school)
+        
+        # modifying restyle_school_colors to include new red point
+        restyle_school_colors_modify <- restyle_school_colors()
+        restyle_school_colors_modify[plotly_school$plotly_row] <- "#be1e2e"
+        restyle_school_colors(restyle_school_colors_modify)
+        
+        plotly::plotlyProxy("sc_school_plot") |>
+          plotly::plotlyProxyInvoke(
+            method = "update",
+            list(marker = list(color = restyle_school_colors(), size = 9, opacity = 0.8))
+          )
+        
+        sel_school_old(sel_school)
+        }
+      }) |>
+        bindEvent(input$sc_school_map_shape_click)
+    }
       
-      plotly_school <- plotly_school_data() |>
-        filter(short_name == selected_school)
+      if (input$school_areas == "Select by Ward") {
+        leafletProxy("sc_school_map") |>
+          addPolygons(data = wards_projected,
+                      color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.5,
+                      label = ~ paste0("Ward: ", sub("Ward ", "", ward)),
+                      layerId = wards_projected$ward, group = "school_areas"
+          )
+        
+        observe({
+          event <- input$sc_school_map_shape_click
+          
+          sel_school <- school_points |>
+            filter(ward == event$id)
+          
+          if (nrow(sel_school) > 0) {
+            
+            wards_re_add <- wards_projected |>
+              filter(ward == event$id)
+            
+            leafletProxy("sc_school_map") |>
+              removeShape(event$id) |>
+              addCircleMarkers(
+                data = sel_school, group = "selected",
+                radius = 5, color = "white", weight = 1, fillColor = "#be1e2e", fillOpacity = 0.8,
+                label = ~ paste0(short_name, " | ", "Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
+                layerId = sel_school$id
+              ) |>
+              addPolygons(data = wards_re_add,
+                          color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.5,
+                          label = ~ paste0("Ward: ", sub("Ward ", "", ward)),
+                          layerId = wards_re_add$ward, group = "school_areas"
+              )
+            
+            selected_school <- sel_school$short_name
+            
+            plotly_school <- plotly_school_data() |>
+              filter(short_name %in% selected_school)
+            
+            # modifying restyle_school_colors to include new red point
+            restyle_school_colors_modify <- restyle_school_colors()
+            restyle_school_colors_modify[plotly_school$plotly_row] <- "#be1e2e"
+            restyle_school_colors(restyle_school_colors_modify)
+            
+            plotly::plotlyProxy("sc_school_plot") |>
+              plotly::plotlyProxyInvoke(
+                method = "update",
+                list(marker = list(color = restyle_school_colors(), size = 9, opacity = 0.8))
+              )
+            
+            sel_school_old(sel_school)
+          }
+        }) |>
+          bindEvent(input$sc_school_map_shape_click)
+      }
       
-      # modifying restyle_school_colors to include new red point
-      restyle_school_colors_modify <- restyle_school_colors()
-      restyle_school_colors_modify[plotly_school$plotly_row] <- "#be1e2e"
-      restyle_school_colors(restyle_school_colors_modify)
-      
-      plotly::plotlyProxy("sc_school_plot") |>
-        plotly::plotlyProxyInvoke(
-          method = "update",
-          list(marker = list(color = restyle_school_colors(), size = 9, opacity = 0.8))
-        )
-      
-      sel_school_old(sel_school)
+      if (input$school_areas == "No") {
+        observe({
+          event <- input$sc_school_map_marker_click
+          
+          print(event$id)
+          
+          sel_school <- school_points |>
+            filter(id == event$id)
+          
+          print(sel_school)
+          
+          leafletProxy("sc_school_map") |>
+            addCircleMarkers(
+              data = sel_school, group = "selected",
+              radius = 5, color = "white", weight = 1, fillColor = "#be1e2e", fillOpacity = 0.8,
+              label = ~ paste0(short_name, " | ", "Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
+              layerId = sel_school$id
+            )
+          
+          selected_school <- sel_school$short_name
+          
+          plotly_school <- plotly_school_data() |>
+            filter(short_name == selected_school)
+          
+          # modifying restyle_school_colors to include new red point
+          restyle_school_colors_modify <- restyle_school_colors()
+          restyle_school_colors_modify[plotly_school$plotly_row] <- "#be1e2e"
+          restyle_school_colors(restyle_school_colors_modify)
+          
+          plotly::plotlyProxy("sc_school_plot") |>
+            plotly::plotlyProxyInvoke(
+              method = "update",
+              list(marker = list(color = restyle_school_colors(), size = 9, opacity = 0.8))
+            )
+          
+          sel_school_old(sel_school)
+        }) |>
+          bindEvent(input$sc_school_map_marker_click)
+      }
     }) |>
-      bindEvent(input$sc_school_map_marker_click)
+      bindEvent(input$school_areas)
 
     # school highlight
     observeEvent(plotly::event_data("plotly_click", source = "sc_school"), {
@@ -2930,23 +3049,27 @@ platform for public reporting, equitable resource allocation, and data-driven de
       leafletProxy("sc_school_map") |>
         addCircleMarkers(
           data = sel_school, group = "selected",
-          radius = 8, color = "white", weight = 2, fillColor = "#be1e2e", fillOpacity = 1,
-          label = ~ paste0(short_name, " | ", neighborhood, ", ", ward),
+          radius = 5, color = "white", weight = 1, fillColor = "#be1e2e", fillOpacity = 0.8,
+          label = ~ paste0(short_name, " | ", "Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
           layerId = sel_school$id
         )
       
       sel_school_old(sel_school)
     })
     
-    # resetting map when x or y is changed, or when selection is cleared
+    # resetting map if needed when x or y is changed, or when selection is cleared
     observe({
-      leafletProxy("sc_tract_map") |>
+        
+      if (!(is.null(sel_old()))) {
+      
+        leafletProxy("sc_tract_map") |>
         clearGroup("selected") |>
         addPolygons(data = sel_old(),
                     color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.5,
                     label = ~ paste0("Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
                     layerId = sel_old()$id
         )
+      }
     }) |>
       bindEvent(input$sc_tract_x, input$sc_tract_y, input$clear_selection, ignoreInit = TRUE)
     
@@ -2962,16 +3085,41 @@ platform for public reporting, equitable resource allocation, and data-driven de
     }) |>
       bindEvent(input$clear_selection)
     
-    # resetting map when x or y is changed, or when selection is cleared
+    # resetting map if needed when x or y is changed, or when selection is cleared
     observe({
+      
+      if (!(is.null(sel_school_old()))) {
+      
       leafletProxy("sc_school_map") |>
         clearGroup("selected") |>
+          clearGroup("school_areas") |>
         addCircleMarkers(
           data = sel_school_old(),
-          radius = 5, color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.8,
-          label = ~ paste0(short_name, " | ", neighborhood, ", ", ward),
-          layerId = school_points$id
+          radius = 5, color = "white", weight = 1, fillColor = "#8856a7", fillOpacity = 0.8,
+          label = ~ paste0(short_name, " | ", "Tract: ", sub("Census Tract ", "", tract), " | ", neighborhood, ", ", ward),
+          layerId = sel_school_old()$id
         )
+        
+        if (input$school_areas == "Select by Tract") {
+          
+          leafletProxy("sc_school_map") |>
+            addPolygons(data = tract_areas,
+                        color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.5,
+                        label = ~ paste0("Tract: ", sub("Census Tract ", "", tract)),
+                        layerId = tract_areas$tract, group = "school_areas"
+            )
+        }
+        
+        if (input$school_areas == "Select by Ward") {
+          
+          leafletProxy("sc_school_map") |>
+            addPolygons(data = wards_projected,
+                        color = "white", weight = 1, fillColor = "grey", fillOpacity = 0.5,
+                        label = ~ paste0("Ward: ", sub("Ward ", "", ward)),
+                        layerId = wards_projected$ward, group = "school_areas"
+            )
+        }
+      }
     }) |>
       bindEvent(input$sc_school_x, input$sc_school_y, input$clear_school_selection, ignoreInit = TRUE)
     
