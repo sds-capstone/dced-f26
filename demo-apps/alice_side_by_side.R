@@ -75,7 +75,7 @@ load <- function(new_data = FALSE) {
     points_projected <- st_transform(neighborhood_points, 4326)
 
     # adding the ward shapefile
-    # here() is a function from the here package. this was was suggested by claude when debugging, just to be transparent about that.
+    # here() is a function from the here package
     ward_shapefile <- st_read(here::here("data-files", "ward_2022"))
 
     # same set of things as other shapefiles
@@ -195,7 +195,6 @@ load <- function(new_data = FALSE) {
       select(variable, estimate, short_name, neighborhood, ward, geometry)
     
     
-    
   # 2.2.5 Grad and Commute Data ====
     # HS grad grads (includes demographic rates too), but doesn't include charter schools
     hs_grad_rates <- read.csv(here::here("data-files", "hs_grad_rates.csv"))
@@ -291,6 +290,88 @@ load <- function(new_data = FALSE) {
         names_from = demographic,
         values_from = metric_score
       )
+
+    # 2.2.6 6 and 12 Month Post-Secondary Enrollment, Four and Five Year Graduation Rates ===
+    # in order to see four and five year grad rates and 6 and 12 month postsecondary enrollment, OSSE only had data for 43 schools... see count chunk
+    
+    # 43 (all) schools have the four-year graduation rate
+    # 41 schools have the five-year graduation rate
+    # 40 schools have six month post-secondary enrollment 
+    # 39 schools have six month post-secondary enrollment 
+    
+    # doesnt make sense to use the 4-year grad part since we have 4-year grad rate for all schools
+    # but should we show include the five year and postsecondary enrollment?
+    # 5 year seems not very important and doesn't quite make sense cuz we have for 4 year
+    # but since we don't have anything else for college enrollment, that part might make sense to use?
+    
+    # grad rates 4 and 5 year, college enrollment 6 and 12 months after grad
+    grad_post_enrol <- read.csv(here::here("data-files", "graduation_college_enrollment.csv"))
+    
+    # for me
+    colnames(grad_post_enrol)
+    
+    grad_post_clean <- grad_post_enrol |>
+      rename(school_name = School.Name,
+             school_code = School.Code, 
+             demographic = Student.Group,
+             grad_ff_post = Metric,
+             metric_score = Metric.Score,
+             metric_n = Metric.N,
+             lea_code = LEA.Code)|>
+      # so can see data for each school next to each otehr
+      arrange(school_code)|>
+      # new col, separating charter school and DCPS
+      # DCPS always has LEA 1, everything else another num
+      mutate(pub_charter = ifelse(lea_code == 1, "DCPS", "Charter"))
+    
+    only_overall <- grad_post_clean |>
+      filter(demographic == "All Report Card Students")
+    
+    only_overall |> count(school_name)
+    # there are 43 high schools in the dataset.
+    # 43 (all) schools have the four-year graduation rate
+    # 41 schools have the five-year graduation rate
+    # 40 schools have six month post-secondary enrollment 
+    # 39 schools have six month post-secondary enrollment 
+    
+    # overall_rate - it's broken down by demographic for each school. if we just want to do it for overall students that variable is called "overall_rate"
+    
+    # 4-year grad rate 
+    four_year <- grad_post_clean |>
+      # only 4-year grad rate
+      filter(grad_ff_post == "Four-Year Graduation Rate")|>
+      # select vars 4 pivot
+      select(school_code, pub_charter, demographic, metric_score)|>
+      # breaks down the student group and metric rows into columns
+      # organizaed by the school and its LEA (public or charter) 
+      # metric score measured, left out n for now but could add
+      pivot_wider(names_from = demographic,
+                  values_from = metric_score)|>
+      rename(overall_rate = `All Report Card Students`)
+    
+    # 5-year grad rate 
+    five_year <- grad_post_clean |>
+      filter(grad_ff_post == "Five-Year Graduation Rate")|>
+      select(school_code, pub_charter, demographic, metric_score)|>
+      pivot_wider(names_from = demographic,
+                  values_from = metric_score)|>
+      rename(overall_rate = `All Report Card Students`)
+    
+    # enrolled in college/post-secondary within 6 months of grad
+    six_month_post <- grad_post_clean |>
+      filter(grad_ff_post == "6-Month Postsecondary Enrollment (2023-24 Graduates)")|>
+      select(school_code, pub_charter, demographic, metric_score)|>
+      pivot_wider(names_from = demographic,
+                  values_from = metric_score)|>
+      rename(overall_rate = `All Report Card Students`)
+    
+    # enrolled in college/post-secondary within 12 months of grad
+    twelve_month_post <- grad_post_clean |>
+      filter(grad_ff_post == "12-Month Postsecondary Enrollment (2022-23 Graduates)")|>
+      select(school_code, pub_charter, demographic, metric_score)|>
+      pivot_wider(names_from = demographic,
+                  values_from = metric_score)|>
+      rename(overall_rate = `All Report Card Students`)
 
     # 2.2.5 Pre-K CLASS Framework Metric Scores Data ====
     
