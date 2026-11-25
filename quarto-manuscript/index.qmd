@@ -72,14 +72,13 @@ To bridge this gap, this capstone project collaborates with the DME to adapt and
   We have categorized all of the outcome data and their corresponding variables into different categories for upward mobility in @tbl-outcome-categories below. These can be broken down into 5 main categories: economic opportunity & housing affordability, demographic diversity, public safety & neighborhood quality, transportation & recreational access, and built environment indicators. Economic Opportunity & Housing Affordability covers poverty, income, rent, and affordable housing variables. Demographic diversity explores the percent of different ethnicity and nationalities. Public Safety & Neighborhood Quality highlights land use, crime, and parks & recreation. Transit & Recreational Access includes variables such as child development centers and transit stops per capital. The built environment indicators are divided into the subcategories: access to school, parks & recreation access, safety and wellness indicators, access to transit, public safety & tract infrastructure, digital access & educational resources, economic & financial access, food access, and climate resilience. Ultimately, our outcome data compiles into 53 different observable variables and 14,393 observations. Most of our data can be visualized across neighborhood, ward, and census tract. However, total population, percentage race, percentage renter-occupied, and percent owner-occupied data are only available by D.C. block level.
 ```{r}
 #| label: tbl-outcome-categories
-#| tbl-cap: "Categorized Outcome Variables"
+#| tbl-cap: "Categorized Variables"
 #| echo: false
 #| message: false
 
 library(tidyverse)
 library(knitr)
 
-# part 1: the variables
 tract <- tribble(
   ~category, ~variable, ~unit, ~source,
   "Open Data DC", "Affordable Housing Units Constructed Since 2015 Per Capita", "rate", "Open Data DC",
@@ -177,12 +176,11 @@ vars <- bind_rows(
   .id = "level"
 )
 
-# part 2: heading rows
 shown <- vars |>
   mutate(level = fct_inorder(level), order = consecutive_id(level, category)) |>
   group_by(level, order, category) |>
   reframe(
-    # no heading if no category
+    
     Variable = c(if (!is.na(cur_group()$category)) paste0("*", cur_group()$category, "*"), variable),
     Unit = c(if (!is.na(cur_group()$category)) "", unit),
     Source = c(if (!is.na(cur_group()$category)) "", source)
@@ -200,40 +198,6 @@ kable(shown)
 ```
 
   
- Our predictor variables have 4 main categories: attendance, graduation & college enrollment, enrollment, level of educational attainment, and employment, with some available by DC school district and others by census tract (@tbl-predictor-categories)
-```{r}
-#| label: tbl-predictor-categories
-#| tbl-cap: "Categorized Predictor Variables"
-#| echo: false
-
-
-categories_predictors <- tibble(
-  Category = c("Attendance (OSSE)", "Graduation and College Enrollment (OSSE)", "Enrollment (ACS)", "Level of Educational Attainment (ACS)", "Employment(ACS)"),
-  variable1 = c("Chronic Absenteeism Rate", 
-                "Four-Year Graduation Rate", 
-                "Nursery school, preschool", 
-                "High School Graduate",
-                "Employment Rate Age 20-24"),
-  variable2 = c("Pre-K Chronic Absenteeism Rate", 
-                "Five-Year Graduation Rate", 
-                "Kindergarten Enrollment",
-                "Bachelor's or higher", 
-                "Employment Rate Age 25-29" ),
-  variable3 = c("Attendance Growth", 
-                "6-Month Postsecondary Enrollment", 
-                NA,
-                NA, 
-                NA),
-  variable4 = c(NA, 
-                "12-Month Postsecondary Enrollment", 
-                NA, 
-                NA, 
-                NA
-                )
-)
-
-kable(categories_predictors, col.names = c("Category", "Variable 1", "Variable 2", "Variable 3", "Variable 4"))
-```
 
 #### Data Cleaning and Preparation
   All data sets were imported and cleaned individually to best suit the type of visualizations our sponsor wanted to observe. Each individual data set was eventually comprised of 6 columns: `variable`, `estimate`, `short_name`, `neighborhood`, `ward`, and `geometry`. `Variable` corresponds to the specific variable the data is examining (i.e., “Poverty Rate”, “Median Household Income”). `Estimate` is the given measure of the data and can be represented as a count or a percentage. `short_name` corresponds to the census tract that each estimate is a total for. The last three columns contain the specific neighborhood, ward, and polygon geometry for which each estimate is a count. Each of the 53 variables was weighted across the census, neighborhood, and ward populations. We included NA values, but converted them to a string called “No Data” for better readability in the visualizations. 
