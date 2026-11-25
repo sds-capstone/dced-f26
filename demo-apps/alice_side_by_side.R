@@ -1,4 +1,4 @@
-# I used to load. shiny::runApp("demo-apps/alice_side_by_side.R")
+# run in console - shiny::runApp("demo-apps/alice_side_by_side.R")
 
 # 1. Packages ----
 
