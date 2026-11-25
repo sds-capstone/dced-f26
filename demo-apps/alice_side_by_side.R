@@ -1,4 +1,4 @@
-# I used to load. shiny::runApp("demo-apps/alice_side_by_side.R")
+# run in console - shiny::runApp("demo-apps/alice_side_by_side.R")
 
 # 1. Packages ----
 
@@ -1147,14 +1147,43 @@ load <- function(new_data = FALSE) {
   school_indicators <- school_indicators |>
     st_join(wards_projected, join = st_within)
 
+  # grad + postsec
+  school_grad <- read.csv(here::here("data-files", "graduation_college_enrollment.csv"), colClasses = "character") |>
+    filter(
+      Student.Group == "All Report Card Students",
+      Metric %in% c(
+        "Four-Year Graduation Rate",
+        "Five-Year Graduation Rate",
+        "6-Month Postsecondary Enrollment (2023-24 Graduates)",
+        "12-Month Postsecondary Enrollment (2022-23 Graduates)"
+      )
+    ) |>
+    mutate(
+      variable = Metric,
+      estimate = suppressWarnings(as.numeric(Metric.Score)),
+      SCHOOL_ID = as.integer(School.Code),
+      short_name = School.Name
+    ) |>
+    filter(!is.na(estimate)) |>
+    select(variable, estimate, short_name, SCHOOL_ID) |>
+    inner_join(school_locations, by = "SCHOOL_ID") |>
+    st_as_sf() |>
+    st_join(tract_areas, join = st_within) |>
+    mutate(percent = TRUE) |>
+    select(variable, estimate, short_name, neighborhood, tract, percent, geometry) |>
+    st_join(wards_projected, join = st_within)
+
+  # scatter tab only
+  school_all <- rbind(school_indicators, school_grad)
+
   # school scatter data
-  school_scatter <- school_indicators |>
+  school_scatter <- school_all |>
     st_drop_geometry() |>
     select(short_name, variable, estimate) |>
     pivot_wider(names_from = variable, values_from = estimate, values_fn = mean)
 
   # school points
-  school_points <- school_indicators |>
+  school_points <- school_all |>
     select(short_name, neighborhood, tract, ward) |>
     distinct(short_name, .keep_all = TRUE)
   
@@ -1252,12 +1281,16 @@ load <- function(new_data = FALSE) {
   # school vars
   school_scatter_vars <- c(
     "3rd Grade ELA Scores",
+    "12-Month Postsecondary Enrollment (2022-23 Graduates)",
+    "6-Month Postsecondary Enrollment (2023-24 Graduates)",
     "8th Grade Algebra Scores",
     "Attendance Growth Rate",
     "CLASS Metric - Pre-K Classroom Organization",
     "CLASS Metric - Pre-K Emotional Support",
     "CLASS Metric - Pre-K Instructional Support",
     "Chronic Absenteeism Rates by School",
+    "Five-Year Graduation Rate",
+    "Four-Year Graduation Rate",
     "Pre-K Chronic Absenteeism Rate",
     "Student Economic Disadvantage"
   )
