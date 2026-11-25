@@ -350,11 +350,9 @@ total population, percentage race, percentage renter-occupied, and
 percent owner-occupied data are only available by D.C. block level.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2308}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1897}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1385}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1385}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.3026}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5328}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1803}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2869}}@{}}
 
 \caption{\label{tbl-outcome-categories}Categorized Outcome Variables}
 
@@ -362,31 +360,151 @@ percent owner-occupied data are only available by D.C. block level.
 
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
-Category
+Variable
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Variable 1
+Unit
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Variable 2
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Variable 3
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Variable 4
+Source
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Economic Opportunity \& Housing Affordability & Poverty Rate & Median
-Household Income & Median Rent & Affordable Housing Units Constructed
-Since 2015 Per Capita \\
-Demographic Diversity & Percent Foreign-born & Percent White Only & NA &
-NA \\
-Public Safety \& Neighborhood Quality & Land Use Diversity Score (0-1) &
-Percent Positive Land Uses & Parks Per Capita & Crimes Per Capita \\
-Transportation \& Recreational Access & Child Development Centers Per
-Capita & Transit Stops Per Capita & NA & NA \\
-Built Environment Indicators & Access to School & Parks + Recreation
-Access & Safety Wellness Indicators & Access to Transit \\
+\textbf{TRACT-LEVEL VARIABLES -- POLYGON} & & \\
+\emph{Open Data DC} & & \\
+Affordable Housing Units Constructed Since 2015 Per Capita & rate & Open
+Data DC \\
+Land Use Diversity Score (0-1) & score (0-1) & Open Data DC \\
+Percent Positive Land Uses & percentage & Open Data DC \\
+Parks Per Capita & rate & Open Data DC \\
+Child Development Centers Per Capita & rate & Open Data DC \\
+Crimes Per Capita in 2025 & rate & Open Data DC \\
+Transit Stops Per Capita & rate & Open Data DC \\
+\emph{Demographics and Income} & & \\
+Percent Foreign-Born & percentage & ACS \\
+Percent White Only & percentage & ACS \\
+Poverty Rate (\%) & percentage & ACS \\
+Median Household Income & USD & ACS \\
+Median Rent & USD & ACS \\
+\emph{Educational Attainment and Employment} & & \\
+Employment Rate Age 20-24 & percentage & ACS \\
+Employment Rate Age 25-29 & percentage & ACS \\
+High School Graduation Percentage & percentage & ACS \\
+Bachelor's or Higher Percentage & percentage & ACS \\
+\emph{Access to School} & & \\
+Percent Tract Within 15-Minute Walk to School & percentage & Built
+Environment Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk to Modernized School & percentage &
+Built Environment Indicators (ACS) \\
+Percent Tract Within 2-Minute Walk of School Crossing Guard & percentage
+& Built Environment Indicators (ACS) \\
+Percent Tract Along Safe Route to School & percentage & Built
+Environment Indicators (ACS) \\
+\emph{Parks \& Recreation Access} & & \\
+Percent Tract Within 15-Minute Walk to Playground & percentage & Built
+Environment Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk of Recreation Center & percentage &
+Built Environment Indicators (ACS) \\
+Percent Tract Within 10-Minute Walk of Park & percentage & Built
+Environment Indicators (ACS) \\
+Percent Tract Within ¼ Mile of Trail & percentage & Built Environment
+Indicators (ACS) \\
+\emph{Safety \& Wellness} & & \\
+Percent Tract Within 15-Minute Walk of Health Care Facility & percentage
+& Built Environment Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk of Mental Health Provider &
+percentage & Built Environment Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk of Police Department & percentage &
+Built Environment Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk of Fire Station & percentage & Built
+Environment Indicators (ACS) \\
+Percent Tract Within 250 Feet of High Injury Network Corridor &
+percentage & Built Environment Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk of Liquor Store & percentage & Built
+Environment Indicators (ACS) \\
+\emph{Access to Transit} & & \\
+Percent Tract Within 2-Minute Walk of Bus Stop & percentage & Built
+Environment Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk of Metro Station & percentage &
+Built Environment Indicators (ACS) \\
+Percent Tract Within 5-Minute Walk of Capital Bikeshare Location &
+percentage & Built Environment Indicators (ACS) \\
+Percent Street Area With Bike Lanes & percentage & Built Environment
+Indicators (ACS) \\
+Percent Households With Work Commute Under 45 Mins & percentage & Built
+Environment Indicators (ACS) \\
+\emph{Public Safety \& Tract Infrastructure} & & \\
+Percent Buildings of Good Quality & percentage & Built Environment
+Indicators (ACS) \\
+Percent Homes Built Since 1970 & percentage & Built Environment
+Indicators (ACS) \\
+Percent 311 Calls Made for Sidewalk Repair & percentage & Built
+Environment Indicators (ACS) \\
+Percent Tract Within 2-Minute Walk of Vacant or Blighted House &
+percentage & Built Environment Indicators (ACS) \\
+Percent Tract Within 2-Minute Walk of Vacant Lot & percentage & Built
+Environment Indicators (ACS) \\
+Percent Sidewalks Within 30 Feet of Streetlight & percentage & Built
+Environment Indicators (ACS) \\
+Percent Tracts Alleys and Parking Lots & percentage & Built Environment
+Indicators (ACS) \\
+\emph{Digital Access \& Educational Resources} & & \\
+Percent Tract Within 15-Minute Walk of Library & percentage & Built
+Environment Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk of Wireless Hotspot & percentage &
+Built Environment Indicators (ACS) \\
+Percent Households With Broadband Internet & percentage & Built
+Environment Indicators (ACS) \\
+\emph{Economic \& Financial Access} & & \\
+Percent Tract Within 15-Minute Walk of Banking Institution & percentage
+& Built Environment Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk of Cash Checking Institution &
+percentage & Built Environment Indicators (ACS) \\
+Percent Housing Units Affordable & percentage & Built Environment
+Indicators (ACS) \\
+\emph{Food Access} & & \\
+Percent Tract Within 15-Minute Walk of Farmers Market & percentage &
+Built Environment Indicators (ACS) \\
+Percent Tract Within 5-Minute Walk of Restaurant & percentage & Built
+Environment Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk of Grocery Store & percentage &
+Built Environment Indicators (ACS) \\
+Percent Tract in Low Food Access Area & percentage & Built Environment
+Indicators (ACS) \\
+Percent Tract Within 15-Minute Walk of Healthy Corner Store & percentage
+& Built Environment Indicators (ACS) \\
+\emph{Climate Resilience} & & \\
+Percent Tract With Tree Canopy & percentage & Built Environment
+Indicators (ACS) \\
+Percent Tract Within Floodplain & percentage & Built Environment
+Indicators (ACS) \\
+\emph{Other} & & \\
+2024 Voter Turnout (\%) & percentage & DC Board of Elections \\
+\textbf{BLOCK LEVEL VARIABLES -- POLYGON} & & \\
+\emph{2020 ACS} & & \\
+Total Population & count & 2020 ACS \\
+Percent White Alone & percentage & 2020 ACS \\
+Percent Black Alone & percentage & 2020 ACS \\
+Percent Asian Alone & percentage & 2020 ACS \\
+Percent Renter Occupied & percentage & 2020 ACS \\
+Percent Owner Occupied & percentage & 2020 ACS \\
+\textbf{OTHER POLYGON DATA} & & \\
+Parks and Recreation Locations & map overlay, no units & Open Data DC \\
+\textbf{SCHOOL-LEVEL DATA -- POINT} & & \\
+\emph{Attendance} & & \\
+Chronic Absenteeism Rate & percentage & OSSE \\
+Pre-K Chronic Absenteeism Rate & percentage & OSSE \\
+Attendance Growth & OSSE metric & OSSE \\
+\emph{Classroom Metrics} & & \\
+CLASS Framework - Pre-K Classroom Organization & OSSE metric & OSSE \\
+CLASS Framework - Pre-K Emotional Support & OSSE metric & OSSE \\
+CLASS Framework - Pre-K Instructional Support & OSSE metric & OSSE \\
+3rd Grade ELA Scores & percentage & OSSE \\
+8th Grade Math Scores & percentage & OSSE \\
+School Level Economic Disadvantage & percentage & OSSE \\
+\emph{Other} & & \\
+2024 Air Quality Monitoring Sites & map overlay, no units & Open Data
+DC \\
 
 \end{longtable}
 
