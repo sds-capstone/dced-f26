@@ -83,24 +83,106 @@ The built environment indicators are divided into the subcategories:
 *climate resilience. 
 
 Ultimately, our tract-level data contains 54 different observable variables and 11,034 observations.
-```{r}
-#| label: tbl-variables
-#| tbl-cap: "Variables by Level, Category, and Source"
-#| echo: false
 
-library(tidyverse)
-library(knitr)
-categories <- tibble(
-  Category = c("Economic Opportunity & Housing Affordability", "Demographic Diversity", "Public Safety & Neighborhood Quality", "Transportation & Recreational Access", "Built Environment Indicators"),
-  variable1 = c("Poverty Rate", "Percent Foreign-born", "Land Use Diversity Score (0-1)", "Child Development Centers Per Capita", "Access to School"),
-  variable2 = c("Median Household Income", "Percent White Only", "Percent Positive Land Uses", "Transit Stops Per Capita", "Parks + Recreation Access" ),
-  variable3 = c("Median Rent", NA, "Parks Per Capita", NA, "Safety Wellness Indicators"),
-  variable4 = c("Affordable Housing Units Constructed Since 2015 Per Capita", NA, "Crimes Per Capita", NA, "Access to Transit" )
-)
+| Variable | Unit | Source |
+|---|---|---|
+| **TRACT-LEVEL VARIABLES – POLYGON** | | |
+| *Open Data DC* | | |
+| Affordable Housing Units Constructed Since 2015 Per Capita | rate | Open Data DC |
+| Land Use Diversity Score (0-1) | score (0-1) | Open Data DC |
+| Percent Positive Land Uses | percentage | Open Data DC |
+| Parks Per Capita | rate | Open Data DC |
+| Child Development Centers Per Capita | rate | Open Data DC |
+| Crimes Per Capita in 2025 | rate | Open Data DC |
+| Transit Stops Per Capita | rate | Open Data DC |
+| *Demographics and Income* | | |
+| Percent Foreign-Born | percentage | ACS |
+| Percent White Only | percentage | ACS |
+| Poverty Rate (%) | percentage | ACS |
+| Median Household Income | USD | ACS |
+| Median Rent | USD | ACS |
+| *Educational Attainment and Employment* | | |
+| Employment Rate Age 20-24 | percentage | ACS |
+| Employment Rate Age 25-29 | percentage | ACS |
+| High School Graduation Percentage | percentage | ACS |
+| Bachelor's or Higher Percentage | percentage | ACS |
+| *Access to School* | | |
+| Percent Tract Within 15-Minute Walk to School | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk to Modernized School | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 2-Minute Walk of School Crossing Guard | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Along Safe Route to School | percentage | Built Environment Indicators (ACS) |
+| *Parks & Recreation Access* | | |
+| Percent Tract Within 15-Minute Walk to Playground | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk of Recreation Center | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 10-Minute Walk of Park | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within ¼ Mile of Trail | percentage | Built Environment Indicators (ACS) |
+| *Safety & Wellness* | | |
+| Percent Tract Within 15-Minute Walk of Health Care Facility | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk of Mental Health Provider | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk of Police Department | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk of Fire Station | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 250 Feet of High Injury Network Corridor | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk of Liquor Store | percentage | Built Environment Indicators (ACS) |
+| *Access to Transit* | | |
+| Percent Tract Within 2-Minute Walk of Bus Stop | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk of Metro Station | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 5-Minute Walk of Capital Bikeshare Location | percentage | Built Environment Indicators (ACS) |
+| Percent Street Area With Bike Lanes | percentage | Built Environment Indicators (ACS) |
+| Percent Households With Work Commute Under 45 Mins | percentage | Built Environment Indicators (ACS) |
+| *Public Safety & Tract Infrastructure* | | |
+| Percent Buildings of Good Quality | percentage | Built Environment Indicators (ACS) |
+| Percent Homes Built Since 1970 | percentage | Built Environment Indicators (ACS) |
+| Percent 311 Calls Made for Sidewalk Repair | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 2-Minute Walk of Vacant or Blighted House | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 2-Minute Walk of Vacant Lot | percentage | Built Environment Indicators (ACS) |
+| Percent Sidewalks Within 30 Feet of Streetlight | percentage | Built Environment Indicators (ACS) |
+| Percent Tracts Alleys and Parking Lots | percentage | Built Environment Indicators (ACS) |
+| *Digital Access & Educational Resources* | | |
+| Percent Tract Within 15-Minute Walk of Library | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk of Wireless Hotspot | percentage | Built Environment Indicators (ACS) |
+| Percent Households With Broadband Internet | percentage | Built Environment Indicators (ACS) |
+| *Economic & Financial Access* | | |
+| Percent Tract Within 15-Minute Walk of Banking Institution | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk of Cash Checking Institution | percentage | Built Environment Indicators (ACS) |
+| Percent Housing Units Affordable | percentage | Built Environment Indicators (ACS) |
+| *Food Access* | | |
+| Percent Tract Within 15-Minute Walk of Farmers Market | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 5-Minute Walk of Restaurant | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk of Grocery Store | percentage | Built Environment Indicators (ACS) |
+| Percent Tract in Low Food Access Area | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within 15-Minute Walk of Healthy Corner Store | percentage | Built Environment Indicators (ACS) |
+| *Climate Resilience* | | |
+| Percent Tract With Tree Canopy | percentage | Built Environment Indicators (ACS) |
+| Percent Tract Within Floodplain | percentage | Built Environment Indicators (ACS) |
+| *Other* | | |
+| 2024 Voter Turnout (%) | percentage | DC Board of Elections |
+| **BLOCK LEVEL VARIABLES – POLYGON** | | |
+| *2020 ACS* | | |
+| Total Population | count | 2020 ACS |
+| Percent White Alone | percentage | 2020 ACS |
+| Percent Black Alone | percentage | 2020 ACS |
+| Percent Asian Alone | percentage | 2020 ACS |
+| Percent Renter Occupied | percentage | 2020 ACS |
+| Percent Owner Occupied | percentage | 2020 ACS |
+| **OTHER POLYGON DATA** | | |
+| Parks and Recreation Locations | map overlay, no units | Open Data DC |
+| **SCHOOL-LEVEL DATA – POINT** | | |
+| *Attendance* | | |
+| Chronic Absenteeism Rate | percentage | OSSE |
+| Pre-K Chronic Absenteeism Rate | percentage | OSSE |
+| Attendance Growth | OSSE metric | OSSE |
+| *Classroom Metrics* | | |
+| CLASS Framework - Pre-K Classroom Organization | OSSE metric | OSSE |
+| CLASS Framework - Pre-K Emotional Support | OSSE metric | OSSE |
+| CLASS Framework - Pre-K Instructional Support | OSSE metric | OSSE |
+| 3rd Grade ELA Scores | percentage | OSSE |
+| 8th Grade Math Scores | percentage | OSSE |
+| School Level Economic Disadvantage | percentage | OSSE |
+| *Other* | | |
+| 2024 Air Quality Monitoring Sites | map overlay, no units | Open Data DC |
 
-kable(categories, col.names = c("Category", "Variable 1", "Variable 2", "Variable 3", "Variable 4"))
+: Categorized Outcome Variables {#tbl-outcome-categories}
 
-```
 
   
   Our point data belongs to 3 main categories: Attendance (D.C. School Level), Classroom Metrics (D.C. School Level), and Point & Polygon Data (ACS Level)  (@tbl-predictor-categories).
@@ -110,6 +192,8 @@ kable(categories, col.names = c("Category", "Variable 1", "Variable 2", "Variabl
 #| tbl-cap: "Categorized Predictor Variables"
 #| echo: false
 
+library(tidyverse)
+library(knitr)
 
 categories_predictors <- tibble(
   Category = c("Attendance (OSSE)", "Graduation and College Enrollment (OSSE)", "Enrollment (ACS)", "Level of Educational Attainment (ACS)", "Employment(ACS)"),
@@ -156,11 +240,11 @@ tracts_neighborhoods <- data |>
   distinct(short_name, neighborhood) |>
   count(neighborhood, sort = TRUE)
 
-ggplot(tracts_neighborhoods, aes(x = neighborhood, y = n)) +
-  geom_line(colorl = "lightblue") +
+ggplot(tracts_neighborhoods, aes(x = reorder(neighborhood, -n), y = n, group = 1)) +
+  geom_line(color = "lightblue") +
    scale_y_continuous(labels = label_comma(),
                      expand = expansion(mult = c(0, 0.05))) +
-  labs(x = "Neighborhood", y = "Number of Tracts assigned to Neighborhood", caption = “Line plot displaying number of census tracts aggregated to each D.C. neighborhood in our data.”) +
+  labs(x = "Neighborhood", y = "Number of Tracts assigned to Neighborhood", caption = "Line plot displaying number of census tracts aggregated to each D.C. neighborhood in our data.") +
   theme_minimal(base_size = 9) +
   theme(
     axis.text.x = element_blank(),
@@ -182,6 +266,7 @@ ggplot(tracts_neighborhoods, aes(x = neighborhood, y = n)) +
 library(dplyr)
 library(tidyverse)
 library(sf)
+library(knitr)
 
   
 key_variables_df <- subset(data, variable %in% c("Poverty Rate (%)", "Percent Foreign-Born", "Percent Positive Land Uses", "Transit Stops Per Capita", "Percent Tract Within 15-Minute Walk of Health Care Facility", "% of Students Chronically Absent, 24-25")) |>
@@ -207,7 +292,7 @@ While comparing our demographic and education-related variables at the tract lev
 ```{r}
 #| echo: false
 
-dcps_plot <- readRDS(here::here(“data-files”, “schools_with_geometry”)) |>
+dcps_plot <- readRDS("../data-files/schools_with_geometry") |>
   st_drop_geometry() |>
   select(c(school_code, variable, percent, ward)) |>
   pivot_wider(names_from = "variable", values_from = "percent")
@@ -237,7 +322,7 @@ geom_point() +
 facet_wrap(vars(ward)) + 
 scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
 scale_x_continuous(labels = scales::percent_format(scale = 1)) +
-labs(y = “3rd-Graders Meeting or Exceeding ELA Requirements”)
+labs(y = "3rd-Graders Meeting or Exceeding ELA Requirements")
 ```
 
 
