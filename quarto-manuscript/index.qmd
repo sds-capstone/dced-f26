@@ -67,7 +67,7 @@ We pull data from many different sources. For more generalized data from Washing
   
   Additionally, we incorporate data from both EdScape and Open Data DC and identified variables that seemed the most important for the goals of the project. Open Data DC is managed by the Enterprise Data team in the Office of the Chief Technology Officer and uses city government open data [@opendatadc]. ED Scape, created by the Office of the Deputy Mayor of Education (DME), carries downloadable data sets from the DME specific to schools in Washington, DC [@edscape]. 
 
-	All polygonal data downloaded via EdScape, Open Data DC, ACS, and the Decennial Census are categorized by census tract, which we weighted by population to fit into their respective D.C. ward or neighborhood. In D.C., there are 8 wards with roughly equal populations, representing the 8 administrative and electoral districts making up the city. Neighborhoods are unofficial designations that do not represent administrative districts and have broader populations and size, but were aggregated using the same methodology. The dashboard also includes a limited set of variables counted by census blocks, which are much smaller units that make up a census tract, but include less data for privacy concerns. However, neither tracts, neighborhoods, nor wards can be cleanly matched to each other because they do not share the same boundaries. Blocks are our smallest visual data and refer to the minimal amount of area completely surrounded by streets. Cumulatively, we organized our data to be counted in estimates of census tract or school populations, percentages, or counts in a specific D.C. ward, block, tract, or neighborhood.
+All polygonal data downloaded via EdScape, Open Data DC, ACS, and the Decennial Census are categorized by census tract, which we weighted by population to fit into their respective D.C. ward or neighborhood. In D.C., there are 8 wards with roughly equal populations, representing the 8 administrative and electoral districts making up the city. Neighborhoods are unofficial designations that do not represent administrative districts and have broader populations and size, but were aggregated using the same methodology. The dashboard also includes a limited set of variables counted by census blocks, which are much smaller units that make up a census tract, but include less data for privacy concerns. However, neither tracts, neighborhoods, nor wards can be cleanly matched to each other because they do not share the same boundaries. Blocks are our smallest visual data and refer to the minimal amount of area completely surrounded by streets. Cumulatively, we organized our data to be counted in estimates of census tract or school populations, percentages, or counts in a specific D.C. ward, block, tract, or neighborhood.
 
 ### Data Description
 
@@ -173,8 +173,7 @@ We pull data from many different sources. For more generalized data from Washing
 
   Ultimately, our tract-level data contains 54 different observable variables and 11,034 observations.
 
- Our point data belongs to 3 main categories: Attendance (D.C. School Level), Classroom Metrics (D.C. School Level), and Point & Polygon Data (ACS Level).  
-  
+ Our point data belongs to 3 main categories: Attendance (D.C. School Level), Classroom Metrics (D.C. School Level), and Other (Air Quality Index Data from ACS).  
   The last of our data is at the D.C. block level, taken from the 2020 decennial census. It represents the smallest square footage per unit in comparison to the neighborhood and ward level, but is limited in variables. This data includes: total population, percent white alone, percent black alone, percent asian alone, percent renter-occupied, and percent owner-occupied. 
 
 #### Summary Statistics and Exploratory Data Analysis
@@ -360,8 +359,8 @@ kruskal_df %>%
   ) %>%
   kable_classic(full_width = FALSE, html_font = "Arial") %>%
   row_spec(0, bold = TRUE, background = "#f2f2f2") %>%
-  column_spec(1, width = "26em") %>%
-  column_spec(2:3, width = "8em") %>%
+  column_spec(1, width = "20em") %>%
+  column_spec(2:3, width = "7em") %>%
   footnote(
     general = "* p < 0.5",
     general_title = ""
@@ -403,9 +402,9 @@ school_df %>%
   ) %>%
   kable_classic(full_width = FALSE, html_font = "Arial") %>%
   row_spec(0, bold = TRUE, background = "#f2f2f2") %>%
-  column_spec(1, width = "22em") %>%
-  column_spec(2, width = "6em") %>%
-  column_spec(3:4, width = "10em")
+  column_spec(1, width = "16em") %>%
+  column_spec(2, width = "5em") %>%
+  column_spec(3:4, width = "7em")
 ```
 These results give us target schools to look into for examples of what is causing better educational outcomes with similar demographics. We hope to use these results to inform future policymaking. 
 
