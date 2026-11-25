@@ -240,8 +240,8 @@ tracts_neighborhoods <- data |>
   distinct(short_name, neighborhood) |>
   count(neighborhood, sort = TRUE)
 
-ggplot(tracts_neighborhoods, aes(x = neighborhood, y = n)) +
-  geom_line(colorl = "lightblue") +
+ggplot(tracts_neighborhoods, aes(x = reorder(neighborhood, -n), y = n, group = 1)) +
+  geom_line(color = "lightblue") +
    scale_y_continuous(labels = label_comma(),
                      expand = expansion(mult = c(0, 0.05))) +
   labs(x = "Neighborhood", y = "Number of Tracts assigned to Neighborhood", caption = "Line plot displaying number of census tracts aggregated to each D.C. neighborhood in our data.") +
