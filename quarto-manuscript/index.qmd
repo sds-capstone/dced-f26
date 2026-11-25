@@ -43,7 +43,7 @@ format:
 
 ## Introduction
 
-In the District of Columbia, significant disparities in resources and economic mobility outcomes create different realities of opportunity for residents across the district. Aggregate citywide statistics often mask contrasts between local metrics, losing track of inequities through broad averages of the data, an oversimplification that can be observed when exploring poverty and income across the district.
+In the District of Columbia (D.C.), significant disparities in resources and economic mobility steer various realities of opportunity for residents across the entire district. Furthermore, aggregated citywide statistics often mask the contrasts between local metrics, losing spatial inequities through broad averages in data analysis. This oversimplification can be observed when exploring poverty and income across the district. 
 
 D.C. exhibits one of the highest levels of income inequality in the United States, where household income in the highest quintile exceeds that of the lowest quintile by nearly 29 times [@santillo2022washingtondc]. D.C.’s Gini coefficient — which is a value between 0 and 1 where 1 signifies the greatest income inequality — is 0.51 [@Census2023ACSDT5Y2023]. The county encompassing the District of Columbia is above the 95th percentile for income inequality (as measured by the Gini coefficient) among all counties in the United States [@Census2023ACSDT5Y2023]. These economic gaps are heavily spatialized across the city's eight wards; for instance, poverty concentrations predominantly cluster east of the Anacostia River in Wards 7 and 8 [@naveed2017income]. Since commonly reported citywide metrics average out these regional divides, effective policy design requires granular spatial analysis to reveal how opportunity drivers and community resources are distributed across specific neighborhoods.
   
@@ -56,151 +56,55 @@ National data visualization platforms such as the Urban Institute’s Upward Mob
 
 ### Our contribution
 
-To bridge this gap, this capstone project collaborates with the DME to adapt and refine the Urban Institute’s Upward Mobility Dashboard at the local level. This project specifically explores the impact of educational factors on upward mobility across the District of Columbia by aggregating disparate indicators into a unified structure across census tract, neighborhood, ward, and citywide scales. The project aims to create a public-facing web application that illustrates variations in opportunity and offers statistical analysis tools that can be used to evaluate how targeted policy interventions can close gaps in opportunity, providing a localized platform for public reporting, equitable resource allocation, and data-driven decision-making.
+To bridge this gap, we collaborated with the DME to reimagine the Urban Institute’s Upward Mobility Dashboard at the local level. We specifically explore the impact of educational factors on upward mobility across the District of Columbia by aggregating disparate indicators into a unified structure across census tract, neighborhood, ward, and citywide scales. We created a public-facing web application that illustrates variations in opportunity and offers statistical analysis tools that can be used to evaluate how targeted policy interventions can close gaps in opportunity, providing a localized platform for public reporting, equitable resource allocation, and data-driven decision-making.
 
 
 ## Data {#sec-data}
 
-#### Data Sources 
+### Data Sources 
 
-  As we are working to create a comprehensive list of variables that define educational attainment and upward mobility, we have been pulling data from many different sources. For more generalized data from Washington, D.C., we used the 2020 decennial census data, which holds the most recent census information. We have pulled census data for every defined census tract in Washington, D.C., which is a complete count of every resident. It must be noted that decennial census data has the lowest margin of error, as it is a complete count of the Washington, D.C. population, but it can still have discrepancies in census boundaries between years. For more up-to-date information, we have also been accumulating data from the American Community Survey (ACS) in 2024 to observe more accurate indicators of modern D.C. environments. The ACS allows us to collect more recent information, but it represents only a small subset of the D.C. population, as it is an annual survey that is optionally completed. 
+We pull data from many different sources. For more generalized data from Washington, D.C., we use the 2020 decennial census data, which holds the most recent census information. We pull census data for every defined census tract in Washington, D.C., which is a complete count of every resident. We note that decennial census data has the lowest margin of error, as it is a complete count of the Washington, D.C., population, but it can still have discrepancies in census boundaries between years. For more up-to-date information, we use data from the American Community Survey (ACS) in 2024 to observe more accurate indicators of modern D.C. environments. The ACS allows us to collect more recent information, but it represents only a small subset of the D.C. population, as it is an annual survey that is optionally completed. 
   
-  Additionally, our sponsors shared data from both EdScape and Open Data DC and identified variables that seemed the most important for the goals of the project. Open Data DC is managed by the Enterprise Data team in the Office of the Chief Technology Officer and uses city government open data [@opendatadc]. ED Scape, created by the Office of the Deputy Mayor of Education (DME), carries downloadable data sets from the DME specific to schools in Washington, DC [@edscape]. Cumulatively, the data is counted by populations, percentages, counts, and estimates in a specific D.C. ward, block, tract, or neighborhood. Most of our data can be pulled remotely; for functionality, we have our data pulled at the user's choice, not constantly. 
+  Additionally, we incorporate data from both EdScape and Open Data DC and identified variables that seemed the most important for the goals of the project. Open Data DC is managed by the Enterprise Data team in the Office of the Chief Technology Officer and uses city government open data [@opendatadc]. ED Scape, created by the Office of the Deputy Mayor of Education (DME), carries downloadable data sets from the DME specific to schools in Washington, DC [@edscape]. 
 
-#### Data Description
+	All polygonal data downloaded via EdScape, Open Data DC, ACS, and the Decennial Census are categorized by census tract, which we weighted by population to fit into their respective D.C. ward or neighborhood. In D.C., there are 8 wards with roughly equal populations, representing the 8 administrative and electoral districts making up the city. Neighborhoods are unofficial designations that do not represent administrative districts and have broader populations and size, but were aggregated using the same methodology. The dashboard also includes a limited set of variables counted by census blocks, which are much smaller units that make up a census tract, but include less data for privacy concerns. However, neither tracts, neighborhoods, nor wards can be cleanly matched to each other because they do not share the same boundaries. Blocks are our smallest visual data and refer to the minimal amount of area completely surrounded by streets. Cumulatively, we organized our data to be counted in estimates of census tract or school populations, percentages, or counts in a specific D.C. ward, block, tract, or neighborhood.
 
-  We have categorized all of the outcome data and their corresponding variables into different categories for upward mobility in @tbl-outcome-categories below. These can be broken down into 5 main categories: economic opportunity & housing affordability, demographic diversity, public safety & neighborhood quality, transportation & recreational access, and built environment indicators. Economic Opportunity & Housing Affordability covers poverty, income, rent, and affordable housing variables. Demographic diversity explores the percent of different ethnicity and nationalities. Public Safety & Neighborhood Quality highlights land use, crime, and parks & recreation. Transit & Recreational Access includes variables such as child development centers and transit stops per capital. The built environment indicators are divided into the subcategories: access to school, parks & recreation access, safety and wellness indicators, access to transit, public safety & tract infrastructure, digital access & educational resources, economic & financial access, food access, and climate resilience. Ultimately, our outcome data compiles into 53 different observable variables and 14,393 observations. Most of our data can be visualized across neighborhood, ward, and census tract. However, total population, percentage race, percentage renter-occupied, and percent owner-occupied data are only available by D.C. block level.
+### Data Description
+
+ To make important distinctions between the ways we can visualize our data, we categorize our data into tract-level, block-level, and point data. Within each category, we organize our variables into different subdomains pertaining to demographics of upward mobility or their data sources. Our categories for tract-level data can be observed in @tbl-outcome-categories below.
+The built environment indicators are divided into the subcategories: 
+*access to school, parks & recreation access
+*safety and wellness indicators
+*access to transit
+*public safety & tract infrastructure
+*digital access & educational resources
+*economic & financial access
+*food access
+*climate resilience. 
+
+Ultimately, our tract-level data contains 54 different observable variables and 11,034 observations.
 ```{r}
 #| label: tbl-outcome-categories
 #| tbl-cap: "Categorized Outcome Variables"
 #| echo: false
-#| message: false
 
 library(tidyverse)
 library(knitr)
-
-# part 1: the variables
-tract <- tribble(
-  ~category, ~variable, ~unit, ~source,
-  "Open Data DC", "Affordable Housing Units Constructed Since 2015 Per Capita", "rate", "Open Data DC",
-  "Open Data DC", "Land Use Diversity Score (0-1)", "score (0-1)", "Open Data DC",
-  "Open Data DC", "Percent Positive Land Uses", "percentage", "Open Data DC",
-  "Open Data DC", "Parks Per Capita", "rate", "Open Data DC",
-  "Open Data DC", "Child Development Centers Per Capita", "rate", "Open Data DC",
-  "Open Data DC", "Crimes Per Capita in 2025", "rate", "Open Data DC",
-  "Open Data DC", "Transit Stops Per Capita", "rate", "Open Data DC",
-  "Demographics and Income", "Percent Foreign-Born", "percentage", "ACS",
-  "Demographics and Income", "Percent White Only", "percentage", "ACS",
-  "Demographics and Income", "Poverty Rate (%)", "percentage", "ACS",
-  "Demographics and Income", "Median Household Income", "USD", "ACS",
-  "Demographics and Income", "Median Rent", "USD", "ACS",
-  "Educational Attainment and Employment", "Employment Rate Age 20-24", "percentage", "ACS",
-  "Educational Attainment and Employment", "Employment Rate Age 25-29", "percentage", "ACS",
-  "Educational Attainment and Employment", "High School Graduation Percentage", "percentage", "ACS",
-  "Educational Attainment and Employment", "Bachelor's or Higher Percentage", "percentage", "ACS",
-  "Access to School", "Percent Tract Within 15-Minute Walk to School", "percentage", "Built Environment Indicators (ACS)",
-  "Access to School", "Percent Tract Within 15-Minute Walk to Modernized School", "percentage", "Built Environment Indicators (ACS)",
-  "Access to School", "Percent Tract Within 2-Minute Walk of School Crossing Guard", "percentage", "Built Environment Indicators (ACS)",
-  "Access to School", "Percent Tract Along Safe Route to School", "percentage", "Built Environment Indicators (ACS)",
-  "Parks & Recreation Access", "Percent Tract Within 15-Minute Walk to Playground", "percentage", "Built Environment Indicators (ACS)",
-  "Parks & Recreation Access", "Percent Tract Within 15-Minute Walk of Recreation Center", "percentage", "Built Environment Indicators (ACS)",
-  "Parks & Recreation Access", "Percent Tract Within 10-Minute Walk of Park", "percentage", "Built Environment Indicators (ACS)",
-  "Parks & Recreation Access", "Percent Tract Within ¼ Mile of Trail", "percentage", "Built Environment Indicators (ACS)",
-  "Safety & Wellness", "Percent Tract Within 15-Minute Walk of Health Care Facility", "percentage", "Built Environment Indicators (ACS)",
-  "Safety & Wellness", "Percent Tract Within 15-Minute Walk of Mental Health Provider", "percentage", "Built Environment Indicators (ACS)",
-  "Safety & Wellness", "Percent Tract Within 15-Minute Walk of Police Department", "percentage", "Built Environment Indicators (ACS)",
-  "Safety & Wellness", "Percent Tract Within 15-Minute Walk of Fire Station", "percentage", "Built Environment Indicators (ACS)",
-  "Safety & Wellness", "Percent Tract Within 250 Feet of High Injury Network Corridor", "percentage", "Built Environment Indicators (ACS)",
-  "Safety & Wellness", "Percent Tract Within 15-Minute Walk of Liquor Store", "percentage", "Built Environment Indicators (ACS)",
-  "Access to Transit", "Percent Tract Within 2-Minute Walk of Bus Stop", "percentage", "Built Environment Indicators (ACS)",
-  "Access to Transit", "Percent Tract Within 15-Minute Walk of Metro Station", "percentage", "Built Environment Indicators (ACS)",
-  "Access to Transit", "Percent Tract Within 5-Minute Walk of Capital Bikeshare Location", "percentage", "Built Environment Indicators (ACS)",
-  "Access to Transit", "Percent Street Area With Bike Lanes", "percentage", "Built Environment Indicators (ACS)",
-  "Access to Transit", "Percent Households With Work Commute Under 45 Mins", "percentage", "Built Environment Indicators (ACS)",
-  "Public Safety & Tract Infrastructure", "Percent Buildings of Good Quality", "percentage", "Built Environment Indicators (ACS)",
-  "Public Safety & Tract Infrastructure", "Percent Homes Built Since 1970", "percentage", "Built Environment Indicators (ACS)",
-  "Public Safety & Tract Infrastructure", "Percent 311 Calls Made for Sidewalk Repair", "percentage", "Built Environment Indicators (ACS)",
-  "Public Safety & Tract Infrastructure", "Percent Tract Within 2-Minute Walk of Vacant or Blighted House", "percentage", "Built Environment Indicators (ACS)",
-  "Public Safety & Tract Infrastructure", "Percent Tract Within 2-Minute Walk of Vacant Lot", "percentage", "Built Environment Indicators (ACS)",
-  "Public Safety & Tract Infrastructure", "Percent Sidewalks Within 30 Feet of Streetlight", "percentage", "Built Environment Indicators (ACS)",
-  "Public Safety & Tract Infrastructure", "Percent Tracts Alleys and Parking Lots", "percentage", "Built Environment Indicators (ACS)",
-  "Digital Access & Educational Resources", "Percent Tract Within 15-Minute Walk of Library", "percentage", "Built Environment Indicators (ACS)",
-  "Digital Access & Educational Resources", "Percent Tract Within 15-Minute Walk of Wireless Hotspot", "percentage", "Built Environment Indicators (ACS)",
-  "Digital Access & Educational Resources", "Percent Households With Broadband Internet", "percentage", "Built Environment Indicators (ACS)",
-  "Economic & Financial Access", "Percent Tract Within 15-Minute Walk of Banking Institution", "percentage", "Built Environment Indicators (ACS)",
-  "Economic & Financial Access", "Percent Tract Within 15-Minute Walk of Cash Checking Institution", "percentage", "Built Environment Indicators (ACS)",
-  "Economic & Financial Access", "Percent Housing Units Affordable", "percentage", "Built Environment Indicators (ACS)",
-  "Food Access", "Percent Tract Within 15-Minute Walk of Farmers Market", "percentage", "Built Environment Indicators (ACS)",
-  "Food Access", "Percent Tract Within 5-Minute Walk of Restaurant", "percentage", "Built Environment Indicators (ACS)",
-  "Food Access", "Percent Tract Within 15-Minute Walk of Grocery Store", "percentage", "Built Environment Indicators (ACS)",
-  "Food Access", "Percent Tract in Low Food Access Area", "percentage", "Built Environment Indicators (ACS)",
-  "Food Access", "Percent Tract Within 15-Minute Walk of Healthy Corner Store", "percentage", "Built Environment Indicators (ACS)",
-  "Climate Resilience", "Percent Tract With Tree Canopy", "percentage", "Built Environment Indicators (ACS)",
-  "Climate Resilience", "Percent Tract Within Floodplain", "percentage", "Built Environment Indicators (ACS)",
-  "Other", "2024 Voter Turnout (%)", "percentage", "DC Board of Elections",
+categories <- tibble(
+  Category = c("Economic Opportunity & Housing Affordability", "Demographic Diversity", "Public Safety & Neighborhood Quality", "Transportation & Recreational Access", "Built Environment Indicators"),
+  variable1 = c("Poverty Rate", "Percent Foreign-born", "Land Use Diversity Score (0-1)", "Child Development Centers Per Capita", "Access to School"),
+  variable2 = c("Median Household Income", "Percent White Only", "Percent Positive Land Uses", "Transit Stops Per Capita", "Parks + Recreation Access" ),
+  variable3 = c("Median Rent", NA, "Parks Per Capita", NA, "Safety Wellness Indicators"),
+  variable4 = c("Affordable Housing Units Constructed Since 2015 Per Capita", NA, "Crimes Per Capita", NA, "Access to Transit" )
 )
 
-block <- tribble(
-  ~category, ~variable, ~unit, ~source,
-  "2020 ACS", "Total Population", "count", "2020 ACS",
-  "2020 ACS", "Percent White Alone", "percentage", "2020 ACS",
-  "2020 ACS", "Percent Black Alone", "percentage", "2020 ACS",
-  "2020 ACS", "Percent Asian Alone", "percentage", "2020 ACS",
-  "2020 ACS", "Percent Renter Occupied", "percentage", "2020 ACS",
-  "2020 ACS", "Percent Owner Occupied", "percentage", "2020 ACS",
-)
+kable(categories, col.names = c("Category", "Variable 1", "Variable 2", "Variable 3", "Variable 4"))
 
-school <- tribble(
-  ~category, ~variable, ~unit, ~source,
-  "Attendance", "Chronic Absenteeism Rate", "percentage", "OSSE",
-  "Attendance", "Pre-K Chronic Absenteeism Rate", "percentage", "OSSE",
-  "Attendance", "Attendance Growth", "OSSE metric", "OSSE",
-  "Classroom Metrics", "CLASS Framework - Pre-K Classroom Organization", "OSSE metric", "OSSE",
-  "Classroom Metrics", "CLASS Framework - Pre-K Emotional Support", "OSSE metric", "OSSE",
-  "Classroom Metrics", "CLASS Framework - Pre-K Instructional Support", "OSSE metric", "OSSE",
-  "Classroom Metrics", "3rd Grade ELA Scores", "percentage", "OSSE",
-  "Classroom Metrics", "8th Grade Math Scores", "percentage", "OSSE",
-  "Classroom Metrics", "School Level Economic Disadvantage", "percentage", "OSSE",
-  "Other", "2024 Air Quality Monitoring Sites", "map overlay, no units", "Open Data DC"
-)
-
-other_polygon <- tribble(
-  ~category, ~variable, ~unit, ~source,
-  NA, "Parks and Recreation Locations", "map overlay, no units", "Open Data DC"
-)
-
-vars <- bind_rows(
-  "Tract-Level Variables – Polygon" = tract,
-  "Block Level Variables – Polygon" = block,
-  "Other Polygon Data" = other_polygon,
-  "School-Level Data – Point" = school,
-  .id = "level"
-)
-
-# part 2: heading rows
-shown <- vars |>
-  mutate(level = fct_inorder(level), order = consecutive_id(level, category)) |>
-  group_by(level, order, category) |>
-  reframe(
-    # no heading if no category
-    Variable = c(if (!is.na(cur_group()$category)) paste0("*", cur_group()$category, "*"), variable),
-    Unit = c(if (!is.na(cur_group()$category)) "", unit),
-    Source = c(if (!is.na(cur_group()$category)) "", source)
-  ) |>
-  group_by(level) |>
-  reframe(
-    Variable = c(paste0("**", toupper(cur_group()$level), "**"), Variable),
-    Unit = c("", Unit),
-    Source = c("", Source)
-  ) |>
-  select(-level)
-
-# part 3: table
-kable(shown)
 ```
 
   
- Our predictor variables have 4 main categories: attendance, graduation & college enrollment, enrollment, level of educational attainment, and employment, with some available by DC school district and others by census tract (@tbl-predictor-categories)
+  Our point data belongs to 3 main categories: Attendance (D.C. School Level), Classroom Metrics (D.C. School Level), and Point & Polygon Data (ACS Level)  (@tbl-predictor-categories).
+ 
 ```{r}
 #| label: tbl-predictor-categories
 #| tbl-cap: "Categorized Predictor Variables"
@@ -235,11 +139,10 @@ categories_predictors <- tibble(
 kable(categories_predictors, col.names = c("Category", "Variable 1", "Variable 2", "Variable 3", "Variable 4"))
 ```
 
-#### Data Cleaning and Preparation
-  All data sets were imported and cleaned individually to best suit the type of visualizations our sponsor wanted to observe. Each individual data set was eventually comprised of 6 columns: `variable`, `estimate`, `short_name`, `neighborhood`, `ward`, and `geometry`. `Variable` corresponds to the specific variable the data is examining (i.e., “Poverty Rate”, “Median Household Income”). `Estimate` is the given measure of the data and can be represented as a count or a percentage. `short_name` corresponds to the census tract that each estimate is a total for. The last three columns contain the specific neighborhood, ward, and polygon geometry for which each estimate is a count. Each of the 53 variables was weighted across the census, neighborhood, and ward populations. We included NA values, but converted them to a string called “No Data” for better readability in the visualizations. 
+The last of our data is at the D.C. block level, taken from the 2020 decennial census. It represents the smallest square footage per unit in comparison to the neighborhood and ward level, but is limited in variables. This data includes: total population, percent white alone, percent black alone, percent asian alone, percent renter-occupied, and percent owner-occupied. 
 
 #### Summary Statistics and Exploratory Data Analysis
-  Overall, our combined data contains 14,393 rows (observations), 53 variables, 206 tracts, 107 neighborhoods, and 8 wards. To contextualize the spatial demographics of the number of census tracts to neighborhoods, we have provided @fig-tracts below. 
+  Overall, our combined data contains 14,393 rows (observations), 53 variables, 206 tracts, 107 neighborhoods, and 8 wards. To contextualize the spatial demographics of the number of census tracts per neighborhood, we have provided @fig-tracts below. 
   
 ```{r}
 #| label: fig-tracts
@@ -254,10 +157,10 @@ tracts_neighborhoods <- data |>
   count(neighborhood, sort = TRUE)
 
 ggplot(tracts_neighborhoods, aes(x = neighborhood, y = n)) +
-  geom_col(fill = "lightblue") +
+  geom_line(colorl = "lightblue") +
    scale_y_continuous(labels = label_comma(),
                      expand = expansion(mult = c(0, 0.05))) +
-  labs(x = "Neighborhood", y = "Number of Tracts") +
+  labs(x = "Neighborhood", y = "Number of Tracts assigned to Neighborhood", caption = “Line plot displaying number of census tracts aggregated to each D.C. neighborhood in our data.”) +
   theme_minimal(base_size = 9) +
   theme(
     axis.text.x = element_blank(),
@@ -267,9 +170,9 @@ ggplot(tracts_neighborhoods, aes(x = neighborhood, y = n)) +
   
 ```
   
-   Most neighborhoods are made up of 1-2 census tracts, but some has as many as 8-9 census tracts, thus we must weight for population in our analyses. 
+  Because census tracts contain roughly similar populations, we can understand the population distribution across neighborhoods in the D.C. area. It can be seen that most neighborhoods are made up of 1-2 census tracts, but some have as many as 8-9 tracts making them up. When looking into inequities across all of D.C., it is important to understand the population distribution and demographics. We account for these population differences by weighting 2020 census tracts by population. 
   
-  For simplicity, the rest of this exploratory data analysis will contain 6 key variables that represent each of our outcome categories: poverty, percent foreign-born, parks per capita, child development centers per capita, percent tract within a 15-minute walk of a health care facility, and the predictor variable: chronic absenteeism rate. 
+  For simplicity, the table below will contain 6 key variables that represent each of our tract-level categories: poverty, percent foreign-born, parks per capita, child development centers per capita, percent tract within a 15-minute walk of a health care facility, and one point variable: chronic absenteeism rate. 
   
 ```{r}
 #| label: tbl-summary-stats
@@ -288,82 +191,187 @@ key_variables_df <- subset(data, variable %in% c("Poverty Rate (%)", "Percent Fo
 summary_stats <- key_variables_df |>
   group_by(variable) |>
   summarize(
-    mean = mean(estimate, na.rm = TRUE),
-    median = median(estimate, na.rm = TRUE),
-    sd = sd(estimate, na.rm = TRUE),
-    min = min(estimate, na.rm = TRUE),
-    max = max(estimate, na.rm = TRUE)
+    mean = round(mean(estimate, na.rm = TRUE), 2),
+    median =round( median(estimate, na.rm = TRUE), 2),
+    sd = round(sd(estimate, na.rm = TRUE), 2),
+    min =round( min(estimate, na.rm = TRUE), 2),
+    max = round(max(estimate, na.rm = TRUE), 2),
   ) 
 
 kable(summary_stats, col.names = c("Variable", "Mean", "Median", "Standard Deviation", "Minimum", "Maximum"))
 ```
-  In @tbl-summary-stats, there is a quick summary of the statistics between our key variables. We can see that there is high variation in most of the data with standard deviations in the 10s and 20s. Additionally, a lot of our percentages have minimums of 0% and maximums of 100%, highlighting the variety within the D.C. tract environments. To better observe data variation across D.C., @fig-ward displays the variation of estimates across the key variables for each ward. 
+  In @tbl-summary-stats, we show a quick summary of the statistics between our key variables. We can see that there is high variation in most of the data, with standard deviations in the 10s and 20s. Additionally, a lot of our percentages have minimums of 0% and maximums of 100%, highlighting the variety within the D.C. tract environments.
+
+While comparing our demographic and education-related variables at the tract level is difficult because the education variables are by school, we do have some demographic information by school. @fig-ward-1 and @fig-ward-2 below show scatterplots showing correlation (or lack thereof) between various demographic variables and various educational outcomes among DC K–12 students. Each point represents a school, and the graph is faceted by the ward each school is located within.
   
 ```{r}
-#| label: fig-ward
-#| fig-cap: "Key Variables estimates by Ward"
-#| echo: false
-ggplot(key_variables_df, aes(factor(ward), estimate)) +
-  geom_boxplot(fill = "steelblue", alpha = 0.6, outlier.size = 0.8) +
-  facet_wrap(~ variable, scales = "free_y") +
-  labs(x = "Ward", y = "Estimate") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
-```
-  
-  As aforementioned, D.C. is characterized by its variable discrepancies across the city. This is highlighted in @fig-ward where we say great variation in the percent of students chronically absent, percent positive lang uses, poverty rates, and percent foreign born. It is to be noted that Ward 6 is unique in that this is near the capital where few live, so there are more transit stops per capita. 
-  While exploring variation in the city is beneficial, we are increasingly interested in the relationship between these variables. These relationships are exemplified in @fig-cor. 
-```{r}
-#| include: false
-dupes <- key_variables_df |>
-  st_drop_geometry() |>
-  count(short_name) |>
-  filter(n > 1)
-
-dupes
-
-key_variables_df |>
-  st_drop_geometry() |>
-  semi_join(head(dupes, 3), by = c("short_name")) |>
-  arrange(short_name)
-
-cors <- key_variables_df |>
-  st_drop_geometry() |>
-  select(short_name, variable, estimate) |>
-  distinct() |>
-  pivot_wider(names_from = variable, values_from = estimate) |>
-  select(-short_name) |>
-  cor(use = "pairwise.complete.obs") |>
-  as.data.frame() |>
-  rownames_to_column("v1") |>
-  pivot_longer(-v1, names_to = "v2", values_to = "r")
-```
-  
-```{r}
-#| label: fig-cor
-#| fig-cap: "Heatmap of Correlation Coefficients for each Key Variable"
 #| echo: false
 
-ggplot(cors, aes(v1, v2, fill = r)) +
-  geom_tile(color = "white") +
-  geom_text(aes(label = round(r, 2)), size = 3) +
-  scale_fill_gradient2(low = "firebrick", mid = "white", high = "steelblue",
-                       limits = c(-1, 1)) +
-  labs(x = NULL, y = NULL, fill = "r") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+dcps_plot <- readRDS(here::here(“data-files”, “schools_with_geometry”)) |>
+  st_drop_geometry() |>
+  select(c(school_code, variable, percent, ward)) |>
+  pivot_wider(names_from = "variable", values_from = "percent")
 ```
-  It can be observed that there is light, negative correlation between most variables. However, the relationship between poverty rate and percent of students chronically absent (-0.24), highlights the possibility of a stronger correlation. Additionally, we see few positive correlations, with the strongest between percent positive land uses and percent foreign born (0.23).
+
+```{r}
+#| label: fig-ward-1
+#| fig-cap: "Economic Disadvantage and Chronic Absenteeism in Washington, D.C. Schools"
+#| echo: false
+
+ggplot(dcps_plot, aes(x = `Economically Disadvantaged Enrolled`, y = `Chronically Absent (K-12)`)) +
+  geom_point() +
+  facet_wrap(vars(ward)) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  scale_x_continuous(labels = scales::percent_format(scale = 1))
+```
+
+In @fig-ward-1, we see a positive correlation across all wards between the percent of economically disadvantaged students in a school and the percent of chronically absent students. This suggests that the impact of economic disadvantage on chronic absenteeism, and potential levers for supporting economically disadvantaged students’ attendance, may be compelling areas for further study. Additionally, we see economic disparities across wards; economically disadvantaged students are much more prevalent in Ward 7 and 8 schools than in, for example, Ward 3 schools.
+
+```{r}
+#| label: fig-ward-2
+#| fig-cap: "English Language Learners and ELA Achievement in Washington, D.C. Schools"
+#| echo: false
+
+ggplot(dcps_plot, aes(x = `English Learners Enrolled`, y = `Percent 3rd Graders Meeting or Exceeding ELA Requirements`)) + 
+geom_point() + 
+facet_wrap(vars(ward)) + 
+scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+scale_x_continuous(labels = scales::percent_format(scale = 1)) +
+labs(y = “3rd-Graders Meeting or Exceeding ELA Requirements”)
+```
+
+
+  
+  As aforementioned, D.C. is characterized by its variable discrepancies across the city. This is highlighted in @fig-ward-2, where we see great variation across wards in whether or not 3rd-graders are meeting ELA requirements. Notably, nearly every school in Wards 1, 7, and 8 has less than 50% of students meeting requirements, while nearly every school in Ward 3 has more than 50% of students meeting requirements. Interestingly, the relationship between percent English-learners and percent meeting ELA requirements seems to vary across wards, suggesting that other variables are also at play in terms of whether or not 3rd-graders tend to meet ELA requirements.
   
   
 ## Methods {#sec-methods}
 
-> Methods: What did you actually do? What techniques or methods did you employ? What were the specifications for any statistical models you used? What software or packages did you use or develop?
+We developed an interactive data exploration dashboard in R to examine how educational and upward mobility factors relate across the District of Columbia.  [Restate the variables from data section]. Due to the available datasets varying in geographic area, time coverage, completeness, we focused on data visualization and interactivity as main goals of the dashboard, rather than formal statistical analysis or causal relationships. 
+Because the source datasets are published at different geographic scales such as census blocks, census tracts, wards, neighborhoods, and individual schools or monitoring sites, spatial layers are standardized to a common coordinate system (`WGS84`) and aligned across geographic levels. Depending on the geographic scale of the source dataset, we used sf, tigris, tidycensus, and arcgislayers for coordinate transformations. 
+Since census tracts do not perfectly fit into ward and neighborhood boundaries, we group tracts into neighborhoods and wards based on block population concentrations from the 2020 Census. We do this by assigning each block (from the 2020 census) to a geographic point within it, and assign the point to a neighborhood and ward polygon. Since tracts do not fit neatly into ward and neighborhood boundaries,  the tract is assigned to the ward and neighborhood in which the highest population of that tract lives. We do this by adding the total block population in each part of the ward or neighborhood and then assigning the tract to the ward or neighborhood with the larger share of its population. We handle schools, facilities, crime records, and monitoring sites differently, linking them by coordinates to their appropriate tracts, neighborhoods, and wards. 
+We employed data cleaning methods that were appropriate to each dataset. Each school data file identifies schools by school codes, which are joined with a file with school coordinates and school codes. Some data sets from the district are missing data for certain schools, for a variety of data collection reasons. When a dataset doesn’t include a certain school code, nothing will be matched to that coordinate, and the school will not appear on a map or scatterplot. Because of this, some map and scatterplot displays include less than the total number of schools. Most school data is broken down by subcategories of students, so we filter to “All Report Card Students” or “All Students.” When possible, we filter to SY25-26 data. In a few cases, we filter to SY24-25 data because that is the only available data. Much of the OSSE school data reports n<10 for metric scores of certain student groups within certain schools, which indicates a count of less than 10 students for that metric. This is due to the OSSE’s Student Privacy and Data Suppression Policy. In these cases, we treated those values as missing data and did not include them in any visualizations. Some census blocks have a population of zero, and no data for these blocks is included or displayed. These blocks appear as white on the blocks map. Some scatterplots will have data for only one of the two selected variables for a given school or tract. When a location is missing data for either of the two selected variables, its point will not appear on the plot. For example, if one variable covers all schools but the other covers only high schools, the scatterplot will show only high schools.
+Certain datasets also include variables with percent signs or USD. We remove the percent and dollar signs and convert them to numeric values, and indicate if a value represents a percentage or amount in USD in the variable name.
+
+We incorporated a built-in data management feature that gives users the ability to switch between loading pre-saved local data files and pulling fresh data from remote sources using `tidycensus`, `tigris`, and `arcgislayers`, allowing the dashboard to start quickly and reliably when using pre-saved data while allowing underlying Census, GIS, and tabular datasets to be refreshed when using remote data retrieval. 
+
+We used choropleth maps for geographic visualization of tract-level data and point overlays for visualization of point/school-level data. Multiple interactive tabs gives the user the ability to switch between visualizations and focuses. Interactive tabs were styled using the `bslib` package.
+An introductory tab outlines the dashboard’s purpose of exploring educational factors and upward mobility across scales, and groups available tract-level, block-level, and point/school-level data to give users an initial understanding of the visualizations possible within this dashboard. The side-by-side map tab allows users to select geographic area, tract-level measures, and school-level measures using separate left-map and right-map control panel, and visually explore patterns between the two side-by-side `leaflet` maps as well as review accompanying summary statistics tables (count, median, mean, and standard deviation), and histograms. The block and school breakdowns tab allows users to select block-level or school-level data to explore local variation within neighborhoods and wards on a map with the selected geography alongside summary statistics and histograms. The linked scatterplots and maps tab lets users explore the distributions of two variables across census tracts or schools through interactive scatterplots built with `plotly` and `leaflet` with click-to-highlight linking between the scatterplot and map, area-based school selection, and controls to clear selections.  
 
 
 ## Results
 
-> Results: What did you learn about the problem you identified in Section 1? This is where you put the tables, figures, and analytics by-products of your work.
+The dashboard provides several visualization options for multi-scale D.C. school and tract-level data, including multi-scale maps, side-by-side visualizations, block/school breakdowns, linked brushing/filtering, scatterplot distributions, and summary statistics. The interactivity of the dashboard, coupled with this flexibility in possible visualizations, is aimed at helping to address the need for granular data visualization due to the large socioeconomic and resource differences across the District of Columbia. 
+
+### Dashboard Layout
+The first page of the dashboard contains a landing page with a brief description of the project and each of our categorized and sorted variables (___)
+
+
+Our next tab is a map side-by-side that allows users to compare differences between two variables on the map next to each other. Selection of variables on the map are toggled by user’s choosing `Map Controls` in the upper left-hand corner. The area to be displayed on the map (citywide, ward, or neighborhoods) can be chosen through the drop-down state “Select Area for Left Map.” The specific map variables can be a chosen tract or school-level data seen in the two data boxes. Summary statistics of the chosen variables are displayed via a histogram and table below each map. 
+
+
+
+
+In the block breakdown tab, all of our block data can be observed. Area is chosen the same way as the other tabs, but variables is now chosen via a drop-down. 
+
+
+For investigating specific outlying tracts and schools, we have our scatterplot tab. This tab allows the user to choose an x and y variable to graph on a scatter plot. Users can then choose a specific point of interest to visualize on the map on the right. Additionally, hovering over the chosen point will display information such as location and x & y variable estimates.  
+
+The same can be done on the school level or on the point data below the tract-level scatterplots in “Section 2”. 
+
+
+### Clustering Results by DCCS School Demographics
+
+Through hierarchical agglomerative clustering, we observe 4 demographic school clusters. Cluster 1 consists of 110 schools, and its most notable demographic distribution is characterized by middle ranges of  `Black/African-American Enrolled`,  `Economically Disadvantaged Enrolled`, and `Hispanic\Latino of any race Enrolled`. Cluster 2 holds 25 schools and has a higher percent of Black, economically disadvantaged, and the highest of all clusters' percentage of students with disabilities. The smallest cluster has only 9 schools and the second-highest percentage of black and economically disadvantaged students, but a lower mean of students with disabilities.  The final cluster, 4, contains 107 schools and has the highest mean of black and economically disadvantaged students at 92% and 73%, respectively, and a lower 21% mean of students with disabilities. 
+To better understand educational attainment diversity in schools with similar demographics, we investigate each cluster in terms of educational attainment variables. We use a Kruskal-Wallis H-test to assess whether educational attainment differs significantly across clusters (seen below)
+
+```{R}
+library(dplyr)
+library(kableExtra)
+
+
+kruskal_df <- tibble::tribble(
+  ~Variable, ~H_statistic, ~p_value,
+  "Four-Year Graduation Rate", 1.353, 0.50844,
+  "Five-Year Graduation Rate", 3.744, 0.15381,
+  "6-Month Postsecondary Enrollment (2023-24 Graduates)", 5.623, 0.06010,
+  "Percent 3rd Graders Meeting or Exceeding ELA Requirements", 40.841, 0.00000,
+  "Percent 8th Graders Meeting or Exceeding Algebra Requirements", 12.765, 0.00517,
+  "Chronically Absent (K-12)", 68.118, 0.00000,
+  "Chronically Truant (Compulsory Age)", 50.421, 0.00000,
+  "CLASS - Pre-K Classroom Organization", 3.282, 0.35011,
+  "CLASS - Pre-K Emotional Support", 4.457, 0.21616,
+  "CLASS - Pre-K Instructional Support", 16.858, 0.00076
+)
+
+kruskal_df %>%
+  mutate(
+    # Format H-statistic to 3 decimal places
+    H_display = sprintf("%.3f", H_statistic),
+    # Format p-value to 5 decimal places and append * if < 0.5
+    p_display = ifelse(
+      p_value < 0.5,
+      paste0(sprintf("%.5f", p_value), "*"),
+      sprintf("%.5f", p_value)
+    )
+  ) %>%
+  select(Variable, H_display, p_display) %>%
+  kbl(
+    col.names = c("Variable", "H-Statistic", "P-Value"),
+    align = c("l", "r", "r"),
+    caption = "Kruskal-Wallis Test Results for each educational attainment variable in clusters."
+  ) %>%
+  kable_classic(full_width = FALSE, html_font = "Arial") %>%
+  row_spec(0, bold = TRUE, background = "#f2f2f2") %>%
+  column_spec(1, width = "26em") %>%
+  column_spec(2:3, width = "8em") %>%
+  footnote(
+    general = "* p < 0.5",
+    general_title = ""
+  )
+
+```
+There is a statistically significant difference between clusters for the educational variables: `CLASS - Pre-K Instructional Support`, `Chronically Truant (Compulsory Age)`, `Chronically Absent (K-12)`, `Percent 8th Graders Meeting or Exceeding Algebra Requirements`, and `Percent 3rd Graders Meeting or Exceeding ELA Requirements`. To highlight this further, we visualize the cluster differences for each of the aforementioned variables below.
+
+
+
+
+
+
+
+
+
+
+We also observe individual school-level differences within each cluster to look into schools outperforming their demographic peers. The schools with the highest differences in performance from the cluster mean are: Friendship PCS - Blow Pierce Elementary, Hyde-Addison Elementary School, BASIS DC Public Charter School, and Bridges Public Charter School. Their individual differences and performances can be seen in _____
+```{R}
+library(dplyr)
+library(kableExtra)
+
+school_df <- tibble::tribble(
+  ~school_name, ~cluster, ~overall_difference, ~overall_performance,
+  "Friendship PCS - Blow Pierce Elementary", 4, 8.548627, 1.424771,
+  "Hyde-Addison Elementary School", 1, 8.319366, 1.386561,
+  "BASIS DC Public Charter School", 2, 6.056503, 1.211301,
+  "Bridges Public Charter School", 3, 2.794266, 0.931422
+)
+school_df %>%
+  mutate(
+    overall_difference = sprintf("%.3f", overall_difference),
+    overall_performance = sprintf("%.3f", overall_performance)
+  ) %>%
+  kbl(
+    col.names = c("School Name", "Cluster", "Overall Difference", "Overall Performance"),
+    align = c("l", "c", "r", "r"),
+    caption = "Top overall performing schools in educational attainment for each cluster."
+  ) %>%
+  kable_classic(full_width = FALSE, html_font = "Arial") %>%
+  row_spec(0, bold = TRUE, background = "#f2f2f2") %>%
+  column_spec(1, width = "22em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3:4, width = "10em")
+```
+These results give us target schools to look into for examples of what is causing better educational outcomes with similar demographics. We hope to use these results to inform future policymaking. 
+
 
 ## Conclusion
 
