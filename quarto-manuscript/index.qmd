@@ -84,8 +84,8 @@ The built environment indicators are divided into the subcategories:
 
 Ultimately, our tract-level data contains 54 different observable variables and 11,034 observations.
 ```{r}
-#| label: tbl-outcome-categories
-#| tbl-cap: "Categorized Outcome Variables"
+#| label: tbl-variables
+#| tbl-cap: "Variables by Level, Category, and Source"
 #| echo: false
 
 library(tidyverse)
