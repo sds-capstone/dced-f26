@@ -71,23 +71,11 @@ We pull data from many different sources. For more generalized data from Washing
 
 ### Data Description
 
- To make important distinctions between the ways we can visualize our data, we categorize our data into tract-level, block-level, and point data. Within each category, we organize our variables into different subdomains pertaining to demographics of upward mobility or their data sources. Our categories for tract-level data can be observed in @tbl-outcome-categories below.
-The built environment indicators are divided into the subcategories: 
-*access to school, parks & recreation access
-*safety and wellness indicators
-*access to transit
-*public safety & tract infrastructure
-*digital access & educational resources
-*economic & financial access
-*food access
-*climate resilience. 
-
-Ultimately, our tract-level data contains 54 different observable variables and 11,034 observations.
+ To make important distinctions between the ways we can visualize our data, we categorize our data into tract-level, block-level, and point data. Within each category, we organize our variables into different subdomains pertaining to demographics of upward mobility or their data sources. 
 
 | Variable | Unit | Source |
 |---|---|---|
 | **TRACT-LEVEL VARIABLES – POLYGON** | | |
-| *Open Data DC* | | |
 | Affordable Housing Units Constructed Since 2015 Per Capita | rate | Open Data DC |
 | Land Use Diversity Score (0-1) | score (0-1) | Open Data DC |
 | Percent Positive Land Uses | percentage | Open Data DC |
@@ -157,7 +145,6 @@ Ultimately, our tract-level data contains 54 different observable variables and 
 | *Other* | | |
 | 2024 Voter Turnout (%) | percentage | DC Board of Elections |
 | **BLOCK LEVEL VARIABLES – POLYGON** | | |
-| *2020 ACS* | | |
 | Total Population | count | 2020 ACS |
 | Percent White Alone | percentage | 2020 ACS |
 | Percent Black Alone | percentage | 2020 ACS |
@@ -181,49 +168,14 @@ Ultimately, our tract-level data contains 54 different observable variables and 
 | *Other* | | |
 | 2024 Air Quality Monitoring Sites | map overlay, no units | Open Data DC |
 
-: Categorized Outcome Variables {#tbl-outcome-categories}
+: Categorized Variables {#tbl-outcome-categories}
 
 
+  Ultimately, our tract-level data contains 54 different observable variables and 11,034 observations.
+
+ Our point data belongs to 3 main categories: Attendance (D.C. School Level), Classroom Metrics (D.C. School Level), and Point & Polygon Data (ACS Level).  
   
-  Our point data belongs to 3 main categories: Attendance (D.C. School Level), Classroom Metrics (D.C. School Level), and Point & Polygon Data (ACS Level)  (@tbl-predictor-categories).
- 
-```{r}
-#| label: tbl-predictor-categories
-#| tbl-cap: "Categorized Predictor Variables"
-#| echo: false
-
-library(tidyverse)
-library(knitr)
-
-categories_predictors <- tibble(
-  Category = c("Attendance (OSSE)", "Graduation and College Enrollment (OSSE)", "Enrollment (ACS)", "Level of Educational Attainment (ACS)", "Employment(ACS)"),
-  variable1 = c("Chronic Absenteeism Rate", 
-                "Four-Year Graduation Rate", 
-                "Nursery school, preschool", 
-                "High School Graduate",
-                "Employment Rate Age 20-24"),
-  variable2 = c("Pre-K Chronic Absenteeism Rate", 
-                "Five-Year Graduation Rate", 
-                "Kindergarten Enrollment",
-                "Bachelor's or higher", 
-                "Employment Rate Age 25-29" ),
-  variable3 = c("Attendance Growth", 
-                "6-Month Postsecondary Enrollment", 
-                NA,
-                NA, 
-                NA),
-  variable4 = c(NA, 
-                "12-Month Postsecondary Enrollment", 
-                NA, 
-                NA, 
-                NA
-                )
-)
-
-kable(categories_predictors, col.names = c("Category", "Variable 1", "Variable 2", "Variable 3", "Variable 4"))
-```
-
-The last of our data is at the D.C. block level, taken from the 2020 decennial census. It represents the smallest square footage per unit in comparison to the neighborhood and ward level, but is limited in variables. This data includes: total population, percent white alone, percent black alone, percent asian alone, percent renter-occupied, and percent owner-occupied. 
+  The last of our data is at the D.C. block level, taken from the 2020 decennial census. It represents the smallest square footage per unit in comparison to the neighborhood and ward level, but is limited in variables. This data includes: total population, percent white alone, percent black alone, percent asian alone, percent renter-occupied, and percent owner-occupied. 
 
 #### Summary Statistics and Exploratory Data Analysis
   Overall, our combined data contains 14,393 rows (observations), 53 variables, 206 tracts, 107 neighborhoods, and 8 wards. To contextualize the spatial demographics of the number of census tracts per neighborhood, we have provided @fig-tracts below. 
